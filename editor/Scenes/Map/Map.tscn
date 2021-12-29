@@ -1,0 +1,76 @@
+[gd_scene format=2]
+
+[node name="Map" type="Control"]
+margin_top = 24.0
+margin_right = 1024.0
+margin_bottom = 596.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="HSplitContainer" type="HSplitContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="C1" type="VBoxContainer" parent="HSplitContainer"]
+margin_right = 260.0
+margin_bottom = 572.0
+rect_min_size = Vector2( 260, 0 )
+size_flags_vertical = 3
+
+[node name="R1" type="HBoxContainer" parent="HSplitContainer/C1"]
+margin_right = 260.0
+margin_bottom = 20.0
+
+[node name="OptionButton" type="OptionButton" parent="HSplitContainer/C1/R1"]
+margin_right = 260.0
+margin_bottom = 20.0
+size_flags_horizontal = 3
+
+[node name="ScrollContainer" type="ScrollContainer" parent="HSplitContainer/C1"]
+margin_top = 24.0
+margin_right = 260.0
+margin_bottom = 224.0
+rect_min_size = Vector2( 0, 200 )
+size_flags_vertical = 3
+
+[node name="TextureRect" type="TextureRect" parent="HSplitContainer/C1/ScrollContainer"]
+
+[node name="VSeparator" type="VSeparator" parent="HSplitContainer/C1"]
+margin_top = 228.0
+margin_right = 260.0
+margin_bottom = 231.0
+
+[node name="ItemList" type="ItemList" parent="HSplitContainer/C1"]
+margin_top = 235.0
+margin_right = 260.0
+margin_bottom = 435.0
+rect_min_size = Vector2( 0, 200 )
+
+[node name="VSeparator2" type="VSeparator" parent="HSplitContainer/C1"]
+margin_top = 439.0
+margin_right = 260.0
+margin_bottom = 442.0
+
+[node name="Tree" type="Tree" parent="HSplitContainer/C1"]
+margin_top = 446.0
+margin_right = 260.0
+margin_bottom = 572.0
+size_flags_vertical = 3
+
+[node name="C2" type="ScrollContainer" parent="HSplitContainer"]
+margin_left = 272.0
+margin_right = 1024.0
+margin_bottom = 572.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="TextureRect" type="TextureRect" parent="HSplitContainer/C2"]
+margin_right = 752.0
+margin_bottom = 572.0
+size_flags_horizontal = 3
+size_flags_vertical = 3

@@ -1,0 +1,74 @@
+[gd_scene load_steps=7 format=2]
+
+[ext_resource path="res://Scenes/Main/Main.gd" type="Script" id=1]
+[ext_resource path="res://Scenes/Main/Menu.tscn" type="PackedScene" id=2]
+[ext_resource path="res://Scenes/Map/Map.tscn" type="PackedScene" id=3]
+[ext_resource path="res://Scenes/Database/Database.tscn" type="PackedScene" id=4]
+[ext_resource path="res://Scenes/Scripts/Scripts.tscn" type="PackedScene" id=5]
+[ext_resource path="res://Scenes/Settings/Settings.tscn" type="PackedScene" id=6]
+
+[node name="Control" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+map_editor_path = NodePath("VBoxContainer/MarginContainer/Map")
+database_editor_path = NodePath("VBoxContainer/MarginContainer/Database")
+scripts_editor_path = NodePath("VBoxContainer/MarginContainer/Scripts")
+settings_path = NodePath("VBoxContainer/MarginContainer/Settings")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Menu" parent="VBoxContainer" instance=ExtResource( 2 )]
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer"]
+margin_top = 24.0
+margin_right = 1024.0
+margin_bottom = 600.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_constants/margin_right = 10
+custom_constants/margin_top = 10
+custom_constants/margin_left = 10
+custom_constants/margin_bottom = 10
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Map" parent="VBoxContainer/MarginContainer" instance=ExtResource( 3 )]
+margin_left = 10.0
+margin_top = 10.0
+margin_right = 1014.0
+margin_bottom = 566.0
+
+[node name="Database" parent="VBoxContainer/MarginContainer" instance=ExtResource( 4 )]
+visible = false
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 10.0
+margin_top = 10.0
+margin_right = 1014.0
+margin_bottom = 566.0
+
+[node name="Scripts" parent="VBoxContainer/MarginContainer" instance=ExtResource( 5 )]
+visible = false
+margin_left = 10.0
+margin_top = 10.0
+margin_right = 1014.0
+margin_bottom = 566.0
+
+[node name="Settings" parent="VBoxContainer/MarginContainer" instance=ExtResource( 6 )]
+visible = false
+margin_left = 10.0
+margin_top = 10.0
+margin_right = 1014.0
+margin_bottom = 566.0
+
+[connection signal="action" from="VBoxContainer/Menu" to="." method="_on_menu_action"]

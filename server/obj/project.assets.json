@@ -1,0 +1,125 @@
+{
+  "version": 3,
+  "targets": {
+    "net5.0": {
+      "IronRuby/1.1.3": {
+        "type": "package",
+        "compile": {
+          "Lib/IronRuby.Libraries.Yaml.dll": {},
+          "Lib/IronRuby.Libraries.dll": {},
+          "Lib/IronRuby.dll": {},
+          "Lib/Microsoft.Dynamic.dll": {},
+          "Lib/Microsoft.Scripting.Metadata.dll": {},
+          "Lib/Microsoft.Scripting.dll": {}
+        },
+        "runtime": {
+          "Lib/IronRuby.Libraries.Yaml.dll": {},
+          "Lib/IronRuby.Libraries.dll": {},
+          "Lib/IronRuby.dll": {},
+          "Lib/Microsoft.Dynamic.dll": {},
+          "Lib/Microsoft.Scripting.Metadata.dll": {},
+          "Lib/Microsoft.Scripting.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "IronRuby/1.1.3": {
+      "sha512": "QPpGvBrKDhv9GhkIcTNTYqKTTQ+3VOqyQu2ctjuUfYFWEUTU5UxPBPtNFmsV26ltqyWNyEkNIu/Ky8zP+izYPA==",
+      "type": "package",
+      "path": "ironruby/1.1.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Lib/IronRuby.Libraries.Yaml.dll",
+        "Lib/IronRuby.Libraries.dll",
+        "Lib/IronRuby.dll",
+        "Lib/Microsoft.Dynamic.dll",
+        "Lib/Microsoft.Scripting.Metadata.dll",
+        "Lib/Microsoft.Scripting.dll",
+        "ironruby.1.1.3.nupkg.sha512",
+        "ironruby.nuspec"
+      ]
+    }
+  },
+  "projectFileDependencyGroups": {
+    "net5.0": [
+      "IronRuby >= 1.1.3"
+    ]
+  },
+  "packageFolders": {
+    "C:\\Users\\psore\\.nuget\\packages\\": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "C:\\Users\\psore\\dev\\c#\\ir_server\\Server.csproj",
+      "projectName": "Server",
+      "projectPath": "C:\\Users\\psore\\dev\\c#\\ir_server\\Server.csproj",
+      "packagesPath": "C:\\Users\\psore\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\psore\\dev\\c#\\ir_server\\obj\\",
+      "projectStyle": "PackageReference",
+      "configFilePaths": [
+        "C:\\Users\\psore\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+      ],
+      "originalTargetFrameworks": [
+        "net5.0"
+      ],
+      "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "net5.0": {
+          "targetAlias": "net5.0",
+          "projectReferences": {}
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      }
+    },
+    "frameworks": {
+      "net5.0": {
+        "targetAlias": "net5.0",
+        "dependencies": {
+          "IronRuby": {
+            "target": "Package",
+            "version": "[1.1.3, )"
+          }
+        },
+        "imports": [
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48"
+        ],
+        "assetTargetFallback": true,
+        "warn": true,
+        "frameworkReferences": {
+          "Microsoft.NETCore.App": {
+            "privateAssets": "all"
+          }
+        },
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.201\\RuntimeIdentifierGraph.json"
+      }
+    }
+  },
+  "logs": [
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'IronRuby 1.1.3' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8' instead of the project target framework 'net5.0'. This package may not be fully compatible with your project.",
+      "libraryId": "IronRuby",
+      "targetGraphs": [
+        "net5.0"
+      ]
+    }
+  ]
+}

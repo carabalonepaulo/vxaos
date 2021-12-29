@@ -1,0 +1,55 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://Scenes/Main/Menu.gd" type="Script" id=1]
+
+[node name="R1" type="HBoxContainer"]
+margin_right = 1024.0
+margin_bottom = 20.0
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Project" type="MenuButton" parent="."]
+margin_right = 57.0
+margin_bottom = 20.0
+focus_mode = 2
+text = "Project"
+items = [ "Open", null, 0, false, false, 0, 0, null, "", false, "Save", null, 0, false, false, 2, 0, null, "", false, "Close", null, 0, false, false, 2, 0, null, "", false ]
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Map" type="Button" parent="."]
+margin_left = 61.0
+margin_right = 100.0
+margin_bottom = 20.0
+text = "Map"
+flat = true
+
+[node name="Database" type="Button" parent="."]
+margin_left = 104.0
+margin_right = 175.0
+margin_bottom = 20.0
+text = "Database"
+flat = true
+
+[node name="Scripts" type="Button" parent="."]
+margin_left = 179.0
+margin_right = 234.0
+margin_bottom = 20.0
+text = "Scripts"
+flat = true
+
+[node name="Settings" type="Button" parent="."]
+margin_left = 238.0
+margin_right = 301.0
+margin_bottom = 20.0
+text = "Settings"
+flat = true
+
+[connection signal="pressed" from="Project" to="." method="_on_project_pressed"]
+[connection signal="pressed" from="Map" to="." method="_on_map_pressed"]
+[connection signal="pressed" from="Database" to="." method="_on_database_pressed"]
+[connection signal="pressed" from="Scripts" to="." method="_on_scripts_pressed"]
+[connection signal="pressed" from="Settings" to="." method="_on_settings_pressed"]

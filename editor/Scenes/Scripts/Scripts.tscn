@@ -1,0 +1,80 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://Scenes/Scripts/Scripts.gd" type="Script" id=1]
+
+[node name="Scripts" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+text_edit_path = NodePath("HSplitContainer/TextEdit")
+
+[node name="HSplitContainer" type="HSplitContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="C1" type="VBoxContainer" parent="HSplitContainer"]
+margin_right = 260.0
+margin_bottom = 600.0
+size_flags_vertical = 3
+custom_constants/separation = 10
+
+[node name="Scripts" type="ItemList" parent="HSplitContainer/C1"]
+margin_right = 260.0
+margin_bottom = 542.0
+rect_min_size = Vector2( 260, 0 )
+size_flags_horizontal = 3
+size_flags_vertical = 3
+items = [ "Main", null, false ]
+
+[node name="R2" type="VBoxContainer" parent="HSplitContainer/C1"]
+margin_top = 552.0
+margin_right = 260.0
+margin_bottom = 600.0
+
+[node name="LineEdit" type="LineEdit" parent="HSplitContainer/C1/R2"]
+margin_right = 260.0
+margin_bottom = 24.0
+
+[node name="R2" type="HBoxContainer" parent="HSplitContainer/C1/R2"]
+margin_top = 28.0
+margin_right = 260.0
+margin_bottom = 48.0
+
+[node name="Button" type="Button" parent="HSplitContainer/C1/R2/R2"]
+margin_right = 128.0
+margin_bottom = 20.0
+size_flags_horizontal = 3
+text = "Insert"
+flat = true
+
+[node name="Button2" type="Button" parent="HSplitContainer/C1/R2/R2"]
+margin_left = 132.0
+margin_right = 260.0
+margin_bottom = 20.0
+size_flags_horizontal = 3
+text = "Delete"
+flat = true
+
+[node name="TextEdit" type="TextEdit" parent="HSplitContainer"]
+margin_left = 272.0
+margin_right = 1024.0
+margin_bottom = 600.0
+highlight_current_line = true
+syntax_highlighting = true
+show_line_numbers = true
+draw_tabs = true
+draw_spaces = true
+smooth_scrolling = true
+__meta__ = {
+"_edit_use_anchors_": false
+}

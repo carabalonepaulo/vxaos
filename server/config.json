@@ -1,0 +1,7 @@
+{
+    "Host": "127.0.0.1",
+    "Port": 5000,
+    "Backlog": 32,
+    "BufferSize": 4096,
+    "MaxConnections": 4096
+}

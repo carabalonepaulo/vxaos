@@ -1,0 +1,131 @@
+[gd_scene format=2]
+
+[node name="Classes" type="Tabs"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="HSplitContainer" type="HSplitContainer" parent="MarginContainer"]
+margin_right = 1024.0
+margin_bottom = 600.0
+
+[node name="ItemList" type="ItemList" parent="MarginContainer/HSplitContainer"]
+margin_right = 260.0
+margin_bottom = 600.0
+rect_min_size = Vector2( 260, 0 )
+
+[node name="C2" type="VBoxContainer" parent="MarginContainer/HSplitContainer"]
+margin_left = 272.0
+margin_right = 1024.0
+margin_bottom = 600.0
+
+[node name="R1" type="HBoxContainer" parent="MarginContainer/HSplitContainer/C2"]
+margin_right = 752.0
+margin_bottom = 600.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="C1" type="VBoxContainer" parent="MarginContainer/HSplitContainer/C2/R1"]
+margin_right = 374.0
+margin_bottom = 600.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_constants/separation = 20
+
+[node name="R1" type="HBoxContainer" parent="MarginContainer/HSplitContainer/C2/R1/C1"]
+margin_right = 374.0
+margin_bottom = 24.0
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/C2/R1/C1/R1"]
+margin_top = 5.0
+margin_right = 42.0
+margin_bottom = 19.0
+text = "Name:"
+
+[node name="C2" type="HBoxContainer" parent="MarginContainer/HSplitContainer/C2/R1/C1/R1"]
+margin_left = 46.0
+margin_right = 374.0
+margin_bottom = 24.0
+size_flags_horizontal = 3
+alignment = 2
+
+[node name="LineEdit" type="LineEdit" parent="MarginContainer/HSplitContainer/C2/R1/C1/R1/C2"]
+margin_left = 128.0
+margin_right = 328.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 200, 0 )
+
+[node name="R2" type="VBoxContainer" parent="MarginContainer/HSplitContainer/C2/R1/C1"]
+margin_top = 44.0
+margin_right = 374.0
+margin_bottom = 328.0
+
+[node name="R1" type="HBoxContainer" parent="MarginContainer/HSplitContainer/C2/R1/C1/R2"]
+margin_right = 374.0
+margin_bottom = 20.0
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/C2/R1/C1/R2/R1"]
+margin_top = 3.0
+margin_right = 114.0
+margin_bottom = 17.0
+text = "Experience Curve:"
+
+[node name="C2" type="HBoxContainer" parent="MarginContainer/HSplitContainer/C2/R1/C1/R2/R1"]
+margin_left = 118.0
+margin_right = 374.0
+margin_bottom = 20.0
+size_flags_horizontal = 3
+alignment = 2
+
+[node name="OptionButton" type="OptionButton" parent="MarginContainer/HSplitContainer/C2/R1/C1/R2/R1/C2"]
+margin_left = 56.0
+margin_right = 256.0
+margin_bottom = 20.0
+rect_min_size = Vector2( 200, 0 )
+
+[node name="TextEdit" type="TextEdit" parent="MarginContainer/HSplitContainer/C2/R1/C1/R2"]
+margin_top = 24.0
+margin_right = 374.0
+margin_bottom = 284.0
+rect_min_size = Vector2( 0, 260 )
+highlight_current_line = true
+syntax_highlighting = true
+show_line_numbers = true
+draw_tabs = true
+draw_spaces = true
+smooth_scrolling = true
+
+[node name="R3" type="VBoxContainer" parent="MarginContainer/HSplitContainer/C2/R1/C1"]
+margin_top = 348.0
+margin_right = 374.0
+margin_bottom = 600.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="R1" type="Label" parent="MarginContainer/HSplitContainer/C2/R1/C1/R3"]
+margin_right = 374.0
+margin_bottom = 14.0
+text = "Skills:"
+
+[node name="R2" type="GridContainer" parent="MarginContainer/HSplitContainer/C2/R1/C1/R3"]
+margin_top = 18.0
+margin_right = 374.0
+margin_bottom = 252.0
+size_flags_vertical = 3
+columns = 2
+
+[node name="C2" type="VBoxContainer" parent="MarginContainer/HSplitContainer/C2/R1"]
+margin_left = 378.0
+margin_right = 752.0
+margin_bottom = 600.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
