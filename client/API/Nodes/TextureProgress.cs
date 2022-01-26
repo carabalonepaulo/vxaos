@@ -3,11 +3,11 @@ using System;
 
 namespace API.Nodes
 {
-    public class VerticalBox : Godot.HBoxContainer, IEmitter
+    public class TextureProgress : Godot.TextureProgress, IEmitter
     {
         public object Emitter { get; set; }
 
-        public VerticalBox()
+        public TextureProgress()
         {
             var ctor = Main.RubyEngine.Runtime.Globals.GetVariable("Emitter");
             Emitter = Main.RubyEngine.Operations.CreateInstance(ctor);
@@ -39,8 +39,9 @@ namespace API.Nodes
             Connect("resized", this, nameof(OnResized));
             Connect("size_flags_changed", this, nameof(OnSizeFlagsChanged));
 
-            // Container
-            Connect("sort_children", this, nameof(OnSortChildren));
+            // Range
+            Connect("changed", this, nameof(OnChanged));
+            Connect("value_changed", this, nameof(OnValueChanged));
         }
 
         #region Node
@@ -70,8 +71,9 @@ namespace API.Nodes
         void OnSizeFlagsChanged() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "size_flags_changed");
         #endregion
 
-        #region Container
-        void OnSortChildren() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "sort_children");
+        #region Range
+        void OnChanged() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "changed");
+        void OnValueChanged(float value) => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "value_changed", value);
         #endregion
     }
 }

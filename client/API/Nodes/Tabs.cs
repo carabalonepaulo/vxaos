@@ -3,11 +3,11 @@ using System;
 
 namespace API.Nodes
 {
-    public class VerticalBox : Godot.HBoxContainer, IEmitter
+    public class Tabs : Godot.Tabs, IEmitter
     {
         public object Emitter { get; set; }
 
-        public VerticalBox()
+        public Tabs()
         {
             var ctor = Main.RubyEngine.Runtime.Globals.GetVariable("Emitter");
             Emitter = Main.RubyEngine.Operations.CreateInstance(ctor);
@@ -39,8 +39,13 @@ namespace API.Nodes
             Connect("resized", this, nameof(OnResized));
             Connect("size_flags_changed", this, nameof(OnSizeFlagsChanged));
 
-            // Container
-            Connect("sort_children", this, nameof(OnSortChildren));
+            // Tabs
+            Connect("reposition_active_tab_request", this, nameof(OnRepositionActiveTabRequest));
+            Connect("right_button_pressed", this, nameof(OnRightButtonPressed));
+            Connect("tab_changed", this, nameof(OnTabChanged));
+            Connect("tab_clicked", this, nameof(OnTabClicked));
+            Connect("tab_close", this, nameof(OnTabClose));
+            Connect("tab_hover", this, nameof(OnTabHover));
         }
 
         #region Node
@@ -70,8 +75,21 @@ namespace API.Nodes
         void OnSizeFlagsChanged() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "size_flags_changed");
         #endregion
 
-        #region Container
-        void OnSortChildren() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "sort_children");
+        #region Tabs
+        void OnRepositionActiveTabRequest(int idxTo) => Main.RubyEngine.Operations.InvokeMember(
+            Emitter,
+            "emit",
+            "reposition_active_tab_request",
+            idxTo);
+        void OnRightButtonPressed(int tabId) => Main.RubyEngine.Operations.InvokeMember(
+            Emitter,
+            "emit",
+            "right_button_pressed",
+            tabId);
+        void OnTabChanged(int tab) => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "tab_changed", tab);
+        void OnTabClicked(int tab) => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "tab_clicked", tab);
+        void OnTabClose(int tab) => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "tab_close", tab);
+        void OnTabHover(int tab) => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "tab_hover", tab);
         #endregion
     }
 }

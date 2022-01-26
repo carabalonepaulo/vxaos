@@ -70,7 +70,7 @@ namespace API.Nodes
         void OnSizeFlagsChanged() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "size_flags_changed");
         #endregion
 
-        #region HBoxContainer
+        #region Container
         void OnSortChildren() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "sort_children");
         #endregion
     }

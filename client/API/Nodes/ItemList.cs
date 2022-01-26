@@ -3,11 +3,11 @@ using System;
 
 namespace API.Nodes
 {
-    public class VerticalBox : Godot.HBoxContainer, IEmitter
+    public class ItemList : Godot.ItemList, IEmitter
     {
         public object Emitter { get; set; }
 
-        public VerticalBox()
+        public ItemList()
         {
             var ctor = Main.RubyEngine.Runtime.Globals.GetVariable("Emitter");
             Emitter = Main.RubyEngine.Operations.CreateInstance(ctor);
@@ -39,8 +39,13 @@ namespace API.Nodes
             Connect("resized", this, nameof(OnResized));
             Connect("size_flags_changed", this, nameof(OnSizeFlagsChanged));
 
-            // Container
-            Connect("sort_children", this, nameof(OnSortChildren));
+            // ItemList
+            Connect("item_activated", this, nameof(OnItemActivated));
+            Connect("item_rmb_selected", this, nameof(OnItemRMBSelected));
+            Connect("item_selected", this, nameof(OnItemSelected));
+            Connect("multi_selected", this, nameof(OnMultiSelected));
+            Connect("nothing_selected", this, nameof(OnNothingSelected));
+            Connect("rmb_clicked", this, nameof(OnRMBClicked));
         }
 
         #region Node
@@ -70,8 +75,25 @@ namespace API.Nodes
         void OnSizeFlagsChanged() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "size_flags_changed");
         #endregion
 
-        #region Container
-        void OnSortChildren() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "sort_children");
+        #region ItemList
+        void OnItemActivated(int index) => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "item_activated", index);
+        void OnItemRMBSelected(int index, Vector2 atPosition) => Main.RubyEngine.Operations.InvokeMember(
+            Emitter,
+            "emit",
+            "item_rmb_selected",
+            index,
+            atPosition);
+        void OnItemSelected(int index) => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "item_selected", index);
+        void OnMultiSelected(int index, bool selected) => Main.RubyEngine.Operations.InvokeMember(Emitter,
+            "emit",
+            "multi_selected",
+            index,
+            selected);
+        void OnNothingSelected() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "nothing_selected");
+        void OnRMBClicked(Vector2 atPosition) => Main.RubyEngine.Operations.InvokeMember(Emitter,
+            "emit",
+            "rmb_clicked",
+            atPosition);
         #endregion
     }
 }

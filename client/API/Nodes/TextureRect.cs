@@ -3,11 +3,11 @@ using System;
 
 namespace API.Nodes
 {
-    public class VerticalBox : Godot.HBoxContainer, IEmitter
+    public class TextureRect : Godot.TextureRect, IEmitter
     {
         public object Emitter { get; set; }
 
-        public VerticalBox()
+        public TextureRect()
         {
             var ctor = Main.RubyEngine.Runtime.Globals.GetVariable("Emitter");
             Emitter = Main.RubyEngine.Operations.CreateInstance(ctor);
@@ -38,9 +38,6 @@ namespace API.Nodes
             Connect("mouse_exited", this, nameof(OnMouseExited));
             Connect("resized", this, nameof(OnResized));
             Connect("size_flags_changed", this, nameof(OnSizeFlagsChanged));
-
-            // Container
-            Connect("sort_children", this, nameof(OnSortChildren));
         }
 
         #region Node
@@ -68,10 +65,6 @@ namespace API.Nodes
         void OnMouseExited() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "mouse_exited");
         void OnResized() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "resized");
         void OnSizeFlagsChanged() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "size_flags_changed");
-        #endregion
-
-        #region Container
-        void OnSortChildren() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "sort_children");
         #endregion
     }
 }

@@ -3,11 +3,11 @@ using System;
 
 namespace API.Nodes
 {
-    public class VerticalBox : Godot.HBoxContainer, IEmitter
+    public class TextEdit : Godot.TextEdit, IEmitter
     {
         public object Emitter { get; set; }
 
-        public VerticalBox()
+        public TextEdit()
         {
             var ctor = Main.RubyEngine.Runtime.Globals.GetVariable("Emitter");
             Emitter = Main.RubyEngine.Operations.CreateInstance(ctor);
@@ -39,8 +39,13 @@ namespace API.Nodes
             Connect("resized", this, nameof(OnResized));
             Connect("size_flags_changed", this, nameof(OnSizeFlagsChanged));
 
-            // Container
-            Connect("sort_children", this, nameof(OnSortChildren));
+            // TextEdit
+            Connect("breakpoint_toggled", this, nameof(OnBreakpointToggled));
+            Connect("cursor_changed", this, nameof(OnCursorChanged));
+            Connect("info_clicked", this, nameof(OnInfoClicked));
+            Connect("request_completion", this, nameof(OnRequestCompletion));
+            Connect("symbol_lookup", this, nameof(OnSymbolLookup));
+            Connect("text_changed", this, nameof(OnTextChanged));
         }
 
         #region Node
@@ -70,8 +75,22 @@ namespace API.Nodes
         void OnSizeFlagsChanged() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "size_flags_changed");
         #endregion
 
-        #region Container
-        void OnSortChildren() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "sort_children");
+        #region TextEdit
+        void OnBreakpointToggled(int row) => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "breakpoint_toggled", row);
+        void OnCursorChanged() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "cursor_changed");
+        void OnInfoClicked(int row, string info) => Main.RubyEngine.Operations.InvokeMember(
+            Emitter,
+            "emit",
+            "info_clicked",
+            row,
+            info);
+        void OnRequestCompletion() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "request_completion");
+        void OnSymbolLookup(string symbol, int row, int column) => Main.RubyEngine.Operations.InvokeMember(
+            Emitter,
+            "emit",
+            "symbol_lookup",
+            symbol, row, column);
+        void OnTextChanged() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "text_changed");
         #endregion
     }
 }

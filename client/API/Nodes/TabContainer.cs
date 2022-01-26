@@ -3,11 +3,11 @@ using System;
 
 namespace API.Nodes
 {
-    public class VerticalBox : Godot.HBoxContainer, IEmitter
+    public class TabContainer : Godot.TabContainer, IEmitter
     {
         public object Emitter { get; set; }
 
-        public VerticalBox()
+        public TabContainer()
         {
             var ctor = Main.RubyEngine.Runtime.Globals.GetVariable("Emitter");
             Emitter = Main.RubyEngine.Operations.CreateInstance(ctor);
@@ -41,6 +41,11 @@ namespace API.Nodes
 
             // Container
             Connect("sort_children", this, nameof(OnSortChildren));
+
+            // TabContainer
+            Connect("pre_popup_pressed", this, nameof(OnPrePopupPressed));
+            Connect("tab_changed", this, nameof(OnTabChanged));
+            Connect("tab_selected", this, nameof(OnTabSelected));
         }
 
         #region Node
@@ -72,6 +77,12 @@ namespace API.Nodes
 
         #region Container
         void OnSortChildren() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "sort_children");
+        #endregion
+
+        #region TabContainer
+        void OnPrePopupPressed() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "pre_popup_pressed");
+        void OnTabChanged(int tab) => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "tab_changed", tab);
+        void OnTabSelected(int tab) => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "tab_selected", tab);
         #endregion
     }
 }

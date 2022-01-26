@@ -3,11 +3,11 @@ using System;
 
 namespace API.Nodes
 {
-    public class VerticalBox : Godot.HBoxContainer, IEmitter
+    public class NinePatchRect : Godot.NinePatchRect, IEmitter
     {
         public object Emitter { get; set; }
 
-        public VerticalBox()
+        public NinePatchRect()
         {
             var ctor = Main.RubyEngine.Runtime.Globals.GetVariable("Emitter");
             Emitter = Main.RubyEngine.Operations.CreateInstance(ctor);
@@ -39,8 +39,8 @@ namespace API.Nodes
             Connect("resized", this, nameof(OnResized));
             Connect("size_flags_changed", this, nameof(OnSizeFlagsChanged));
 
-            // Container
-            Connect("sort_children", this, nameof(OnSortChildren));
+            // NinePatchRect
+            Connect("texture_changed", this, nameof(OnTextureChanged));
         }
 
         #region Node
@@ -70,8 +70,8 @@ namespace API.Nodes
         void OnSizeFlagsChanged() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "size_flags_changed");
         #endregion
 
-        #region Container
-        void OnSortChildren() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "sort_children");
+        #region NinePatchRect
+        void OnTextureChanged() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "texture_changed");
         #endregion
     }
 }
