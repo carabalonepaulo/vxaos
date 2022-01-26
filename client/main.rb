@@ -40,8 +40,13 @@ class Main
       btn2.text = 'Toggle Me!'
       btn2.toggle_mode = true
 
+      txt_box = Main[:node].create_node 'LineEdit'
+      txt_box.rect_min_size = Main[:primitives].vector2 150, 30
+      btn1.emitter.bind('pressed') { p txt_box.text }
+
       hbox.add_child btn1
       hbox.add_child btn2
+      hbox.add_child txt_box
 
       root = Main[:system].root
       root.add_child hbox

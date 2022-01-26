@@ -23,7 +23,8 @@ namespace API
                 { "Control", typeof(API.Nodes.Control) },
                 { "HorizontalBox", typeof(API.Nodes.HorizontalBox) },
                 { "VerticalBox", typeof(API.Nodes.VerticalBox) },
-                { "Button", typeof(API.Nodes.Button) }
+                { "Button", typeof(API.Nodes.Button) },
+                { "LineEdit", typeof(API.Nodes.LineEdit) }
             };
         }
 
