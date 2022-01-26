@@ -2,6 +2,11 @@ using Godot;
 using System;
 using Microsoft.Scripting.Hosting;
 
+public interface RubyAPI
+{
+    event Action<String> ExceptionRaised;
+}
+
 public class Main : Node2D
 {
     ScriptEngine _engine;
@@ -11,16 +16,23 @@ public class Main : Node2D
     bool _hasError;
     AcceptDialog _errorDialog;
 
+    API.System _systemAPI;
+    API.Primitives _primitivesAPI;
+    API.Node _nodeAPI;
+
+    public static ScriptEngine RubyEngine;
+
     public override void _Ready()
     {
         SetupErrorDialog();
+        CreateAPIs();
         SetupRubyEnvironment();
         RunScripts();
-        RaiseException("error message here");
     }
 
     public override void _Process(float delta)
     {
+        if (_hasError || _main == null) return;
         _engine.Operations.InvokeMember(_main, "process", delta);
     }
 
@@ -32,6 +44,15 @@ public class Main : Node2D
     }
 
     void OnDialogConfirmed() => GetTree().Quit();
+
+    void CreateAPIs()
+    {
+        _systemAPI = new API.System(this);
+        _systemAPI.ExceptionRaised += RaiseException;
+        _primitivesAPI = new API.Primitives();
+        _nodeAPI = new API.Node();
+        _nodeAPI.ExceptionRaised += RaiseException;
+    }
 
     void RaiseException(string message)
     {
@@ -45,6 +66,7 @@ public class Main : Node2D
         _runtime = IronRuby.Ruby.CreateRuntime();
         _engine = _runtime.GetEngine("Ruby");
         _scope = _engine.CreateScope();
+        RubyEngine = _engine;
     }
 
     string LoadScripts()
@@ -60,6 +82,6 @@ public class Main : Node2D
     {
         _engine.Execute(LoadScripts(), _scope);
         var mainClass = _engine.Runtime.Globals.GetVariable("Main");
-        _main = _engine.Operations.CreateInstance(mainClass);
+        _main = _engine.Operations.CreateInstance(mainClass, _systemAPI, _primitivesAPI, _nodeAPI);
     }
 }
