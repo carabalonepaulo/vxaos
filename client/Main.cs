@@ -51,7 +51,6 @@ public class Main : Node2D
         _systemAPI.ExceptionRaised += RaiseException;
         _primitivesAPI = new API.Primitives();
         _nodeAPI = new API.Node();
-        _nodeAPI.ExceptionRaised += RaiseException;
     }
 
     void RaiseException(string message)
