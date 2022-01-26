@@ -3,11 +3,11 @@ using System;
 
 namespace API.Nodes
 {
-    public class VerticalBox : Godot.HBoxContainer, IEmitter
+    public class LineEdit : Godot.LineEdit, IEmitter
     {
         public object Emitter { get; set; }
 
-        public VerticalBox()
+        public LineEdit()
         {
             var ctor = Main.RubyEngine.Runtime.Globals.GetVariable("Emitter");
             Emitter = Main.RubyEngine.Operations.CreateInstance(ctor);
@@ -39,8 +39,10 @@ namespace API.Nodes
             Connect("resized", this, nameof(OnResized));
             Connect("size_flags_changed", this, nameof(OnSizeFlagsChanged));
 
-            // Container
-            Connect("sort_children", this, nameof(OnSortChildren));
+            // LineEdit
+            Connect("text_change_rejected", this, nameof(OnTextChangeRejected));
+            Connect("text_changed", this, nameof(OnTextChanged));
+            Connect("text_entered", this, nameof(OnTextEntered));
         }
 
         #region Node
@@ -70,8 +72,22 @@ namespace API.Nodes
         void OnSizeFlagsChanged() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "size_flags_changed");
         #endregion
 
-        #region HBoxContainer
-        void OnSortChildren() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "sort_children");
+        #region LineEdit
+        void OnTextChangeRejected(string rejectedSubstring) => Main.RubyEngine.Operations.InvokeMember(
+            Emitter,
+            "emit",
+            "text_change_rejected",
+            rejectedSubstring);
+        void OnTextChanged(string newText) => Main.RubyEngine.Operations.InvokeMember(
+            Emitter,
+            "emit",
+            "text_changed",
+            newText);
+        void OnTextEntered(string newText) => Main.RubyEngine.Operations.InvokeMember(
+            Emitter,
+            "emit",
+            "text_entered",
+            newText);
         #endregion
     }
 }

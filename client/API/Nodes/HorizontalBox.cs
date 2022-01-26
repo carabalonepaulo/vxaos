@@ -38,6 +38,9 @@ namespace API.Nodes
             Connect("mouse_exited", this, nameof(OnMouseExited));
             Connect("resized", this, nameof(OnResized));
             Connect("size_flags_changed", this, nameof(OnSizeFlagsChanged));
+
+            // Container
+            Connect("sort_children", this, nameof(OnSortChildren));
         }
 
         #region Node
