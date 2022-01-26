@@ -1,7 +1,6 @@
 <Project Sdk="Godot.NET.Sdk/3.3.0">
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
-    <RootNamespace>RGSSPlayer</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="IronRuby" Version="1.1.3" />

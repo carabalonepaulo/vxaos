@@ -1,6 +1,2 @@
-.import
-.mono
-.vs
-.vscode
 *.import
-Client
+.mono
