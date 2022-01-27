@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using Microsoft.Scripting.Hosting;
+using System.Collections.Generic;
 
 public interface RubyAPI
 {
@@ -27,7 +28,8 @@ public class Main : Node2D
         SetupErrorDialog();
         CreateAPIs();
         SetupRubyEnvironment();
-        RunScripts();
+        LoadScripts();
+        Run();
     }
 
     public override void _Process(float delta)
@@ -68,18 +70,49 @@ public class Main : Node2D
         RubyEngine = _engine;
     }
 
-    string LoadScripts()
+    string[] CollectScriptFiles(string dirPath)
+    {
+        var dir = new Directory();
+        dir.Open(dirPath);
+        dir.ListDirBegin();
+
+        var files = new List<string>();
+        var fileName = dir.GetNext();
+        while (fileName != "")
+        {
+            if (fileName.Find(".rb") != -1 && fileName != "main.rb")
+                files.Add(fileName);
+            fileName = dir.GetNext();
+        }
+
+        var file = new File();
+        if (file.FileExists($"{dirPath}main.rb")) files.Add("main.rb");
+        else RaiseException("Main script not found.");
+
+        return files.ToArray();
+    }
+
+    string LoadFile(string path)
     {
         var file = new File();
-        file.Open("res://main.rb", File.ModeFlags.Read);
+        file.Open(path, File.ModeFlags.Read);
         var content = file.GetAsText();
         file.Close();
         return content;
     }
 
-    void RunScripts()
+    void LoadScripts()
     {
-        _engine.Execute(LoadScripts(), _scope);
+        var dirPath = "res://Scripts/";
+        foreach (var fileName in CollectScriptFiles(dirPath))
+        {
+            _engine.Execute(LoadFile($"{dirPath}{fileName}"));
+            GD.Print($"Script {fileName} loaded.");
+        }
+    }
+
+    void Run()
+    {
         var mainClass = _engine.Runtime.Globals.GetVariable("Main");
         _main = _engine.Operations.CreateInstance(mainClass, _systemAPI, _primitivesAPI, _nodeAPI);
     }
