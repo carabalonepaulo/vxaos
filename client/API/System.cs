@@ -1,5 +1,7 @@
 using System;
 using Godot;
+using System.Reflection;
+using System.Linq;
 
 namespace API
 {
@@ -17,6 +19,15 @@ namespace API
         public void Print(string message) => GD.Print(message);
 
         public void RaiseException(string message) => ExceptionRaised?.Invoke(message);
+
+        public object CreateInstance(string fullName, params object[] args)
+        {
+            var type = Assembly.GetExecutingAssembly()
+                .GetTypes()
+                .Where(t => t.FullName == fullName)
+                .First();
+            return Activator.CreateInstance(type, args);
+        }
 
         public void Quit() { }
     }
