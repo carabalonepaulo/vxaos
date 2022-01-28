@@ -1,13 +1,13 @@
 using Godot;
 using System;
 
-namespace API.Nodes
+namespace API.Controls
 {
-    public class LineEdit : Godot.LineEdit, IRubyControl
+    public class VerticalBox : Godot.HBoxContainer, IRubyControl
     {
         public object Emitter { get; set; }
 
-        public LineEdit()
+        public VerticalBox()
         {
             var ctor = Main.RubyEngine.Runtime.Globals.GetVariable("Emitter");
             Emitter = Main.RubyEngine.Operations.CreateInstance(ctor);
@@ -39,10 +39,8 @@ namespace API.Nodes
             Connect("resized", this, nameof(OnResized));
             Connect("size_flags_changed", this, nameof(OnSizeFlagsChanged));
 
-            // LineEdit
-            Connect("text_change_rejected", this, nameof(OnTextChangeRejected));
-            Connect("text_changed", this, nameof(OnTextChanged));
-            Connect("text_entered", this, nameof(OnTextEntered));
+            // Container
+            Connect("sort_children", this, nameof(OnSortChildren));
         }
 
         #region Node
@@ -72,22 +70,8 @@ namespace API.Nodes
         void OnSizeFlagsChanged() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "size_flags_changed");
         #endregion
 
-        #region LineEdit
-        void OnTextChangeRejected(string rejectedSubstring) => Main.RubyEngine.Operations.InvokeMember(
-            Emitter,
-            "emit",
-            "text_change_rejected",
-            rejectedSubstring);
-        void OnTextChanged(string newText) => Main.RubyEngine.Operations.InvokeMember(
-            Emitter,
-            "emit",
-            "text_changed",
-            newText);
-        void OnTextEntered(string newText) => Main.RubyEngine.Operations.InvokeMember(
-            Emitter,
-            "emit",
-            "text_entered",
-            newText);
+        #region Container
+        void OnSortChildren() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "sort_children");
         #endregion
     }
 }

@@ -1,7 +1,7 @@
 using Godot;
 using System;
 
-namespace API.Nodes
+namespace API.Controls
 {
     public class SpinBox : Godot.SpinBox, IRubyControl
     {

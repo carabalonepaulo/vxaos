@@ -1,13 +1,13 @@
 using Godot;
 using System;
 
-namespace API.Nodes
+namespace API.Controls
 {
-    public class ProgressBar : Godot.ProgressBar, IRubyControl
+    public class Control : Godot.Control, IRubyControl
     {
         public object Emitter { get; set; }
 
-        public ProgressBar()
+        public Control()
         {
             var ctor = Main.RubyEngine.Runtime.Globals.GetVariable("Emitter");
             Emitter = Main.RubyEngine.Operations.CreateInstance(ctor);
@@ -38,10 +38,6 @@ namespace API.Nodes
             Connect("mouse_exited", this, nameof(OnMouseExited));
             Connect("resized", this, nameof(OnResized));
             Connect("size_flags_changed", this, nameof(OnSizeFlagsChanged));
-
-            // Range
-            Connect("changed", this, nameof(OnChanged));
-            Connect("value_changed", this, nameof(OnValueChanged));
         }
 
         #region Node
@@ -69,11 +65,6 @@ namespace API.Nodes
         void OnMouseExited() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "mouse_exited");
         void OnResized() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "resized");
         void OnSizeFlagsChanged() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "size_flags_changed");
-        #endregion
-
-        #region Range
-        void OnChanged() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "changed");
-        void OnValueChanged(float value) => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "value_changed", value);
         #endregion
     }
 }

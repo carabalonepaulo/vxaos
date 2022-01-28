@@ -1,13 +1,13 @@
 using Godot;
 using System;
 
-namespace API.Nodes
+namespace API.Controls
 {
-    public class RichTextLabel : Godot.RichTextLabel, IRubyControl
+    public class Label : Godot.Label, IRubyControl
     {
         public object Emitter { get; set; }
 
-        public RichTextLabel()
+        public Label()
         {
             var ctor = Main.RubyEngine.Runtime.Globals.GetVariable("Emitter");
             Emitter = Main.RubyEngine.Operations.CreateInstance(ctor);
@@ -38,11 +38,6 @@ namespace API.Nodes
             Connect("mouse_exited", this, nameof(OnMouseExited));
             Connect("resized", this, nameof(OnResized));
             Connect("size_flags_changed", this, nameof(OnSizeFlagsChanged));
-
-            // RichTextLabel
-            Connect("meta_clicked", this, nameof(OnMetaClicked));
-            Connect("meta_hover_endede", this, nameof(OnMetaHoverEnded));
-            Connect("meta_hover_started", this, nameof(OnMetaHoverStarted));
         }
 
         #region Node
@@ -70,12 +65,6 @@ namespace API.Nodes
         void OnMouseExited() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "mouse_exited");
         void OnResized() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "resized");
         void OnSizeFlagsChanged() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "size_flags_changed");
-        #endregion
-
-        #region RichTextLabel
-        void OnMetaClicked(object meta) => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "meta_clicked", meta);
-        void OnMetaHoverEnded(object meta) => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "meta_hover_ended", meta);
-        void OnMetaHoverStarted(object meta) => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "meta_hover_started", meta);
         #endregion
     }
 }

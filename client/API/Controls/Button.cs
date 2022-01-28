@@ -1,13 +1,12 @@
 using Godot;
-using System;
 
-namespace API.Nodes
+namespace API.Controls
 {
-    public class VideoPlayer : Godot.VideoPlayer, IRubyControl
+    public class Button : Godot.Button, IRubyControl
     {
         public object Emitter { get; set; }
 
-        public VideoPlayer()
+        public Button()
         {
             var ctor = Main.RubyEngine.Runtime.Globals.GetVariable("Emitter");
             Emitter = Main.RubyEngine.Operations.CreateInstance(ctor);
@@ -39,8 +38,11 @@ namespace API.Nodes
             Connect("resized", this, nameof(OnResized));
             Connect("size_flags_changed", this, nameof(OnSizeFlagsChanged));
 
-            // VideoPlayer
-            Connect("finished", this, nameof(OnFinished));
+            // Button
+            Connect("button_down", this, nameof(OnButtonDown));
+            Connect("button_up", this, nameof(OnButtonUp));
+            Connect("pressed", this, nameof(OnPressed));
+            Connect("toggled", this, nameof(OnToggled));
         }
 
         #region Node
@@ -70,8 +72,11 @@ namespace API.Nodes
         void OnSizeFlagsChanged() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "size_flags_changed");
         #endregion
 
-        #region VideoPlayer
-        void OnFinished() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "finished");
+        #region Button
+        void OnButtonDown() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "button_down");
+        void OnButtonUp() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "button_up");
+        void OnPressed() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "pressed");
+        void OnToggled(bool pressed) => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "toggled", pressed);
         #endregion
     }
 }

@@ -13,18 +13,18 @@ namespace API
         Type this[string name] { get; }
     }
 
-    public class NodeBucket : IBucket
+    public class ControlBucket : IBucket
     {
         Dictionary<string, Type> _cache;
 
-        public NodeBucket()
+        public ControlBucket()
         {
             _cache = new Dictionary<string, Type>();
             foreach (var type in FindTypes())
                 _cache.Add(type.Name, type);
         }
 
-        IEnumerable<Type> FindTypes() => Assembly.GetAssembly(typeof(API.Nodes.Control))
+        IEnumerable<Type> FindTypes() => Assembly.GetAssembly(typeof(API.Controls.Control))
             .GetTypes()
             .Where(t => t.GetInterface("IRubyControl") != null);
 
@@ -58,7 +58,7 @@ namespace API
     {
         public event Action<String> ExceptionRaised;
 
-        NodeBucket _nodeBucket;
+        ControlBucket _controlBucket;
         GodotObjectBucket _godotObjectBucket;
 
         public readonly Godot.Node Root;
@@ -66,7 +66,7 @@ namespace API
         public System(Godot.Node root)
         {
             Root = root;
-            _nodeBucket = new NodeBucket();
+            _controlBucket = new ControlBucket();
             _godotObjectBucket = new GodotObjectBucket();
         }
 
@@ -74,7 +74,7 @@ namespace API
 
         public void RaiseException(string message) => ExceptionRaised?.Invoke(message);
 
-        public object CreateNode(string name) => Activator.CreateInstance(_nodeBucket[name]);
+        public object CreateControl(string name) => Activator.CreateInstance(_controlBucket[name]);
 
         public object CreateGodotObject(string name, params object[] args) => Activator
             .CreateInstance(_godotObjectBucket[name], args);

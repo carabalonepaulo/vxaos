@@ -1,13 +1,13 @@
 using Godot;
 using System;
 
-namespace API.Nodes
+namespace API.Controls
 {
-    public class Label : Godot.Label, IRubyControl
+    public class NinePatchRect : Godot.NinePatchRect, IRubyControl
     {
         public object Emitter { get; set; }
 
-        public Label()
+        public NinePatchRect()
         {
             var ctor = Main.RubyEngine.Runtime.Globals.GetVariable("Emitter");
             Emitter = Main.RubyEngine.Operations.CreateInstance(ctor);
@@ -38,6 +38,9 @@ namespace API.Nodes
             Connect("mouse_exited", this, nameof(OnMouseExited));
             Connect("resized", this, nameof(OnResized));
             Connect("size_flags_changed", this, nameof(OnSizeFlagsChanged));
+
+            // NinePatchRect
+            Connect("texture_changed", this, nameof(OnTextureChanged));
         }
 
         #region Node
@@ -65,6 +68,10 @@ namespace API.Nodes
         void OnMouseExited() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "mouse_exited");
         void OnResized() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "resized");
         void OnSizeFlagsChanged() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "size_flags_changed");
+        #endregion
+
+        #region NinePatchRect
+        void OnTextureChanged() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "texture_changed");
         #endregion
     }
 }
