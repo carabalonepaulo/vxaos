@@ -3,7 +3,7 @@ using System;
 
 namespace API.Nodes
 {
-    public class NinePatchRect : Godot.NinePatchRect, IEmitter
+    public class NinePatchRect : Godot.NinePatchRect, IRubyControl
     {
         public object Emitter { get; set; }
 

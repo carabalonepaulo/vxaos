@@ -2,7 +2,7 @@ using Godot;
 
 namespace API.Nodes
 {
-    public class TextureButton : Godot.TextureButton, IEmitter
+    public class TextureButton : Godot.TextureButton, IRubyControl
     {
         public object Emitter { get; set; }
 

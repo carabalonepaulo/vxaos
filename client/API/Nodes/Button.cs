@@ -2,7 +2,7 @@ using Godot;
 
 namespace API.Nodes
 {
-    public class Button : Godot.Button, IEmitter
+    public class Button : Godot.Button, IRubyControl
     {
         public object Emitter { get; set; }
 

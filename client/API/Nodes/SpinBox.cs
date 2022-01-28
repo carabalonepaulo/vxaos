@@ -3,7 +3,7 @@ using System;
 
 namespace API.Nodes
 {
-    public class SpinBox : Godot.SpinBox, IEmitter
+    public class SpinBox : Godot.SpinBox, IRubyControl
     {
         public object Emitter { get; set; }
 

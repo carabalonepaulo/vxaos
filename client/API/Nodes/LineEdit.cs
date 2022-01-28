@@ -3,7 +3,7 @@ using System;
 
 namespace API.Nodes
 {
-    public class LineEdit : Godot.LineEdit, IEmitter
+    public class LineEdit : Godot.LineEdit, IRubyControl
     {
         public object Emitter { get; set; }
 

@@ -3,7 +3,7 @@ using System;
 
 namespace API.Nodes
 {
-    public class ProgressBar : Godot.ProgressBar, IEmitter
+    public class ProgressBar : Godot.ProgressBar, IRubyControl
     {
         public object Emitter { get; set; }
 

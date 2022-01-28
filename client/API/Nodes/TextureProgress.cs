@@ -3,7 +3,7 @@ using System;
 
 namespace API.Nodes
 {
-    public class TextureProgress : Godot.TextureProgress, IEmitter
+    public class TextureProgress : Godot.TextureProgress, IRubyControl
     {
         public object Emitter { get; set; }
 

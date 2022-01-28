@@ -3,7 +3,7 @@ using System;
 
 namespace API.Nodes
 {
-    public class RichTextLabel : Godot.RichTextLabel, IEmitter
+    public class RichTextLabel : Godot.RichTextLabel, IRubyControl
     {
         public object Emitter { get; set; }
 

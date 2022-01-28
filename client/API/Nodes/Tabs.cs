@@ -3,7 +3,7 @@ using System;
 
 namespace API.Nodes
 {
-    public class Tabs : Godot.Tabs, IEmitter
+    public class Tabs : Godot.Tabs, IRubyControl
     {
         public object Emitter { get; set; }
 

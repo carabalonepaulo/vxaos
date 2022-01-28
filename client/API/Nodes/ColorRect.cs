@@ -3,7 +3,7 @@ using System;
 
 namespace API.Nodes
 {
-    public class ColorRect : Godot.ColorRect, IEmitter
+    public class ColorRect : Godot.ColorRect, IRubyControl
     {
         public object Emitter { get; set; }
 

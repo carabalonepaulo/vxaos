@@ -3,7 +3,7 @@ using System;
 
 namespace API.Nodes
 {
-    public class TextureRect : Godot.TextureRect, IEmitter
+    public class TextureRect : Godot.TextureRect, IRubyControl
     {
         public object Emitter { get; set; }
 

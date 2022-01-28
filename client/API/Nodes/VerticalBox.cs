@@ -3,7 +3,7 @@ using System;
 
 namespace API.Nodes
 {
-    public class VerticalBox : Godot.HBoxContainer, IEmitter
+    public class VerticalBox : Godot.HBoxContainer, IRubyControl
     {
         public object Emitter { get; set; }
 

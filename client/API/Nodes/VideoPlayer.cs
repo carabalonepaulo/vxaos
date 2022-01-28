@@ -3,7 +3,7 @@ using System;
 
 namespace API.Nodes
 {
-    public class VideoPlayer : Godot.VideoPlayer, IEmitter
+    public class VideoPlayer : Godot.VideoPlayer, IRubyControl
     {
         public object Emitter { get; set; }
 

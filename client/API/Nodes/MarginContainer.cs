@@ -3,7 +3,7 @@ using System;
 
 namespace API.Nodes
 {
-    public class MarginContainer : Godot.MarginContainer, IEmitter
+    public class MarginContainer : Godot.MarginContainer, IRubyControl
     {
         public object Emitter { get; set; }
 
