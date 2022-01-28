@@ -71,10 +71,8 @@ namespace API
 
         public object CreateNode(string name) => Activator.CreateInstance(_nodeBucket[name]);
 
-        public object CreateGodotObject(string name, params object[] args)
-        {
-            return Activator.CreateInstance(_godotObjectBucket[name], args);
-        }
+        public object CreateGodotObject(string name, params object[] args) => Activator
+            .CreateInstance(_godotObjectBucket[name], args);
 
         public void Quit() { Root.GetTree().Quit(); }
     }
