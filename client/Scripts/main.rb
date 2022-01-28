@@ -1,6 +1,6 @@
 class Main
   def initialize(system_api, file_system_api)
-    System.init api
+    System.init system_api
     FileSystem.init file_system_api
 
     begin
