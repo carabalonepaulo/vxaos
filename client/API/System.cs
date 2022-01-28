@@ -8,7 +8,12 @@ namespace API
 {
     public interface IRubyControl { }
 
-    public class NodeBucket
+    public interface IBucket
+    {
+        Type this[string name] { get; }
+    }
+
+    public class NodeBucket : IBucket
     {
         Dictionary<string, Type> _cache;
 
@@ -26,7 +31,7 @@ namespace API
         public Type this[string name] { get => _cache[name]; }
     }
 
-    public class GodotObjectBucket
+    public class GodotObjectBucket : IBucket
     {
         Dictionary<string, Type> _cache;
 
