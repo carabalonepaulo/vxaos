@@ -2,7 +2,7 @@ class Vector2
   attr_reader :source
   
   def initialize(x, y)
-    @source = Main[:primitives].vector2 x, y
+    @source = $system.create_godot_object 'Vector2', x, y
   end
   
   def x=(v)
@@ -42,11 +42,11 @@ class Rect
   attr_reader :source
   
   def initialize(x, y, width, height)
-    @source = Main[:primitives].rect x, y, width, height
+    @source = $system.create_godot_object 'Rect2', x, y, width, height
   end
   
   def x=(v)
-    @source.position = Main[:primitives].vector2 v, y
+    @source.position = $system.create_godot_object 'Vector2', v, y
   end
   
   def x
@@ -54,7 +54,7 @@ class Rect
   end
   
   def y=(v)
-    @source.position = Main[:primitives].vector2 x, v
+    @source.position = $system.create_godot_object 'Vector2', x, v
   end
   
   def y
@@ -62,7 +62,7 @@ class Rect
   end
   
   def width=(v)
-    @source.size = Main[:primitives].vector2 v, height
+    @source.size = $system.create_godot_object 'Vector2', v, height
   end
   
   def width
@@ -70,7 +70,7 @@ class Rect
   end
   
   def height=(v)
-    @source.size = Main[:primitives].vector2 width, v
+    @source.size = $system.create_godot_object 'Vector2', width, v
   end
   
   def height
@@ -82,7 +82,11 @@ class Color
   attr_reader :source
   
   def initialize(r, g, b, a = 255)
-    @source = Main[:primitives].color r, g, b, a
+    @source = $system.create_godot_object 'Color'
+    @source.r8 = r
+    @source.g8 = g
+    @source.b8 = b
+    @source.a8 = a
   end
   
   def red=(v)
