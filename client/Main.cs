@@ -83,8 +83,6 @@ public class Main : Node2D
             var filePath = dir.GetCurrentDir() + "/" + fileName;
             if (dir.CurrentIsDir()) innerFileList.AddRange(CollectScriptFiles(filePath));
             else files.Add(filePath);
-            // if (dir.CurrentIsDir()) files.AddRange(CollectScriptFiles(filePath));
-            // else files.Add(filePath);
             fileName = dir.GetNext();
         }
         files.AddRange(innerFileList);
