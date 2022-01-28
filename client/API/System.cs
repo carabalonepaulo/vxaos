@@ -18,6 +18,8 @@ namespace API
 
         public void Print(string message) => GD.Print(message);
 
+        public void Error(string message) => GD.PushError(message);
+
         public void RaiseException(string message) => ExceptionRaised?.Invoke(message);
 
         public object CreateInstance(string fullName, params object[] args)

@@ -20,6 +20,7 @@ public class Main : Node2D
     API.System _systemAPI;
     API.Primitives _primitivesAPI;
     API.Node _nodeAPI;
+    API.FileSystem _fileSystemAPI;
 
     public static ScriptEngine RubyEngine;
 
@@ -53,6 +54,7 @@ public class Main : Node2D
         _systemAPI.ExceptionRaised += RaiseException;
         _primitivesAPI = new API.Primitives();
         _nodeAPI = new API.Node();
+        _fileSystemAPI = new API.FileSystem();
     }
 
     void RaiseException(string message)
@@ -114,6 +116,6 @@ public class Main : Node2D
     void Run()
     {
         var mainClass = _engine.Runtime.Globals.GetVariable("Main");
-        _main = _engine.Operations.CreateInstance(mainClass, _systemAPI, _primitivesAPI, _nodeAPI);
+        _main = _engine.Operations.CreateInstance(mainClass, _systemAPI, _primitivesAPI, _nodeAPI, _fileSystemAPI);
     }
 }
