@@ -68,24 +68,21 @@ public class Main : Node2D
         RubyEngine = _engine;
     }
 
-    string[] CollectScriptFiles(string dirPath)
+    string[] CollectScriptFiles(string rootDir)
     {
-        var dir = new Directory();
-        dir.Open(dirPath);
-        dir.ListDirBegin();
-
         var files = new List<string>();
+        var dir = new Directory();
+        dir.Open(rootDir);
+        dir.ListDirBegin(true, true);
+
         var fileName = dir.GetNext();
         while (fileName != "")
         {
-            if (fileName.Find(".rb") != -1 && fileName != "main.rb")
-                files.Add(fileName);
+            var filePath = dir.GetCurrentDir() + "/" + fileName;
+            if (dir.CurrentIsDir()) files.AddRange(CollectScriptFiles(filePath));
+            else files.Add(filePath);
             fileName = dir.GetNext();
         }
-
-        var file = new File();
-        if (file.FileExists($"{dirPath}main.rb")) files.Add("main.rb");
-        else RaiseException("Main script not found.");
 
         return files.ToArray();
     }
@@ -102,11 +99,8 @@ public class Main : Node2D
     void LoadScripts()
     {
         var dirPath = "res://Scripts/";
-        foreach (var fileName in CollectScriptFiles(dirPath))
-        {
-            _engine.Execute(LoadFile($"{dirPath}{fileName}"));
-            GD.Print($"Script {fileName} loaded.");
-        }
+        foreach (var filePath in CollectScriptFiles(dirPath))
+            _engine.Execute(LoadFile(filePath));
     }
 
     void Run()
