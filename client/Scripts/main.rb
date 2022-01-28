@@ -12,8 +12,16 @@ class Main
   end
 
   def create_test_objects
-    vector = $system.create_godot_object 'Vector2', 10, 11
-    $system.print vector.x
+    vector = Vector2.new 10, 11
+    vector.x = 21
+    $system.print vector.to_s
+
+    rect = Rect.new 0, 0, 100, 100
+    rect.x = 22
+    $system.print rect.to_s
+
+    color = Color.new 255, 0, 128, 60
+    $system.print color.to_s
   end
 
   def create_test_ui
