@@ -98,9 +98,10 @@ public class Main : Node2D
 
     void LoadScripts()
     {
-        var dirPath = "res://Scripts/";
-        foreach (var filePath in CollectScriptFiles(dirPath))
+        var files = CollectScriptFiles("res://Scripts/");
+        foreach (var filePath in files)
             _engine.Execute(LoadFile(filePath));
+        GD.Print($"{files.Length} scripts successfully loaded.");
     }
 
     void Run()
