@@ -7,7 +7,7 @@ class Main
       create_test_objects
       create_test_ui
     rescue => e
-      $system.error e.inspect
+      $system.raise_exception e.inspect
     end
   end
 

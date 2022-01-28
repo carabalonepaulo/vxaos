@@ -70,7 +70,7 @@ namespace API
             _godotObjectBucket = new GodotObjectBucket();
         }
 
-        public void Print(string message) => GD.Print(message);
+        public void Print(object message) => GD.Print(message.ToString());
 
         public void RaiseException(string message) => ExceptionRaised?.Invoke(message);
 
