@@ -3,5 +3,8 @@
   "editor.tabSize": 4,
   "cSpell.words": [
     "RGSS"
-  ]
+  ],
+  "[ruby]": {
+    "editor.tabSize": 2
+  }
 }
