@@ -1,5 +1,5 @@
 class Rect
-  attr_reader :source
+  attr_accessor :source
   
   def initialize(x, y, width, height)
     @pos = Vector2.new x, y

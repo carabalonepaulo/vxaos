@@ -1,5 +1,5 @@
 class Color
-  attr_reader :source
+  attr_accessor :source
   
   def initialize(r, g, b, a = 255)
     @source = $system.create_godot_object 'Color'

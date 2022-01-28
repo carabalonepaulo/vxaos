@@ -1,5 +1,5 @@
 class Vector2
-  attr_reader :source
+  attr_accessor :source
   
   def initialize(x, y)
     @source = $system.create_godot_object 'Vector2', x, y

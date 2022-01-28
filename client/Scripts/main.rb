@@ -5,7 +5,8 @@ class Main
 
     begin
       create_test_objects
-      create_test_ui
+      # create_test_ui
+      create_new_ui
     rescue => e
       $system.raise_exception e.inspect
     end
@@ -53,6 +54,14 @@ class Main
 
     root = $system.root
     root.add_child hbox
+  end
+
+  def create_new_ui
+    button = Button.new
+    button.text = 'Click Me!'
+    button.connect('pressed') { $system.print 'from new button' }
+
+    $system.root.add_child button.source
   end
 
   def load_rpg_maker_scripts
