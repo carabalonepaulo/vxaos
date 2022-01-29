@@ -1,5 +1,6 @@
-class Color
-  attr_accessor :source
+class Color < Wrapper
+  White = Color.new(255, 255, 255, 255).freeze
+  Black = Color.new(0, 0, 0, 255).freeze
   
   def initialize(r = 0, g = 0, b = 0, a = 255)
     if r.class == 'Godot::Color'

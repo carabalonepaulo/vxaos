@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using Microsoft.Scripting.Hosting;
+using System.CodeDom;
 
 public class RubyEnvironment
 {
@@ -31,13 +32,19 @@ public class RubyEnvironment
 
     string[] ScriptList => new string[] {
         "emitter",
+        "wrapper",
 
-        "controls/control",
-        "controls/button",
+        "nodes/node",
+        "nodes/canvas_item",
+        "nodes/control",
+        "nodes/container",
+        "nodes/base_button",
+        "nodes/button",
 
-        "primitives/color",
-        "primitives/rect",
-        "primitives/vector2",
+        "objects/color",
+        "objects/rect",
+        "objects/vector2",
+        "objects/node_path",
 
         "rgss/bitmap",
         "rgss/sprite",
@@ -69,8 +76,8 @@ public class RubyEnvironment
 
     public void Run()
     {
-        var mainClass = RubyEnvironment.Engine.Runtime.Globals.GetVariable("Main");
-        _main = RubyEnvironment.Engine.Operations.CreateInstance(mainClass, _system, _fileSystem);
+        var mainClass = _engine.Runtime.Globals.GetVariable("Main");
+        _main = _engine.Operations.CreateInstance(mainClass, _system, _fileSystem);
     }
 
     public void Notification(int what) => _engine.Operations.InvokeMember(_main, "notification", what);

@@ -4,7 +4,7 @@ class Main
     $file_system = file_system_api
 
     begin
-      create_new_ui 
+      create_test_objects
     rescue => e
       $system.raise_exception e.message, e.inspect, e.backtrace
     end

@@ -1,26 +1,17 @@
-class Control
-  attr_accessor :source
-
+class Control < CanvasItem
   def initialize
     @source = $system.create_control 'Control'
     init_inner_control_vars
   end
 
   def init_inner_control_vars
+    super
     @rect_position = Vector2.new @source.rect_position
     @rect_global_position = Vector2.new @source.rect_global_position
     @rect_size = Vector2.new @source.rect_size
     @rect_min_size = Vector2.new @source.rect_min_size
     @rect_scale = Vector2.new @source.rect_scale
     @rect_pivot_offset = Vector2.new @source.rect_pivot_offset
-  end
-
-  def emit(signal, *args)
-    @source.emitter.emit(signal, *args)
-  end
-
-  def connect(signal, &callback)
-    @source.emitter.bind(signal, &callback)
   end
 
   def anchor_left
