@@ -87,7 +87,7 @@ class CanvasItem < Node
   def draw_arc(center, radius, start_angle, end_angle, point_count, color, width = 1, antialiased = false)
   end
 
-  def draw_char(font, position, char, next, modulate = Color::White)
+  def draw_char(font, position, char, _next, modulate = Color::White)
   end
 
   def draw_circle(position, radius, color)
