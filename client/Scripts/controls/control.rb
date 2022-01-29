@@ -7,23 +7,12 @@ class Control
   end
 
   def init_inner_control_vars
-    @rect_position = Vector2.new
-    @rect_position.source = @source.rect_position
-
-    @rect_global_position = Vector2.new
-    @rect_global_position.source = @source.rect_global_position
-
-    @rect_size = Vector2.new
-    @rect_size.source = @source.rect_size
-
-    @rect_min_size = Vector2.new
-    @rect_min_size.source = @source.rect_min_size
-
-    @rect_scale = Vector2.new
-    @rect_scale.source = @source.rect_scale
-
-    @rect_pivot_offset = Vector2.new
-    @rect_pivot_offset.source = @source.rect_pivot_offset
+    @rect_position = Vector2.new @source.rect_position
+    @rect_global_position = Vector2.new @source.rect_global_position
+    @rect_size = Vector2.new @source.rect_size
+    @rect_min_size = Vector2.new @source.rect_min_size
+    @rect_scale = Vector2.new @source.rect_scale
+    @rect_pivot_offset = Vector2.new @source.rect_pivot_offset
   end
 
   def emit(signal, *args)

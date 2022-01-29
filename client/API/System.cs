@@ -3,6 +3,7 @@ using Godot;
 using System.Reflection;
 using System.Linq;
 using System.Collections.Generic;
+using IronRuby.Builtins;
 
 namespace API
 {
@@ -54,12 +55,13 @@ namespace API
         public Type this[string name] { get => FindType(name); }
     }
 
-    public class System : RubyAPI
+    public class System
     {
-        public event Action<String> ExceptionRaised;
+        public event Action<string, string, string[]> ExceptionRaised;
 
         ControlBucket _controlBucket;
         GodotObjectBucket _godotObjectBucket;
+        List<string> _errorLines;
 
         public readonly Godot.Node Root;
 
@@ -72,7 +74,10 @@ namespace API
 
         public void Print(object message) => GD.Print(message.ToString());
 
-        public void RaiseException(string message) => ExceptionRaised?.Invoke(message);
+        public void RaiseException(string message, string inspect, RubyArray backtrace)
+        {
+            ExceptionRaised?.Invoke(message, inspect, backtrace.Select(line => line.ToString()).ToArray());
+        }
 
         public object CreateControl(string name) => Activator.CreateInstance(_controlBucket[name]);
 

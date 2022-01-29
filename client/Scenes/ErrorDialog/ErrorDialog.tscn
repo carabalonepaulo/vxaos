@@ -1,0 +1,95 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://Scenes/ErrorDialog/ErrorDialog.cs" type="Script" id=1]
+
+[node name="Control" type="CenterContainer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Panel" type="Panel" parent="."]
+margin_left = 100.0
+margin_top = 80.0
+margin_right = 540.0
+margin_bottom = 400.0
+rect_min_size = Vector2( 440, 320 )
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_constants/margin_right = 10
+custom_constants/margin_top = 10
+custom_constants/margin_left = 10
+custom_constants/margin_bottom = 10
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="C1" type="VBoxContainer" parent="Panel/MarginContainer"]
+margin_left = 10.0
+margin_top = 10.0
+margin_right = 430.0
+margin_bottom = 310.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_constants/separation = 10
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Message" type="Label" parent="Panel/MarginContainer/C1"]
+margin_right = 420.0
+margin_bottom = 14.0
+
+[node name="Inspect" type="Label" parent="Panel/MarginContainer/C1"]
+margin_top = 24.0
+margin_right = 420.0
+margin_bottom = 38.0
+size_flags_horizontal = 3
+
+[node name="R1" type="ScrollContainer" parent="Panel/MarginContainer/C1"]
+margin_top = 48.0
+margin_right = 420.0
+margin_bottom = 270.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="C1" type="VBoxContainer" parent="Panel/MarginContainer/C1/R1"]
+margin_right = 420.0
+margin_bottom = 222.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="R2" type="HBoxContainer" parent="Panel/MarginContainer/C1"]
+margin_top = 280.0
+margin_right = 420.0
+margin_bottom = 300.0
+size_flags_horizontal = 3
+custom_constants/separation = 10
+alignment = 2
+
+[node name="Save" type="Button" parent="Panel/MarginContainer/C1/R2"]
+margin_left = 322.0
+margin_right = 363.0
+margin_bottom = 20.0
+text = "Save"
+flat = true
+
+[node name="Close" type="Button" parent="Panel/MarginContainer/C1/R2"]
+margin_left = 373.0
+margin_right = 420.0
+margin_bottom = 20.0
+text = "Close"
+__meta__ = {
+"_edit_use_anchors_": false
+}

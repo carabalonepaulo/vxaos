@@ -8,8 +8,8 @@ namespace API.Controls
 
         public LinkButton()
         {
-            var ctor = Main.RubyEngine.Runtime.Globals.GetVariable("Emitter");
-            Emitter = Main.RubyEngine.Operations.CreateInstance(ctor);
+            var ctor = RubyEnvironment.Engine.Runtime.Globals.GetVariable("Emitter");
+            Emitter = RubyEnvironment.Engine.Operations.CreateInstance(ctor);
         }
 
         public override void _Ready()
@@ -46,37 +46,37 @@ namespace API.Controls
         }
 
         #region Node
-        void OnReady() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "ready");
-        void OnRenamed() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "renamed");
-        void OnTreeEntered() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "tree_entered");
-        void OnTreeExited() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "tree_exited");
-        void OnTreeExiting() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "tree_exiting");
+        void OnReady() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "ready");
+        void OnRenamed() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "renamed");
+        void OnTreeEntered() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "tree_entered");
+        void OnTreeExited() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "tree_exited");
+        void OnTreeExiting() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "tree_exiting");
         #endregion
 
         #region CanvasItem
-        void OnDraw() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "draw");
-        void OnHide() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "hide");
-        void OnItemRectChanged() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "item_rect_changed");
-        void OnVisibilityChanged() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "visibility_changed");
+        void OnDraw() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "draw");
+        void OnHide() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "hide");
+        void OnItemRectChanged() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "item_rect_changed");
+        void OnVisibilityChanged() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "visibility_changed");
         #endregion
 
         #region Control
-        void OnFocusEntered() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "focus_entered");
-        void OnFocusExited() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "focus_exited");
-        void OnGuiInput(InputEvent e) => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "gui_input", e);
-        void OnMinimumSizeChanged() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "minimum_size_changed");
-        void OnModalClose() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "modal_close");
-        void OnMouseEntered() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "mouse_entered");
-        void OnMouseExited() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "mouse_exited");
-        void OnResized() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "resized");
-        void OnSizeFlagsChanged() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "size_flags_changed");
+        void OnFocusEntered() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "focus_entered");
+        void OnFocusExited() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "focus_exited");
+        void OnGuiInput(InputEvent e) => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "gui_input", e);
+        void OnMinimumSizeChanged() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "minimum_size_changed");
+        void OnModalClose() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "modal_close");
+        void OnMouseEntered() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "mouse_entered");
+        void OnMouseExited() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "mouse_exited");
+        void OnResized() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "resized");
+        void OnSizeFlagsChanged() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "size_flags_changed");
         #endregion
 
         #region Button
-        void OnButtonDown() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "button_down");
-        void OnButtonUp() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "button_up");
-        void OnPressed() => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "pressed");
-        void OnToggled(bool pressed) => Main.RubyEngine.Operations.InvokeMember(Emitter, "emit", "toggled", pressed);
+        void OnButtonDown() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "button_down");
+        void OnButtonUp() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "button_up");
+        void OnPressed() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "pressed");
+        void OnToggled(bool pressed) => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "toggled", pressed);
         #endregion
     }
 }
