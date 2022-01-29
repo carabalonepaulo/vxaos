@@ -1,8 +1,12 @@
 class Vector2
   attr_accessor :source
   
-  def initialize(x, y)
-    @source = $system.create_godot_object 'Vector2', x, y
+  def initialize(x, y = nil)
+    if x.class == 'Godot::Vector2'
+      @source = x
+    else
+      @source = $system.create_godot_object 'Vector2', x, y
+    end
   end
   
   def x=(v)
@@ -39,5 +43,10 @@ class Vector2
 
   def to_s
     "<Vector2 @x=#{x} @y=#{y}>"
+  end
+end
+
+class EmptyVector2 < Vector2
+  def initialize
   end
 end

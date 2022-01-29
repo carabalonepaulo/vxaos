@@ -1,10 +1,14 @@
 class Rect
   attr_accessor :source
   
-  def initialize(x, y, width, height)
-    @pos = Vector2.new x, y
-    @size = Vector2.new width, height
-    @source = $system.create_godot_object 'Rect2', @pos.source, @size.source
+  def initialize(x = 0, y = 0, width = 0, height = 0)
+    if x.class == 'Godot::Rect2'
+      @source = x
+    else
+      @pos = Vector2.new x, y
+      @size = Vector2.new width, height
+      @source = $system.create_godot_object 'Rect2', @pos.source, @size.source
+    end
   end
   
   def x=(v)

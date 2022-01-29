@@ -1,12 +1,16 @@
 class Color
   attr_accessor :source
   
-  def initialize(r, g, b, a = 255)
-    @source = $system.create_godot_object 'Color'
-    @source.r8 = r
-    @source.g8 = g
-    @source.b8 = b
-    @source.a8 = a
+  def initialize(r = 0, g = 0, b = 0, a = 255)
+    if r.class == 'Godot::Color'
+      @source = r
+    else
+      @source = $system.create_godot_object 'Color'
+      @source.r8 = r
+      @source.g8 = g
+      @source.b8 = b
+      @source.a8 = a
+    end
   end
   
   def red=(v)
