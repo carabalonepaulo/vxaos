@@ -4,7 +4,7 @@ class Main
     $file_system = file_system_api
 
     begin
-      create_test_objects
+      create_new_ui
     rescue => e
       $system.raise_exception e.message, e.inspect, e.backtrace
     end
@@ -60,6 +60,8 @@ class Main
     button.connect('pressed') { $system.print 'from new button' }
 
     $system.root.add_child button.source
+
+    $system.print button.get_path.source.class.to_s
   end
 
   def load_rpg_maker_scripts

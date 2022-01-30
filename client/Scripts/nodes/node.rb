@@ -5,7 +5,6 @@ class Node < Wrapper
   end
 
   def init_inner_control_vars
-    @owner = Node.new @source.owner unless @source.owner.nil?
     @viewport = Viewport.new @source.get_viewport
     # TODO: @multiplayer_api = MultiplayerAPI.new @source.multiplayer
     # TODO: @custom_multiplayer = MultiplayerAPI.new @source.custom_multiplayer
@@ -77,9 +76,13 @@ class Node < Wrapper
   end
 
   def _enter_tree
+    # TODO: @owner = Node.new @source.owner
+    # TODO: @path = NodePath.new @source.get_path
   end
 
   def _exit_tree
+    # TODO: @owner = nil
+    # TODO: @path = nil
   end
 
   def _get_configuration_warning

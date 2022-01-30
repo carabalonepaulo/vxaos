@@ -46,8 +46,3 @@ class Vector2
     "<Vector2 @x=#{x} @y=#{y}>"
   end
 end
-
-class EmptyVector2 < Vector2
-  def initialize
-  end
-end
