@@ -41,10 +41,12 @@ public class RubyEnvironment
         "nodes/base_button",
         "nodes/button",
 
-        "objects/color",
-        "objects/rect",
-        "objects/vector2",
-        "objects/node_path",
+        "godot_objects/color",
+        "godot_objects/rect",
+        "godot_objects/vector2",
+        "godot_objects/node_path",
+        "godot_objects/scene_tree",
+        "godot_objects/viewport",
 
         "rgss/bitmap",
         "rgss/sprite",
