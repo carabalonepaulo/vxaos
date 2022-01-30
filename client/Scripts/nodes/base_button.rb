@@ -1,11 +1,6 @@
 class BaseButton < Control
-  def initialize(source = nil)
-    if source.class.to_s == 'Godot::BaseButton'
-      @source = source
-    else
-      @source = $system.create_godot_object 'BaseButton'
-    end
-    init_inner_control_vars
+  def initialize
+    raise "Can't create instance of BaseButton."
   end
 
   def disabled
@@ -80,7 +75,7 @@ class BaseButton < Control
     raise 'not implemented yet'
   end
 
-  def gruop
+  def group
     raise 'not implemented yet'
   end
 

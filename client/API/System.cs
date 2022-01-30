@@ -79,7 +79,7 @@ namespace API
             ExceptionRaised?.Invoke(message, inspect, backtrace.Select(line => line.ToString()).ToArray());
         }
 
-        public object CreateControl(string name) => Activator.CreateInstance(_controlBucket[name]);
+        public object CreateControl(string name, object owner) => Activator.CreateInstance(_controlBucket[name], owner);
 
         public object CreateGodotObject(string name, params object[] args) => Activator
             .CreateInstance(_godotObjectBucket[name], args);

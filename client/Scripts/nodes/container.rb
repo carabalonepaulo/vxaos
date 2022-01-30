@@ -1,11 +1,6 @@
 class Container < Control
   def initialize(source)
-    if source.class.to_s == 'Godot::Container'
-      @source = source
-    else
-      @source = $system.create_godot_object 'Container'
-    end
-    init_inner_control_vars
+    raise "Can't create instance of Container."
   end
 
   def fit_child_in_rect(control, rect)

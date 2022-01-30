@@ -2,12 +2,7 @@ class Vector2
   attr_accessor :source
   
   def initialize(x, y = nil)
-    if x.class.to_s == 'Godot::Vector2'
-      @source = x
-    else
-      @source = $system.create_godot_object 'Vector2', x, y
-    end
-    $system.print @source.class.to_s
+    @source = x.class.to_s == 'Godot::Vector2' ? x : $system.create_godot_object('Vector2', x, y)
   end
   
   def x=(v)

@@ -1,11 +1,6 @@
 class CanvasItem < Node
-  def initialize(source)
-    if source.class.to_s == 'Godot::CanvasItem'
-      @source = source
-    else
-      @source = $system.create_godot_object 'CanvasItem'
-    end
-    init_inner_control_vars
+  def initialize
+    raise "Can't create instance of CanvasItem."
   end
 
   def init_inner_control_vars
@@ -129,6 +124,7 @@ class CanvasItem < Node
   end
 
   def draw_rect(rect, color, filled = true, width = 1, antialiased = false)
+    @source.draw_rect rect.source, color.source, filled, width, antialiased
   end
 
   def draw_set_transform(position, rotation, scale)

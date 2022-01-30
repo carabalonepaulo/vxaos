@@ -1,6 +1,6 @@
-class Button < Control
-  def initialize
-    @source = $system.create_control 'Button'
+class Button < BaseButton
+  def initialize(source = nil)
+    init_source source, 'Button'
     init_inner_control_vars
   end
 

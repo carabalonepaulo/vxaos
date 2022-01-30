@@ -7,10 +7,43 @@ namespace API.Controls
     {
         public object Emitter { get; set; }
 
-        public Control()
+        object _rubyOwner;
+
+        public Control(object rubyOwner)
         {
+            _rubyOwner = rubyOwner;
             var ctor = RubyEnvironment.Engine.Runtime.Globals.GetVariable("Emitter");
             Emitter = RubyEnvironment.Engine.Operations.CreateInstance(ctor);
+        }
+
+        public override void _EnterTree()
+        {
+            base._EnterTree();
+            RubyEnvironment.Engine.Operations.InvokeMember(_rubyOwner, "_enter_tree");
+        }
+
+        public override void _ExitTree()
+        {
+            base._ExitTree();
+            RubyEnvironment.Engine.Operations.InvokeMember(_rubyOwner, "_exit_tree");
+        }
+
+        public override void _Input(InputEvent @event)
+        {
+            base._Input(@event);
+            RubyEnvironment.Engine.Operations.InvokeMember(_rubyOwner, "_input", @event);
+        }
+
+        public override void _PhysicsProcess(float delta)
+        {
+            base._PhysicsProcess(delta);
+            RubyEnvironment.Engine.Operations.InvokeMember(_rubyOwner, "_physics_process", delta);
+        }
+
+        public override void _Process(float delta)
+        {
+            base._Process(delta);
+            RubyEnvironment.Engine.Operations.InvokeMember(_rubyOwner, "_process", delta);
         }
 
         public override void _Ready()
@@ -38,6 +71,38 @@ namespace API.Controls
             Connect("mouse_exited", this, nameof(OnMouseExited));
             Connect("resized", this, nameof(OnResized));
             Connect("size_flags_changed", this, nameof(OnSizeFlagsChanged));
+
+            RubyEnvironment.Engine.Operations.InvokeMember(_rubyOwner, "_ready");
+        }
+
+        public override void _UnhandledInput(InputEvent @event)
+        {
+            base._UnhandledInput(@event);
+            RubyEnvironment.Engine.Operations.InvokeMember(_rubyOwner, "_unhandled_input", @event);
+        }
+
+        public override void _UnhandledKeyInput(InputEventKey @event)
+        {
+            base._UnhandledKeyInput(@event);
+            RubyEnvironment.Engine.Operations.InvokeMember(_rubyOwner, "_unhandled_key_input", @event);
+        }
+
+        public override void _Draw()
+        {
+            base._Draw();
+            RubyEnvironment.Engine.Operations.InvokeMember(_rubyOwner, "_draw");
+        }
+
+        public override void _GuiInput(InputEvent @event)
+        {
+            base._GuiInput(@event);
+            RubyEnvironment.Engine.Operations.InvokeMember(_rubyOwner, "_gui_input", @event);
+        }
+
+        public override void _Notification(int what)
+        {
+            base._Notification(what);
+            RubyEnvironment.Engine.Operations.InvokeMember(_rubyOwner, "_notification", what);
         }
 
         #region Node

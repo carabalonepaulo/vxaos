@@ -1,7 +1,11 @@
 class Node < Wrapper
-  def initialize(source=nil)
-    @source = source.class.to_s == 'Godot::Node' ? source : $system.create_control('Node')
+  def initialize(source = nil)
+    init_source source, 'Node'
     init_inner_control_vars
+  end
+
+  def init_source(source, name, godot_name = nil)
+    @source = source.class.to_s == "Godot::#{godot_name || name}" ? source : $system.create_control(name, self)
   end
 
   def init_inner_control_vars
@@ -76,16 +80,19 @@ class Node < Wrapper
   end
 
   def _enter_tree
-    # TODO: @owner = Node.new @source.owner
-    # TODO: @path = NodePath.new @source.get_path
+    @owner = Node.new @source.owner
+    @path = NodePath.new @source.get_path
   end
 
   def _exit_tree
-    # TODO: @owner = nil
-    # TODO: @path = nil
+    @owner = nil
+    @path = nil
   end
 
   def _get_configuration_warning
+  end
+
+  def _notification(what)
   end
 
   def _input(event)

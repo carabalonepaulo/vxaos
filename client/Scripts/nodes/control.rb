@@ -1,10 +1,6 @@
 class Control < CanvasItem
   def initialize(source = nil)
-    if source.class.to_s == 'Godot::Control'
-      @source = source
-    else
-      @source = $system.create_control 'Control'
-    end
+    init_source source, 'Control'
     init_inner_control_vars
   end
 
@@ -285,5 +281,29 @@ class Control < CanvasItem
 
   def theme=(v)
     raise 'not implemented yet'
+  end
+
+  def _clips_input
+  end
+
+  def _get_minimum_size
+  end
+
+  def _gui_input(event)
+  end
+
+  def _make_custom_tooltip(for_text)
+  end
+
+  def can_drop_data(position, data)
+  end
+
+  def drop_data(position, data)
+  end
+
+  def get_drag_data(position)
+  end
+
+  def has_point(point)
   end
 end
