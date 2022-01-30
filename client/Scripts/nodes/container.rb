@@ -1,6 +1,6 @@
 class Container < Control
   def initialize(source)
-    if source.class == 'Godot::Container'
+    if source.class.to_s == 'Godot::Container'
       @source = source
     else
       @source = $system.create_godot_object 'Container'

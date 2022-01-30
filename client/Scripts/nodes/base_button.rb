@@ -1,6 +1,6 @@
 class BaseButton < Control
   def initialize(source = nil)
-    if source.class == 'Godot::BaseButton'
+    if source.class.to_s == 'Godot::BaseButton'
       @source = source
     else
       @source = $system.create_godot_object 'BaseButton'

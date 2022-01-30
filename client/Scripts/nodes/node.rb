@@ -1,17 +1,11 @@
 class Node < Wrapper
   def initialize(source=nil)
-    if source.class == 'Godot::Node'
-      @source = source
-    else
-      @source = $system.create_control 'Node'
-    end
+    @source = source.class.to_s == 'Godot::Node' ? source : $system.create_control('Node')
     init_inner_control_vars
   end
 
   def init_inner_control_vars
-    @owner = Node.new @source.owner
-    @path = NodePath.new @source.get_path
-    @scene_tree = SceneTree.new @source.get_tree
+    @owner = Node.new @source.owner unless @source.owner.nil?
     @viewport = Viewport.new @source.get_viewport
     # TODO: @multiplayer_api = MultiplayerAPI.new @source.multiplayer
     # TODO: @custom_multiplayer = MultiplayerAPI.new @source.custom_multiplayer
@@ -54,7 +48,8 @@ class Node < Wrapper
   end
 
   def owner=(v)
-    @owner.source = v
+    @owner = v
+    @owner.source = v.source
   end
 
   def multiplayer

@@ -1,6 +1,6 @@
 class CanvasItem < Node
   def initialize(source)
-    if source.class == 'Godot::CanvasItem'
+    if source.class.to_s == 'Godot::CanvasItem'
       @source = source
     else
       @source = $system.create_godot_object 'CanvasItem'

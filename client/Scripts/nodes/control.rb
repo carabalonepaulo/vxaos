@@ -1,13 +1,16 @@
 class Control < CanvasItem
-  def initialize
-    @source = $system.create_control 'Control'
+  def initialize(source = nil)
+    if source.class.to_s == 'Godot::Control'
+      @source = source
+    else
+      @source = $system.create_control 'Control'
+    end
     init_inner_control_vars
   end
 
   def init_inner_control_vars
     super
     @rect_position = Vector2.new @source.rect_position
-    @rect_global_position = Vector2.new @source.rect_global_position
     @rect_size = Vector2.new @source.rect_size
     @rect_min_size = Vector2.new @source.rect_min_size
     @rect_scale = Vector2.new @source.rect_scale
@@ -100,7 +103,7 @@ class Control < CanvasItem
 
   def rect_position=(v)
     @rect_position = v
-    @source.rect_position = @rect_position.source
+    @source.rect_position = v.source
   end
 
   def rect_global_position
@@ -109,7 +112,7 @@ class Control < CanvasItem
 
   def rect_global_position=(v)
     @rect_global_position = v
-    @source.rect_global_position = @rect_global_position.source
+    @source.rect_global_position = v.source
   end
 
   def rect_size
@@ -118,7 +121,7 @@ class Control < CanvasItem
 
   def rect_size=(v)
     @rect_size = v
-    @source.rect_size = @rect_size.source
+    @source.rect_size = v.source
   end
 
   def rect_min_size
@@ -127,7 +130,7 @@ class Control < CanvasItem
 
   def rect_min_size=(v)
     @rect_min_size = v
-    @source.rect_min_size = @rect_min_size.source
+    @source.rect_min_size = v.source
   end
 
   def rect_rotation
@@ -144,7 +147,7 @@ class Control < CanvasItem
 
   def rect_scale=(v)
     @rect_scale = v
-    @source.rect_scale = @rect_scale.source
+    @source.rect_scale = v.source
   end
 
   def rect_pivot_offset
@@ -153,7 +156,7 @@ class Control < CanvasItem
 
   def rect_pivot_offset=(v)
     @rect_pivot_offset = v
-    @source.rect_pivot_offset = @rect_pivot_offset.source
+    @source.rect_pivot_offset = v.source
   end
 
   def rect_clip_content
