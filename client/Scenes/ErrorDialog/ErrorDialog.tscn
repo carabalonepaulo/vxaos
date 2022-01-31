@@ -32,11 +32,23 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="C1" type="VBoxContainer" parent="Panel/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer"]
 margin_left = 10.0
 margin_top = 10.0
 margin_right = 430.0
 margin_bottom = 310.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Panel/MarginContainer/VBoxContainer"]
+margin_right = 420.0
+margin_bottom = 276.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="C1" type="VBoxContainer" parent="Panel/MarginContainer/VBoxContainer/ScrollContainer"]
+margin_right = 420.0
+margin_bottom = 276.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 custom_constants/separation = 10
@@ -44,33 +56,34 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Message" type="Label" parent="Panel/MarginContainer/C1"]
+[node name="Message" type="Label" parent="Panel/MarginContainer/VBoxContainer/ScrollContainer/C1"]
 margin_right = 420.0
 margin_bottom = 14.0
 
-[node name="Inspect" type="Label" parent="Panel/MarginContainer/C1"]
+[node name="Inspect" type="Label" parent="Panel/MarginContainer/VBoxContainer/ScrollContainer/C1"]
 margin_top = 24.0
 margin_right = 420.0
 margin_bottom = 38.0
 size_flags_horizontal = 3
 
-[node name="R1" type="ScrollContainer" parent="Panel/MarginContainer/C1"]
+[node name="R1" type="ScrollContainer" parent="Panel/MarginContainer/VBoxContainer/ScrollContainer/C1"]
 margin_top = 48.0
 margin_right = 420.0
-margin_bottom = 270.0
+margin_bottom = 276.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
+scroll_horizontal_enabled = false
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="C1" type="VBoxContainer" parent="Panel/MarginContainer/C1/R1"]
+[node name="C1" type="VBoxContainer" parent="Panel/MarginContainer/VBoxContainer/ScrollContainer/C1/R1"]
 margin_right = 420.0
-margin_bottom = 222.0
+margin_bottom = 228.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="R2" type="HBoxContainer" parent="Panel/MarginContainer/C1"]
+[node name="R2" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer"]
 margin_top = 280.0
 margin_right = 420.0
 margin_bottom = 300.0
@@ -78,14 +91,14 @@ size_flags_horizontal = 3
 custom_constants/separation = 10
 alignment = 2
 
-[node name="Save" type="Button" parent="Panel/MarginContainer/C1/R2"]
+[node name="Save" type="Button" parent="Panel/MarginContainer/VBoxContainer/R2"]
 margin_left = 322.0
 margin_right = 363.0
 margin_bottom = 20.0
 text = "Save"
 flat = true
 
-[node name="Close" type="Button" parent="Panel/MarginContainer/C1/R2"]
+[node name="Close" type="Button" parent="Panel/MarginContainer/VBoxContainer/R2"]
 margin_left = 373.0
 margin_right = 420.0
 margin_bottom = 20.0

@@ -10,11 +10,11 @@ public class ErrorDialog : CenterContainer
 
     public override void _Ready()
     {
-        _backtraceContainer = GetNode("Panel/MarginContainer/C1/R1/C1");
-        _closeButton = GetNode<Button>("Panel/MarginContainer/C1/R2/Close");
+        _backtraceContainer = GetNode("Panel/MarginContainer/VBoxContainer/ScrollContainer/C1/R1/C1");
+        _closeButton = GetNode<Button>("Panel/MarginContainer/VBoxContainer/R2/Close");
         _closeButton.Connect("pressed", this, nameof(OnClosePressed));
-        _message = GetNode<Label>("Panel/MarginContainer/C1/Message");
-        _inspect = GetNode<Label>("Panel/MarginContainer/C1/Inspect");
+        _message = GetNode<Label>("Panel/MarginContainer/VBoxContainer/ScrollContainer/C1/Message");
+        _inspect = GetNode<Label>("Panel/MarginContainer/VBoxContainer/ScrollContainer/C1/Inspect");
     }
 
     public void RaiseException(string message, string inspect, string[] lines)
