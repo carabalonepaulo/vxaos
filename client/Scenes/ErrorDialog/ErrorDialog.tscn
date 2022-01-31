@@ -72,7 +72,6 @@ margin_right = 420.0
 margin_bottom = 276.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
-scroll_horizontal_enabled = false
 __meta__ = {
 "_edit_use_anchors_": false
 }
