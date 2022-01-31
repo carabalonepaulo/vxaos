@@ -27,6 +27,7 @@ public class ErrorDialog : CenterContainer
         }
         _message.Text = message;
         _inspect.Text = inspect;
+        _closeButton.GrabFocus();
         Visible = true;
     }
 
