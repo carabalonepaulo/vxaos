@@ -51,6 +51,7 @@ public class RubyEnvironment
         "rgss/bitmap",
         "rgss/sprite",
 
+        "rgss",
         "main",
     };
 

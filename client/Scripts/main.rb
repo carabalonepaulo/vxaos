@@ -9,6 +9,11 @@ class Main
     end
   end
 
+  def init_rgss
+    rgss = RGSS.new
+    rgss.load_scripts
+  end
+
   def notification(what)
   end
 
