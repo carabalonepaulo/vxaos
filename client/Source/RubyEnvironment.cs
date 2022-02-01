@@ -59,6 +59,7 @@ public class RubyEnvironment
         "nodes/vsplit_container",
         "nodes/margin_container",
         "nodes/panel_container",
+        "nodes/tab_container",
         "nodes/base_button",
         "nodes/button",
 
