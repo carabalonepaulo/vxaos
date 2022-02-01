@@ -7,7 +7,7 @@
 - [x] ColorPicker (2/2)
 - [x] HBoxContainer (2/2)
 - [x] VBoxContainer (2/2)
-- [ ] CenterContainer (0/2)
+- [x] CenterContainer (2/2)
 - [ ] ScrollContainer (0/2)
 - [ ] GraphNode (0/2)
 - [ ] GridContainer (0/2)
