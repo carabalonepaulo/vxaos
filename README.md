@@ -9,7 +9,7 @@
 - [x] VBoxContainer (2/2)
 - [x] CenterContainer (2/2)
 - [x] ScrollContainer (2/2)
-- [ ] GraphNode (0/2)
+- [x] GraphNode (2/2)
 - [ ] GridContainer (0/2)
 - [ ] SplitContainer (0/2)
 - [ ] HSplitContainer (0/2)
