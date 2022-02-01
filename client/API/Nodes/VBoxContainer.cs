@@ -3,11 +3,11 @@ using System;
 
 namespace API.Nodes
 {
-    public class HorizontalBox : Godot.HBoxContainer, IRubyControl
+    public class VBoxContainer : Godot.VBoxContainer, IRubyControl
     {
         public object Emitter { get; set; }
 
-        public HorizontalBox()
+        public VBoxContainer()
         {
             var ctor = RubyEnvironment.Engine.Runtime.Globals.GetVariable("Emitter");
             Emitter = RubyEnvironment.Engine.Operations.CreateInstance(ctor);
