@@ -2,6 +2,7 @@
   "omnisharp.useEditorFormattingSettings": true,
   "editor.tabSize": 4,
   "cSpell.words": [
+    "hbox",
     "RGSS"
   ],
   "[ruby]": {

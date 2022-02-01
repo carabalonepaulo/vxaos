@@ -47,6 +47,12 @@ public class RubyEnvironment
         "nodes/container",
         "nodes/aspect_ratio_container",
         "nodes/box_container",
+        "nodes/color_picker",
+        "nodes/hbox_container",
+        "nodes/vbox_container",
+        "nodes/center_container",
+        "nodes/scroll_container",
+        "nodes/graph_node",
         "nodes/base_button",
         "nodes/button",
 
