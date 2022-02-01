@@ -1,6 +1,6 @@
 class CanvasItem < Node
   def initialize
-    raise "Can't create instance of CanvasItem."
+    fail_to_init
   end
 
   def init_inner_control_vars

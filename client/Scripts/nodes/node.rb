@@ -4,6 +4,10 @@ class Node < Wrapper
     init_inner_control_vars
   end
 
+  def fail_to_init
+    raise "Can't create instance of #{self.class.to_s}."
+  end
+
   def init_source(source, godot_name = nil)
     name = self.class.to_s
     @source = source.class.to_s == "Godot::#{godot_name || name}" ? source : $system.create_control(name, self)

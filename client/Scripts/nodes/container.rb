@@ -1,6 +1,6 @@
 class Container < Control
   def initialize(source)
-    raise "Can't create instance of Container."
+    fail_to_init
   end
 
   def fit_child_in_rect(control, rect)

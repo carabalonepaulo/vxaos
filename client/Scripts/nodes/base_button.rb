@@ -1,6 +1,6 @@
 class BaseButton < Control
   def initialize
-    raise "Can't create instance of BaseButton."
+    fail_to_init
   end
 
   def disabled

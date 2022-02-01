@@ -46,6 +46,7 @@ public class RubyEnvironment
         "nodes/control",
         "nodes/container",
         "nodes/aspect_ratio_container",
+        "nodes/box_container",
         "nodes/base_button",
         "nodes/button",
 
