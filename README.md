@@ -14,7 +14,7 @@
 - [x] SplitContainer (1/1)
 - [x] HSplitContainer (2/2)
 - [x] VSplitContainer (2/2)
-- [ ] MarginContainer (0/2)
+- [x] MarginContainer (2/2)
 - [ ] PanelContainer (0/2)
 - [ ] TabContainer (0/2)
 - [ ] ViewportContainer (0/2)

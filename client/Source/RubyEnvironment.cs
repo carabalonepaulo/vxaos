@@ -53,6 +53,11 @@ public class RubyEnvironment
         "nodes/center_container",
         "nodes/scroll_container",
         "nodes/graph_node",
+        "nodes/grid_container",
+        "nodes/split_container",
+        "nodes/hsplit_container",
+        "nodes/vsplit_container",
+        "nodes/margin_container",
         "nodes/base_button",
         "nodes/button",
 
