@@ -15,7 +15,7 @@
 - [x] HSplitContainer (2/2)
 - [x] VSplitContainer (2/2)
 - [x] MarginContainer (2/2)
-- [ ] PanelContainer (0/2)
+- [x] PanelContainer (2/2)
 - [ ] TabContainer (0/2)
 - [ ] ViewportContainer (0/2)
 - [x] BaseButton (2/2)
