@@ -2,6 +2,8 @@ using Godot;
 using System;
 using Microsoft.Scripting.Hosting;
 using System.CodeDom;
+using IronRuby.Runtime;
+using IronRuby;
 
 public class RubyEnvironment
 {
@@ -12,6 +14,8 @@ public class RubyEnvironment
     Node _root;
     ScriptEngine _engine;
     ScriptRuntime _runtime;
+    RubyContext _context;
+    OutputStream _stream;
 
     API.System _system;
     API.FileSystem _fileSystem;
@@ -23,6 +27,9 @@ public class RubyEnvironment
         _root = root;
         _runtime = IronRuby.Ruby.CreateRuntime();
         _engine = _runtime.GetEngine("Ruby");
+        _stream = new OutputStream();
+        _runtime.IO.SetOutput(_stream, System.Text.Encoding.UTF8);
+        _runtime.LoadAssembly(typeof(Godot.GD).Assembly);
 
         Engine = _engine;
 
