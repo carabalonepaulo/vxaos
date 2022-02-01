@@ -4,7 +4,7 @@
 - [x] Container (2/2)
 - [x] AspectRatioContainer (2/2)
 - [x] BoxContainer (1/1)
-- [ ] ColorPicker (0/2)
+- [x] ColorPicker (2/2)
 - [ ] HBoxContainer (0/2)
 - [ ] VBoxContainer (0/2)
 - [ ] CenterContainer (0/2)
