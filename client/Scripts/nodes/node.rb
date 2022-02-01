@@ -1,10 +1,11 @@
 class Node < Wrapper
   def initialize(source = nil)
-    init_source source, 'Node'
+    init_source source
     init_inner_control_vars
   end
 
-  def init_source(source, name, godot_name = nil)
+  def init_source(source, godot_name = nil)
+    name = self.class.to_s
     @source = source.class.to_s == "Godot::#{godot_name || name}" ? source : $system.create_control(name, self)
   end
 

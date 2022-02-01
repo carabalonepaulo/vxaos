@@ -1,6 +1,6 @@
 class Button < BaseButton
   def initialize(source = nil)
-    init_source source, 'Button'
+    init_source source
     init_inner_control_vars
   end
 
