@@ -60,6 +60,7 @@ public class RubyEnvironment
         "nodes/margin_container",
         "nodes/panel_container",
         "nodes/tab_container",
+        "nodes/viewport_container",
         "nodes/base_button",
         "nodes/button",
 
