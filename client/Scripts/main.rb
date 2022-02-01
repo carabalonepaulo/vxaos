@@ -2,8 +2,10 @@ class Main
   def initialize(system_api, file_system_api)
     $system = system_api
     $file_system = file_system_api
+    $resource_loader = system_api.resource_loader
 
     begin
+      $system.print $resource_loader.exists('res://icon.png')
     rescue => e
       $system.raise_exception e.message, e.inspect, e.backtrace
     end

@@ -64,10 +64,12 @@ namespace API
         List<string> _errorLines;
 
         public readonly Godot.Node Root;
+        public readonly API.ResourceLoader ResourceLoader;
 
         public System(Godot.Node root)
         {
             Root = root;
+            ResourceLoader = new API.ResourceLoader();
             _controlBucket = new ControlBucket();
             _godotObjectBucket = new GodotObjectBucket();
         }
