@@ -1,13 +1,13 @@
 using Godot;
 using System;
 
-namespace API.Controls
+namespace API.Nodes
 {
-    public class MarginContainer : Godot.MarginContainer, IRubyControl
+    public class ProgressBar : Godot.ProgressBar, IRubyControl
     {
         public object Emitter { get; set; }
 
-        public MarginContainer()
+        public ProgressBar()
         {
             var ctor = RubyEnvironment.Engine.Runtime.Globals.GetVariable("Emitter");
             Emitter = RubyEnvironment.Engine.Operations.CreateInstance(ctor);
@@ -39,8 +39,9 @@ namespace API.Controls
             Connect("resized", this, nameof(OnResized));
             Connect("size_flags_changed", this, nameof(OnSizeFlagsChanged));
 
-            // Container
-            Connect("sort_children", this, nameof(OnSortChildren));
+            // Range
+            Connect("changed", this, nameof(OnChanged));
+            Connect("value_changed", this, nameof(OnValueChanged));
         }
 
         #region Node
@@ -70,8 +71,9 @@ namespace API.Controls
         void OnSizeFlagsChanged() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "size_flags_changed");
         #endregion
 
-        #region Container
-        void OnSortChildren() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "sort_children");
+        #region Range
+        void OnChanged() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "changed");
+        void OnValueChanged(float value) => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "value_changed", value);
         #endregion
     }
 }

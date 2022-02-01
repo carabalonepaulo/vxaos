@@ -1,7 +1,7 @@
 using Godot;
 using System;
 
-namespace API.Controls
+namespace API.Nodes
 {
     public class TextureProgress : Godot.TextureProgress, IRubyControl
     {

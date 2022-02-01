@@ -1,13 +1,13 @@
 using Godot;
 using System;
 
-namespace API.Controls
+namespace API.Nodes
 {
-    public class NinePatchRect : Godot.NinePatchRect, IRubyControl
+    public class TabContainer : Godot.TabContainer, IRubyControl
     {
         public object Emitter { get; set; }
 
-        public NinePatchRect()
+        public TabContainer()
         {
             var ctor = RubyEnvironment.Engine.Runtime.Globals.GetVariable("Emitter");
             Emitter = RubyEnvironment.Engine.Operations.CreateInstance(ctor);
@@ -39,8 +39,13 @@ namespace API.Controls
             Connect("resized", this, nameof(OnResized));
             Connect("size_flags_changed", this, nameof(OnSizeFlagsChanged));
 
-            // NinePatchRect
-            Connect("texture_changed", this, nameof(OnTextureChanged));
+            // Container
+            Connect("sort_children", this, nameof(OnSortChildren));
+
+            // TabContainer
+            Connect("pre_popup_pressed", this, nameof(OnPrePopupPressed));
+            Connect("tab_changed", this, nameof(OnTabChanged));
+            Connect("tab_selected", this, nameof(OnTabSelected));
         }
 
         #region Node
@@ -70,8 +75,14 @@ namespace API.Controls
         void OnSizeFlagsChanged() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "size_flags_changed");
         #endregion
 
-        #region NinePatchRect
-        void OnTextureChanged() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "texture_changed");
+        #region Container
+        void OnSortChildren() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "sort_children");
+        #endregion
+
+        #region TabContainer
+        void OnPrePopupPressed() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "pre_popup_pressed");
+        void OnTabChanged(int tab) => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "tab_changed", tab);
+        void OnTabSelected(int tab) => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "tab_selected", tab);
         #endregion
     }
 }

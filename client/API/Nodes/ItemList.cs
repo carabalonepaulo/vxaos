@@ -1,13 +1,13 @@
 using Godot;
 using System;
 
-namespace API.Controls
+namespace API.Nodes
 {
-    public class TextureRect : Godot.TextureRect, IRubyControl
+    public class ItemList : Godot.ItemList, IRubyControl
     {
         public object Emitter { get; set; }
 
-        public TextureRect()
+        public ItemList()
         {
             var ctor = RubyEnvironment.Engine.Runtime.Globals.GetVariable("Emitter");
             Emitter = RubyEnvironment.Engine.Operations.CreateInstance(ctor);
@@ -38,6 +38,14 @@ namespace API.Controls
             Connect("mouse_exited", this, nameof(OnMouseExited));
             Connect("resized", this, nameof(OnResized));
             Connect("size_flags_changed", this, nameof(OnSizeFlagsChanged));
+
+            // ItemList
+            Connect("item_activated", this, nameof(OnItemActivated));
+            Connect("item_rmb_selected", this, nameof(OnItemRMBSelected));
+            Connect("item_selected", this, nameof(OnItemSelected));
+            Connect("multi_selected", this, nameof(OnMultiSelected));
+            Connect("nothing_selected", this, nameof(OnNothingSelected));
+            Connect("rmb_clicked", this, nameof(OnRMBClicked));
         }
 
         #region Node
@@ -65,6 +73,27 @@ namespace API.Controls
         void OnMouseExited() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "mouse_exited");
         void OnResized() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "resized");
         void OnSizeFlagsChanged() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "size_flags_changed");
+        #endregion
+
+        #region ItemList
+        void OnItemActivated(int index) => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "item_activated", index);
+        void OnItemRMBSelected(int index, Vector2 atPosition) => RubyEnvironment.Engine.Operations.InvokeMember(
+            Emitter,
+            "emit",
+            "item_rmb_selected",
+            index,
+            atPosition);
+        void OnItemSelected(int index) => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "item_selected", index);
+        void OnMultiSelected(int index, bool selected) => RubyEnvironment.Engine.Operations.InvokeMember(Emitter,
+            "emit",
+            "multi_selected",
+            index,
+            selected);
+        void OnNothingSelected() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "nothing_selected");
+        void OnRMBClicked(Vector2 atPosition) => RubyEnvironment.Engine.Operations.InvokeMember(Emitter,
+            "emit",
+            "rmb_clicked",
+            atPosition);
         #endregion
     }
 }

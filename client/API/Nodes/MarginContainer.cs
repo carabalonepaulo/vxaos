@@ -1,13 +1,13 @@
 using Godot;
 using System;
 
-namespace API.Controls
+namespace API.Nodes
 {
-    public class HorizontalBox : Godot.HBoxContainer, IRubyControl
+    public class MarginContainer : Godot.MarginContainer, IRubyControl
     {
         public object Emitter { get; set; }
 
-        public HorizontalBox()
+        public MarginContainer()
         {
             var ctor = RubyEnvironment.Engine.Runtime.Globals.GetVariable("Emitter");
             Emitter = RubyEnvironment.Engine.Operations.CreateInstance(ctor);

@@ -25,7 +25,7 @@ namespace API
                 _cache.Add(type.Name, type);
         }
 
-        IEnumerable<Type> FindTypes() => Assembly.GetAssembly(typeof(API.Controls.Control))
+        IEnumerable<Type> FindTypes() => Assembly.GetAssembly(typeof(API.Nodes.Control))
             .GetTypes()
             .Where(t => t.GetInterface("IRubyControl") != null);
 

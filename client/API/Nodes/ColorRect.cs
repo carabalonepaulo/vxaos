@@ -1,13 +1,13 @@
 using Godot;
 using System;
 
-namespace API.Controls
+namespace API.Nodes
 {
-    public class Label : Godot.Label, IRubyControl
+    public class ColorRect : Godot.ColorRect, IRubyControl
     {
         public object Emitter { get; set; }
 
-        public Label()
+        public ColorRect()
         {
             var ctor = RubyEnvironment.Engine.Runtime.Globals.GetVariable("Emitter");
             Emitter = RubyEnvironment.Engine.Operations.CreateInstance(ctor);

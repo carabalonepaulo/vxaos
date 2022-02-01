@@ -1,13 +1,12 @@
 using Godot;
-using System;
 
-namespace API.Controls
+namespace API.Nodes
 {
-    public class TabContainer : Godot.TabContainer, IRubyControl
+    public class LinkButton : Godot.LinkButton, IRubyControl
     {
         public object Emitter { get; set; }
 
-        public TabContainer()
+        public LinkButton()
         {
             var ctor = RubyEnvironment.Engine.Runtime.Globals.GetVariable("Emitter");
             Emitter = RubyEnvironment.Engine.Operations.CreateInstance(ctor);
@@ -39,13 +38,11 @@ namespace API.Controls
             Connect("resized", this, nameof(OnResized));
             Connect("size_flags_changed", this, nameof(OnSizeFlagsChanged));
 
-            // Container
-            Connect("sort_children", this, nameof(OnSortChildren));
-
-            // TabContainer
-            Connect("pre_popup_pressed", this, nameof(OnPrePopupPressed));
-            Connect("tab_changed", this, nameof(OnTabChanged));
-            Connect("tab_selected", this, nameof(OnTabSelected));
+            // Button
+            Connect("button_down", this, nameof(OnButtonDown));
+            Connect("button_up", this, nameof(OnButtonUp));
+            Connect("pressed", this, nameof(OnPressed));
+            Connect("toggled", this, nameof(OnToggled));
         }
 
         #region Node
@@ -75,14 +72,11 @@ namespace API.Controls
         void OnSizeFlagsChanged() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "size_flags_changed");
         #endregion
 
-        #region Container
-        void OnSortChildren() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "sort_children");
-        #endregion
-
-        #region TabContainer
-        void OnPrePopupPressed() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "pre_popup_pressed");
-        void OnTabChanged(int tab) => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "tab_changed", tab);
-        void OnTabSelected(int tab) => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "tab_selected", tab);
+        #region Button
+        void OnButtonDown() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "button_down");
+        void OnButtonUp() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "button_up");
+        void OnPressed() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "pressed");
+        void OnToggled(bool pressed) => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "toggled", pressed);
         #endregion
     }
 }

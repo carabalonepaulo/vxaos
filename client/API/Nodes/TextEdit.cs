@@ -1,13 +1,13 @@
 using Godot;
 using System;
 
-namespace API.Controls
+namespace API.Nodes
 {
-    public class LineEdit : Godot.LineEdit, IRubyControl
+    public class TextEdit : Godot.TextEdit, IRubyControl
     {
         public object Emitter { get; set; }
 
-        public LineEdit()
+        public TextEdit()
         {
             var ctor = RubyEnvironment.Engine.Runtime.Globals.GetVariable("Emitter");
             Emitter = RubyEnvironment.Engine.Operations.CreateInstance(ctor);
@@ -39,10 +39,13 @@ namespace API.Controls
             Connect("resized", this, nameof(OnResized));
             Connect("size_flags_changed", this, nameof(OnSizeFlagsChanged));
 
-            // LineEdit
-            Connect("text_change_rejected", this, nameof(OnTextChangeRejected));
+            // TextEdit
+            Connect("breakpoint_toggled", this, nameof(OnBreakpointToggled));
+            Connect("cursor_changed", this, nameof(OnCursorChanged));
+            Connect("info_clicked", this, nameof(OnInfoClicked));
+            Connect("request_completion", this, nameof(OnRequestCompletion));
+            Connect("symbol_lookup", this, nameof(OnSymbolLookup));
             Connect("text_changed", this, nameof(OnTextChanged));
-            Connect("text_entered", this, nameof(OnTextEntered));
         }
 
         #region Node
@@ -72,22 +75,22 @@ namespace API.Controls
         void OnSizeFlagsChanged() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "size_flags_changed");
         #endregion
 
-        #region LineEdit
-        void OnTextChangeRejected(string rejectedSubstring) => RubyEnvironment.Engine.Operations.InvokeMember(
+        #region TextEdit
+        void OnBreakpointToggled(int row) => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "breakpoint_toggled", row);
+        void OnCursorChanged() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "cursor_changed");
+        void OnInfoClicked(int row, string info) => RubyEnvironment.Engine.Operations.InvokeMember(
             Emitter,
             "emit",
-            "text_change_rejected",
-            rejectedSubstring);
-        void OnTextChanged(string newText) => RubyEnvironment.Engine.Operations.InvokeMember(
+            "info_clicked",
+            row,
+            info);
+        void OnRequestCompletion() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "request_completion");
+        void OnSymbolLookup(string symbol, int row, int column) => RubyEnvironment.Engine.Operations.InvokeMember(
             Emitter,
             "emit",
-            "text_changed",
-            newText);
-        void OnTextEntered(string newText) => RubyEnvironment.Engine.Operations.InvokeMember(
-            Emitter,
-            "emit",
-            "text_entered",
-            newText);
+            "symbol_lookup",
+            symbol, row, column);
+        void OnTextChanged() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "text_changed");
         #endregion
     }
 }

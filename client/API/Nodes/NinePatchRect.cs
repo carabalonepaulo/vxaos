@@ -1,13 +1,13 @@
 using Godot;
 using System;
 
-namespace API.Controls
+namespace API.Nodes
 {
-    public class Tabs : Godot.Tabs, IRubyControl
+    public class NinePatchRect : Godot.NinePatchRect, IRubyControl
     {
         public object Emitter { get; set; }
 
-        public Tabs()
+        public NinePatchRect()
         {
             var ctor = RubyEnvironment.Engine.Runtime.Globals.GetVariable("Emitter");
             Emitter = RubyEnvironment.Engine.Operations.CreateInstance(ctor);
@@ -39,13 +39,8 @@ namespace API.Controls
             Connect("resized", this, nameof(OnResized));
             Connect("size_flags_changed", this, nameof(OnSizeFlagsChanged));
 
-            // Tabs
-            Connect("reposition_active_tab_request", this, nameof(OnRepositionActiveTabRequest));
-            Connect("right_button_pressed", this, nameof(OnRightButtonPressed));
-            Connect("tab_changed", this, nameof(OnTabChanged));
-            Connect("tab_clicked", this, nameof(OnTabClicked));
-            Connect("tab_close", this, nameof(OnTabClose));
-            Connect("tab_hover", this, nameof(OnTabHover));
+            // NinePatchRect
+            Connect("texture_changed", this, nameof(OnTextureChanged));
         }
 
         #region Node
@@ -75,21 +70,8 @@ namespace API.Controls
         void OnSizeFlagsChanged() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "size_flags_changed");
         #endregion
 
-        #region Tabs
-        void OnRepositionActiveTabRequest(int idxTo) => RubyEnvironment.Engine.Operations.InvokeMember(
-            Emitter,
-            "emit",
-            "reposition_active_tab_request",
-            idxTo);
-        void OnRightButtonPressed(int tabId) => RubyEnvironment.Engine.Operations.InvokeMember(
-            Emitter,
-            "emit",
-            "right_button_pressed",
-            tabId);
-        void OnTabChanged(int tab) => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "tab_changed", tab);
-        void OnTabClicked(int tab) => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "tab_clicked", tab);
-        void OnTabClose(int tab) => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "tab_close", tab);
-        void OnTabHover(int tab) => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "tab_hover", tab);
+        #region NinePatchRect
+        void OnTextureChanged() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "texture_changed");
         #endregion
     }
 }

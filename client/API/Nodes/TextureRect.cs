@@ -1,12 +1,13 @@
 using Godot;
+using System;
 
-namespace API.Controls
+namespace API.Nodes
 {
-    public class TextureButton : Godot.TextureButton, IRubyControl
+    public class TextureRect : Godot.TextureRect, IRubyControl
     {
         public object Emitter { get; set; }
 
-        public TextureButton()
+        public TextureRect()
         {
             var ctor = RubyEnvironment.Engine.Runtime.Globals.GetVariable("Emitter");
             Emitter = RubyEnvironment.Engine.Operations.CreateInstance(ctor);
@@ -37,12 +38,6 @@ namespace API.Controls
             Connect("mouse_exited", this, nameof(OnMouseExited));
             Connect("resized", this, nameof(OnResized));
             Connect("size_flags_changed", this, nameof(OnSizeFlagsChanged));
-
-            // Button
-            Connect("button_down", this, nameof(OnButtonDown));
-            Connect("button_up", this, nameof(OnButtonUp));
-            Connect("pressed", this, nameof(OnPressed));
-            Connect("toggled", this, nameof(OnToggled));
         }
 
         #region Node
@@ -70,13 +65,6 @@ namespace API.Controls
         void OnMouseExited() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "mouse_exited");
         void OnResized() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "resized");
         void OnSizeFlagsChanged() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "size_flags_changed");
-        #endregion
-
-        #region Button
-        void OnButtonDown() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "button_down");
-        void OnButtonUp() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "button_up");
-        void OnPressed() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "pressed");
-        void OnToggled(bool pressed) => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "toggled", pressed);
         #endregion
     }
 }

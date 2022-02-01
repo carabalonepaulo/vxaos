@@ -1,13 +1,13 @@
 using Godot;
 using System;
 
-namespace API.Controls
+namespace API.Nodes
 {
-    public class ColorRect : Godot.ColorRect, IRubyControl
+    public class VideoPlayer : Godot.VideoPlayer, IRubyControl
     {
         public object Emitter { get; set; }
 
-        public ColorRect()
+        public VideoPlayer()
         {
             var ctor = RubyEnvironment.Engine.Runtime.Globals.GetVariable("Emitter");
             Emitter = RubyEnvironment.Engine.Operations.CreateInstance(ctor);
@@ -38,6 +38,9 @@ namespace API.Controls
             Connect("mouse_exited", this, nameof(OnMouseExited));
             Connect("resized", this, nameof(OnResized));
             Connect("size_flags_changed", this, nameof(OnSizeFlagsChanged));
+
+            // VideoPlayer
+            Connect("finished", this, nameof(OnFinished));
         }
 
         #region Node
@@ -65,6 +68,10 @@ namespace API.Controls
         void OnMouseExited() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "mouse_exited");
         void OnResized() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "resized");
         void OnSizeFlagsChanged() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "size_flags_changed");
+        #endregion
+
+        #region VideoPlayer
+        void OnFinished() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "finished");
         #endregion
     }
 }
