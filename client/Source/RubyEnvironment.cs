@@ -68,6 +68,7 @@ public class RubyEnvironment
         "nodes/color_picker_button",
         "nodes/menu_button",
         "nodes/option_button",
+        "nodes/tool_button",
 
         "godot_objects/color",
         "godot_objects/rect",
