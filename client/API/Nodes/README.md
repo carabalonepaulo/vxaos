@@ -26,7 +26,7 @@
 - [x] MenuButton (2/2)
 - [x] OptionButton (2/2)
 - [x] ToolButton (2/2)
-- [ ] LinkButton (0/2)
+- [x] LinkButton (2/2)
 - [ ] TextureButton (0/2)
 - [ ] ColorRect (0/2)
 - [ ] Range (0/2)
