@@ -63,6 +63,7 @@ public class RubyEnvironment
         "nodes/viewport_container",
         "nodes/base_button",
         "nodes/button",
+        "nodes/check_box",
 
         "godot_objects/color",
         "godot_objects/rect",
