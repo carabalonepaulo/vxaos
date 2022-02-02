@@ -71,6 +71,7 @@ public class RubyEnvironment
         "nodes/tool_button",
         "nodes/link_button",
         "nodes/texture_button",
+        "nodes/color_rect",
 
         "godot_objects/color",
         "godot_objects/rect",
