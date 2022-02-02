@@ -1,7 +1,5 @@
 using Godot;
 using System;
-using Microsoft.Scripting.Hosting;
-using System.Collections.Generic;
 
 public interface RubyAPI
 {
@@ -19,7 +17,6 @@ public class Main : Node2D
     {
         SetupErrorDialog();
         SetupRubyEnvironment();
-        // RaiseException(new string[] { "line 1", "line 2", "line 3", "line 4" });
     }
 
     public override void _Notification(int what)
