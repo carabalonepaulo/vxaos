@@ -76,6 +76,9 @@ namespace API.Nodes
             Connect("pressed", this, nameof(OnPressed));
             Connect("toggled", this, nameof(OnToggled));
 
+            // MenuButton
+            Connect("about_to_show", this, nameof(OnAboutToShow));
+
             RubyEnvironment.Engine.Operations.InvokeMember(_rubyOwner, "_ready");
         }
 
@@ -153,6 +156,10 @@ namespace API.Nodes
         void OnButtonUp() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "button_up");
         void OnPressed() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "pressed");
         void OnToggled(bool pressed) => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "toggled", pressed);
+        #endregion
+
+        #region MenuButton
+        void OnAboutToShow() => RubyEnvironment.Engine.Operations.InvokeMember(Emitter, "emit", "about_to_show");
         #endregion
     }
 }
