@@ -3,8 +3,10 @@
   "editor.tabSize": 4,
   "cSpell.words": [
     "hbox",
+    "hscroll",
     "hsplit",
     "RGSS",
+    "vscroll",
     "vsplit"
   ],
   "[ruby]": {

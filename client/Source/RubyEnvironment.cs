@@ -72,6 +72,10 @@ public class RubyEnvironment
         "nodes/link_button",
         "nodes/texture_button",
         "nodes/color_rect",
+        "nodes/range",
+        "nodes/scroll_bar",
+        "nodes/hscroll_bar",
+        "nodes/vscroll_bar",
 
         "godot_objects/color",
         "godot_objects/rect",
