@@ -76,6 +76,8 @@ public class RubyEnvironment
         "nodes/scroll_bar",
         "nodes/hscroll_bar",
         "nodes/vscroll_bar",
+        "nodes/progress_bar",
+        "nodes/spin_box",
 
         "godot_objects/color",
         "godot_objects/rect",
