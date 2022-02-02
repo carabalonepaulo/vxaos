@@ -1,2 +1,0 @@
-﻿57433
-C:/Users/psore/dev/godot-bin/Godot_v3.4-stable_mono_win64/Godot_v3.4-stable_mono_win64.exe
