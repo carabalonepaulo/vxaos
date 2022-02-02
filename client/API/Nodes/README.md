@@ -23,7 +23,7 @@
 - [x] CheckBox (2/2)
 - [x] CheckButton (2/2)
 - [x] ColorPickerButton (2/2)
-- [ ] MenuButton (0/2)
+- [x] MenuButton (2/2)
 - [ ] OptionButton (0/2)
 - [ ] ToolButton (0/2)
 - [ ] LinkButton (0/2)
