@@ -35,7 +35,7 @@
 - [x] VScrollBar (2/2)
 - [x] ProgressBar (2/2)
 - [x] SpinBox (2/2)
-- [ ] TextureProgress (0/2)
+- [x] TextureProgress (2/2)
 - [ ] GraphEdit (0/2)
 - [ ] Separator (0/2)
 - [ ] HSeparator (0/2)
