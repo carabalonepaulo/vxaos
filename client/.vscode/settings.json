@@ -4,9 +4,11 @@
   "cSpell.words": [
     "hbox",
     "hscroll",
+    "hseparator",
     "hsplit",
     "RGSS",
     "vscroll",
+    "vseparator",
     "vsplit"
   ],
   "[ruby]": {

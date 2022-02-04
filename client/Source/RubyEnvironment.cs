@@ -79,6 +79,10 @@ public class RubyEnvironment
         "nodes/progress_bar",
         "nodes/spin_box",
         "nodes/texture_progress",
+        "nodes/separator",
+        "nodes/hseparator",
+        "nodes/vseparator",
+        "nodes/item_list",
 
         "godot_objects/color",
         "godot_objects/rect",
