@@ -89,6 +89,11 @@ public class RubyEnvironment
         "nodes/panel",
         "nodes/reference_rect",
         "nodes/rich_text_label",
+        "nodes/tabs",
+        // "nodes/text_edit",
+        "nodes/texture_rect",
+        // "nodes/tree",
+        "nodes/video_player",
 
         "godot_objects/color",
         "godot_objects/rect",
