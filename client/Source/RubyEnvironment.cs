@@ -87,6 +87,7 @@ public class RubyEnvironment
         "nodes/line_edit",
         "nodes/nine_patch_rect",
         "nodes/panel",
+        "nodes/reference_rect",
 
         "godot_objects/color",
         "godot_objects/rect",
