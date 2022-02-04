@@ -42,7 +42,7 @@
 - [x] VSeparator (2/2)
 - [x] ItemList (2/2)
 - [x] Label (2/2)
-- [ ] LineEdit (0/2)
+- [x] LineEdit (2/2)
 - [ ] NinePatchRect (0/2)
 - [ ] Panel (0/2)
 - [ ] ReferenceRect (0/2)
