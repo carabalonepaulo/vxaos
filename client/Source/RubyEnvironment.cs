@@ -83,6 +83,7 @@ public class RubyEnvironment
         "nodes/hseparator",
         "nodes/vseparator",
         "nodes/item_list",
+        "nodes/label",
 
         "godot_objects/color",
         "godot_objects/rect",

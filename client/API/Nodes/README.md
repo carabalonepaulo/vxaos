@@ -41,7 +41,7 @@
 - [x] HSeparator (2/2)
 - [x] VSeparator (2/2)
 - [x] ItemList (2/2)
-- [ ] Label (0/2)
+- [x] Label (2/2)
 - [ ] LineEdit (0/2)
 - [ ] NinePatchRect (0/2)
 - [ ] Panel (0/2)
