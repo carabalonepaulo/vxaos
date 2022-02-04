@@ -46,7 +46,7 @@
 - [x] NinePatchRect (2/2)
 - [x] Panel (2/2)
 - [x] ReferenceRect (2/2)
-- [ ] RichTextLabel (0/2)
+- [x] RichTextLabel (2/2)
 - [ ] Tabs (0/2)
 - [ ] TextEdit (0/2)
 - [ ] TextureRect (0/2)
