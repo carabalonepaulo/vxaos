@@ -5,6 +5,13 @@ class Main
     $resource_loader = system_api.resource_loader
 
     begin
+      button = Button.new
+      button.text = "Click me!"
+      button.connect("pressed") do
+        print "hello from ruby"
+      end
+
+      $system.root.add_child button.source
     rescue => e
       $system.raise_exception e.message, e.inspect, e.backtrace
     end
