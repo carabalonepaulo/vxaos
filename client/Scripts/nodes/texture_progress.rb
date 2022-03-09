@@ -1,4 +1,4 @@
-class TextureProgress < Range
+class TextureProgress < SRange
   def initialize(source = nil)
     init_source source
     init_inner_control_vars

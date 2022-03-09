@@ -1,4 +1,4 @@
-class Range < Control
+class SRange < Control
   def initialize
     fail_to_init
   end

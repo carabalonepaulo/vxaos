@@ -1,4 +1,4 @@
-class ScrollBar < Range
+class ScrollBar < SRange
   def custom_step
     @source.custom_step
   end
