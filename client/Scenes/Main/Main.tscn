@@ -4,6 +4,7 @@
 [ext_resource path="res://Scenes/ErrorDialog/ErrorDialog.tscn" type="PackedScene" id=2]
 
 [node name="Main" type="Node2D"]
+position = Vector2( 0, 1 )
 script = ExtResource( 1 )
 
 [node name="ErrorDialog" parent="." instance=ExtResource( 2 )]
