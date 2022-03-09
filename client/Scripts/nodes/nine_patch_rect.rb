@@ -4,6 +4,10 @@ class NinePatchRect < Control
     init_inner_control_vars
   end
 
+  def current_godot_object
+    "NinePatchRect"
+  end
+
   def init_inner_control_vars
     super
     @region_rect = Rect.new @source.region_rect

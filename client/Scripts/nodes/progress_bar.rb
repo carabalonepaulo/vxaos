@@ -4,6 +4,10 @@ class ProgressBar < SRange
     init_inner_control_vars
   end
 
+  def current_godot_object
+    "ProgressBar"
+  end
+
   def percent_visible
     @source.percent_visible
   end

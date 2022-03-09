@@ -4,6 +4,10 @@ class ColorPicker < BoxContainer
     init_inner_control_vars
   end
 
+  def current_godot_object
+    "ColorPicker"
+  end
+
   def init_inner_control_vars
     super
     @color = Color.new @source.color

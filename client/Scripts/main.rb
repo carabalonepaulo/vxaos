@@ -1,3 +1,17 @@
+class CustomButton < Button
+  def _ready
+    print "from ready"
+  end
+
+  def _notification(what)
+    # print what
+  end
+
+  def _process(dt)
+    # print(dt)
+  end
+end
+
 class Main
   def initialize(system_api, file_system_api)
     $system = system_api
@@ -5,7 +19,7 @@ class Main
     $resource_loader = system_api.resource_loader
 
     begin
-      button = Button.new
+      button = CustomButton.new
       button.text = "Click me!"
       button.connect("pressed") do
         print "hello from ruby"

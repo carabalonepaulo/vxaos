@@ -4,6 +4,10 @@ class TextureRect < Control
     init_inner_control_vars
   end
 
+  def current_godot_object
+    "TextureRect"
+  end
+
   def texture
     @source.texture
   end

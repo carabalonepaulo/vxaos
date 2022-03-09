@@ -3,6 +3,10 @@ class BoxContainer < Container
     fail_to_init
   end
 
+  def current_godot_object
+    "BoxContainer"
+  end
+
   def alignment
     @source.alignment
   end

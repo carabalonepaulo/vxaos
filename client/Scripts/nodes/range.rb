@@ -3,6 +3,10 @@ class SRange < Control
     fail_to_init
   end
 
+  def current_godot_object
+    "Range"
+  end
+
   def min_value
     @source.min_value
   end

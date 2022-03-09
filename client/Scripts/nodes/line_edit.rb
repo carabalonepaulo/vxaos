@@ -4,6 +4,10 @@ class LineEdit < Control
     init_inner_control_vars
   end
 
+  def current_godot_object
+    "LineEdit"
+  end
+
   def text
     @source.text
   end

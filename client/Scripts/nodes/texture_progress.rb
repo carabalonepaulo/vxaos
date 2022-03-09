@@ -4,6 +4,10 @@ class TextureProgress < SRange
     init_inner_control_vars
   end
 
+  def current_godot_object
+    "TextureProgress"
+  end
+
   def init_inner_control_vars
     super
     @texture_progress_offset = Vector2.new @source.texture_progress_offset

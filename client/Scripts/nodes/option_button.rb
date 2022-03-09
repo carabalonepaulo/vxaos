@@ -4,6 +4,10 @@ class OptionButton < Button
     init_inner_control_vars
   end
 
+  def current_godot_object
+    "OptionButton"
+  end
+
   def selected
     @source.selected
   end

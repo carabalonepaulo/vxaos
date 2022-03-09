@@ -4,6 +4,10 @@ class GraphNode < Container
     init_inner_control_vars
   end
 
+  def current_godot_object
+    "GraphNode"
+  end
+
   def init_inner_control_vars
     super
     @offset = Vector2.new @source.offset

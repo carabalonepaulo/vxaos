@@ -4,6 +4,10 @@ class ReferenceRect < Control
     init_inner_control_vars
   end
 
+  def current_godot_object
+    "ReferenceRect"
+  end
+
   def init_inner_control_vars
     super
     @border_color = Color.new @source.border_color

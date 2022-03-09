@@ -4,6 +4,10 @@ class RichTextLabel < Control
     init_inner_control_vars
   end
 
+  def current_godot_object
+    "RichTextLabel"
+  end
+
   def bbcode_enabled
     @source.bbcode_enabled
   end

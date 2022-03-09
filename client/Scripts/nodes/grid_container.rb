@@ -4,6 +4,10 @@ class GridContainer < Container
     init_inner_control_vars
   end
 
+  def current_godot_object
+    "GridContainer"
+  end
+
   def columns
     @source.columns
   end

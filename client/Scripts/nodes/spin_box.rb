@@ -4,6 +4,10 @@ class SpinBox < SRange
     init_inner_control_vars
   end
 
+  def current_godot_object
+    "SpinBox"
+  end
+
   def align
     @source.align
   end

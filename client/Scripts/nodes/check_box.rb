@@ -4,6 +4,10 @@ class CheckBox < Button
     init_inner_control_vars
   end
 
+  def current_godot_object
+    "CheckBox"
+  end
+
   def align
     @source.align
   end

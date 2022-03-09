@@ -4,6 +4,10 @@ class MarginContainer < Container
     init_inner_control_vars
   end
 
+  def current_godot_object
+    "MarginContainer"
+  end
+
   def margin_right
     @source.margin_right
   end

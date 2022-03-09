@@ -4,6 +4,10 @@ class Button < BaseButton
     init_inner_control_vars
   end
 
+  def current_godot_object
+    "Button"
+  end
+
   def init_inner_control_vars
     super
     @texture = nil

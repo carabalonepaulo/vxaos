@@ -4,6 +4,10 @@ class Label < Control
     init_inner_control_vars
   end
 
+  def current_godot_object
+    "Label"
+  end
+
   def text
     @source.text
   end

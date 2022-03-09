@@ -4,6 +4,10 @@ class ColorPickerButton < Button
     init_inner_control_vars
   end
 
+  def current_godot_object
+    "ColorPickerButton"
+  end
+
   def init_inner_control_vars
     super
     @color = Color.new @source.color

@@ -4,6 +4,10 @@ class ScrollContainer < Container
     init_inner_control_vars
   end
 
+  def current_godot_object
+    "ScrollContainer"
+  end
+
   def follow_focus
     @source.follow_focus
   end

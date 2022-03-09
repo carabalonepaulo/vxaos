@@ -3,6 +3,10 @@ class ScrollBar < SRange
     @source.custom_step
   end
 
+  def current_godot_object
+    "ScrollBar"
+  end
+
   def custom_step=(v)
     @source.custom_step = v
   end

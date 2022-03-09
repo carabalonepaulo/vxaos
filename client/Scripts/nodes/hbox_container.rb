@@ -3,4 +3,8 @@ class HBoxContainer < BoxContainer
     init_source source
     init_inner_control_vars
   end
+
+  def current_godot_object
+    "HBoxContainer"
+  end
 end

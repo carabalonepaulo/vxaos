@@ -4,6 +4,10 @@ class ColorRect < Control
     init_inner_control_vars
   end
 
+  def current_godot_object
+    "ColorRect"
+  end
+
   def init_inner_control_vars
     super
     @color = Color.new @source.color

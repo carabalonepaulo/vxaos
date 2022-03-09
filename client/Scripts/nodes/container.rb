@@ -3,6 +3,10 @@ class Container < Control
     fail_to_init
   end
 
+  def current_godot_object
+    "Container"
+  end
+
   def fit_child_in_rect(control, rect)
     @source.fit_child_in_rect control.source, rect.source
   end

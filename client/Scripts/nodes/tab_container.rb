@@ -4,6 +4,10 @@ class TabContainer < Container
     init_inner_control_vars
   end
 
+  def current_godot_object
+    "TabContainer"
+  end
+
   def tab_align
     @source.tab_align
   end

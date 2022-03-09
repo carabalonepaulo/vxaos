@@ -4,6 +4,10 @@ class TextureButton < BaseButton
     init_inner_control_vars
   end
 
+  def current_godot_object
+    "TextureButton"
+  end
+
   def texture_normal
     @source.texture_normal
   end

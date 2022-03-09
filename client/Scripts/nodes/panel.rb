@@ -3,4 +3,8 @@ class Panel < Control
     init_source source
     init_inner_control_vars
   end
+
+  def current_godot_object
+    "Panel"
+  end
 end

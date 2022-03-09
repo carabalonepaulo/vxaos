@@ -3,6 +3,10 @@ class BaseButton < Control
     fail_to_init
   end
 
+  def current_godot_object
+    "BaseButton"
+  end
+
   def disabled
     @source.disabled
   end

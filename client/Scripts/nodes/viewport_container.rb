@@ -4,6 +4,10 @@ class ViewportContainer < Container
     init_inner_control_vars
   end
 
+  def current_godot_object
+    "ViewportContainer"
+  end
+
   def stretch
     @source.stretch
   end

@@ -3,6 +3,10 @@ class SplitContainer < Container
     fail_to_init
   end
 
+  def current_godot_object
+    "SplitContainer"
+  end
+
   def split_offset
     @source.split_offset
   end

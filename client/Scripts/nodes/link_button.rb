@@ -4,6 +4,10 @@ class LinkButton < BaseButton
     init_inner_control_vars
   end
 
+  def current_godot_object
+    "LinkButton"
+  end
+
   def text
     @source.text
   end

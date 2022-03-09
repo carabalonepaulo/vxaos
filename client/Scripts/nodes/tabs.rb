@@ -4,6 +4,10 @@ class Tabs < Control
     init_inner_control_vars
   end
 
+  def current_godot_object
+    "Tabs"
+  end
+
   def current_tab
     @source.current_tab
   end

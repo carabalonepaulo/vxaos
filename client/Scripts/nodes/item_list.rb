@@ -4,6 +4,10 @@ class ItemList < Control
     init_inner_control_vars
   end
 
+  def current_godot_object
+    "ItemList"
+  end
+
   def init_inner_control_vars
     super
     @fixed_icon_size = Vector2.new @source.fixed_icon_size

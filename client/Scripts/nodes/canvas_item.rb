@@ -3,6 +3,10 @@ class CanvasItem < Node
     fail_to_init
   end
 
+  def current_godot_object
+    "CanvasItem"
+  end
+
   def init_inner_control_vars
     super
     @modulate = Color.new @source.modulate

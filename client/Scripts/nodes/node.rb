@@ -8,9 +8,12 @@ class Node < Wrapper
     raise "Can't create instance of #{self.class.to_s}."
   end
 
+  def current_godot_object
+    "Node"
+  end
+
   def init_source(source, godot_name = nil)
-    name = self.class.to_s
-    @source = source.class.to_s == "Godot::#{godot_name || name}" ? source : $system.create_control(name, self)
+    @source = source.class.to_s == "Godot::#{godot_name || current_godot_object}" ? source : $system.create_control(current_godot_object, self)
   end
 
   def init_inner_control_vars

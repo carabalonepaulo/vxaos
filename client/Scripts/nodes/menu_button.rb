@@ -4,6 +4,10 @@ class MenuButton < Button
     init_inner_control_vars
   end
 
+  def current_godot_object
+    "MenuButton"
+  end
+
   def switch_on_hover
     @source.switch_on_hover
   end

@@ -4,6 +4,10 @@ class GraphEdit < Control
     init_inner_control_vars
   end
 
+  def current_godot_object
+    "GraphEdit"
+  end
+
   def right_disconnects
     @source.right_disconnects
   end

@@ -4,6 +4,10 @@ class Control < CanvasItem
     init_inner_control_vars
   end
 
+  def current_godot_object
+    "Control"
+  end
+
   def init_inner_control_vars
     super
     @rect_position = Vector2.new @source.rect_position

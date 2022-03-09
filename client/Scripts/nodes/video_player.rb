@@ -4,6 +4,10 @@ class VideoPlayer < Control
     init_inner_control_vars
   end
 
+  def current_godot_object
+    "VideoPlayer"
+  end
+
   def audio_track
     @source.audio_track
   end

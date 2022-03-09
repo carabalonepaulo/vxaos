@@ -4,6 +4,10 @@ class CenterContainer < Container
     init_inner_control_vars
   end
 
+  def current_godot_object
+    "CenterContainer"
+  end
+
   def use_top_left
     @source.use_top_left
   end

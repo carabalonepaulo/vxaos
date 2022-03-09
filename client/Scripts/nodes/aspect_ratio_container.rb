@@ -4,6 +4,10 @@ class AspectRatioContainer < Container
     init_inner_control_vars
   end
 
+  def current_godot_object
+    "AspectRatioContainer"
+  end
+
   def ratio
     @source.ratio
   end
