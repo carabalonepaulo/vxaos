@@ -41,8 +41,17 @@ public class RubyEnvironment
         "emitter",
         "wrapper",
 
+        "godot_objects/color",
+        "godot_objects/rect",
+        "godot_objects/vector2",
+        "godot_objects/node_path",
+        "godot_objects/scene_tree",
+        "godot_objects/viewport",
+        "godot_objects/font",
+
         "nodes/node",
         "nodes/canvas_item",
+        "nodes/node2d",
         "nodes/control",
         "nodes/container",
         "nodes/aspect_ratio_container",
@@ -94,16 +103,6 @@ public class RubyEnvironment
         "nodes/texture_rect",
         // "nodes/tree",
         "nodes/video_player",
-
-        "godot_objects/color",
-        "godot_objects/rect",
-        "godot_objects/vector2",
-        "godot_objects/node_path",
-        "godot_objects/scene_tree",
-        "godot_objects/viewport",
-
-        "rgss/bitmap",
-        "rgss/sprite",
 
         "rgss",
         "main",
