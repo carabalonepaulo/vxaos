@@ -1,14 +1,16 @@
-class CustomButton < Button
+class CustomNode < Node2D
   def _ready
-    print "from ready"
+    @texture = $system.resource_loader.load("res://001-Fighter01.png")
+    @dest_rect = Rect.new(300, 100, 32, 48)
+    @src_rect = Rect.new(0, 0, 32, 48)
+    @font = DynamicFont.new
+    @font.font_data = $system.resource_loader.load("res://Fonts/Roboto/Roboto-Regular.ttf")
   end
 
-  def _notification(what)
-    # print what
-  end
-
-  def _process(dt)
-    # print(dt)
+  def _draw
+    draw_texture(@texture, Vector2.new(0, 0))
+    draw_texture_rect_region(@texture, @dest_rect, @src_rect)
+    draw_string(@font, Vector2.new(200, 100), "hello world", Color.new(255, 0, 0))
   end
 end
 
@@ -19,13 +21,9 @@ class Main
     $resource_loader = system_api.resource_loader
 
     begin
-      button = CustomButton.new
-      button.text = "Click me!"
-      button.connect("pressed") do
-        print "hello from ruby"
-      end
-
-      $system.root.add_child button.source
+      node = CustomNode.new()
+      # node = Node2D.new
+      $system.root.add_child node.source
     rescue => e
       $system.raise_exception e.message, e.inspect, e.backtrace
     end

@@ -15,7 +15,7 @@ namespace API
 
         public bool HasCached(string path) => Godot.ResourceLoader.HasCached(path);
 
-        public Resource Load(string path, string typeHint, bool noCache = false) =>
+        public Resource Load(string path, string typeHint = "", bool noCache = false) =>
             Godot.ResourceLoader.Load(path, typeHint, noCache);
     }
 }
