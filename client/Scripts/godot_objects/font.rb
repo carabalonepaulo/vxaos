@@ -1,8 +1,14 @@
-class DynamicFont
+class Font
+  def get_string_size(string)
+    @source.get_string_size string
+  end
+end
+
+class DynamicFont < Font
   attr_accessor :source
 
   def initialize(source = nil)
-    if source.class.to_s == 'Godot::Color'
+    if source.class.to_s == 'Godot::DynamicFont'
       @source = source
     else
       @source = $system.create_godot_object 'DynamicFont'
