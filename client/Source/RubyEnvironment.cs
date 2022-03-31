@@ -47,7 +47,6 @@ public class RubyEnvironment
         "godot_objects/node_path",
         "godot_objects/scene_tree",
         "godot_objects/viewport",
-        "godot_objects/font",
 
         "nodes/node",
         "nodes/canvas_item",
