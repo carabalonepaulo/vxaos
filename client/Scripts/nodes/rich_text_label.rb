@@ -193,7 +193,7 @@ class RichTextLabel < Control
   end
 
   def push_font(font)
-    @source.push_font font.source
+    @source.push_font font
   end
 
   def push_indent(level)
