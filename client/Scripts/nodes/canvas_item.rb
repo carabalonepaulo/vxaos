@@ -92,7 +92,7 @@ class CanvasItem < Node
   end
 
   def draw_char(font, position, char, _next, modulate = Color::White)
-    @source.draw_char font.source, position.source, char, _next, modulate.source
+    @source.draw_char font, position.source, char, _next, modulate.source
   end
 
   def draw_circle(position, radius, color)
@@ -143,7 +143,7 @@ class CanvasItem < Node
   end
 
   def draw_string(font, position, text, modulate = Color::White, clip_w = -1)
-    @source.draw_string(font.source, position.source, text, modulate.source, clip_w)
+    @source.draw_string(font, position.source, text, modulate.source, clip_w)
   end
 
   def draw_style_box(style_box, rect)
