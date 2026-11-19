@@ -5,11 +5,12 @@ All notable changes to VXA-OS are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project follows [Semantic Versioning](https://semver.org/).
 
-## [0.1.0] - 2026-11-19
+## [3.0.0] - 2026-11-19
 
-Initial public release. This is the Go server rewrite with a patched VX Ace
-client, protocol v2, server-authoritative gameplay, map actors and area of
-interest.
+Initial public release of the Go server rewrite. Version 3 starts a new major
+line over the v2 server because this release applies breaking changes to the
+protocol, data layout, content pipeline and runtime architecture; further
+breaking changes are expected during the 3.x line.
 
 ### Added
 
@@ -197,4 +198,4 @@ every 2 s:
 - Full setup, admin, content and Lisp guide: the mdBook in `book/` (in
   progress).
 
-[0.1.0]: https://github.com/kelaia/vxaos/releases/tag/v0.1.0
+[3.0.0]: https://github.com/carabalonepaulo/vxaos/releases/tag/v3.0.0

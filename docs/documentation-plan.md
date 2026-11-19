@@ -193,8 +193,8 @@ chapter is considered done. Config examples must match the real loader.
 ## 8. Open choices (decide before scaffolding)
 
 - Book location: `book/` at repository root (recommended).
-- Version for the first public release: `0.1.0` (recommended; protocol v2 is
-  still evolving).
+- Version for the first public release: `3.0.0` (major 3 starts over the v2
+  server; protocol v2 remains the wire protocol).
 - Hosting: GitHub Pages via mdBook later; not required for the first build.
 - Whether the old Ruby server remains documented as historical reference or is
   out of scope (recommended: one short historical note, no operational guide).
