@@ -1,0 +1,36 @@
+set shell := ["powershell.exe", "-NoProfile", "-Command"]
+
+# List the available recipes.
+default:
+    @just --list
+
+# Build the server and admin tools into bin/.
+build:
+    go build -o bin/vxaos-server.exe ./cmd/vxaos-server
+    go build -o bin/vxaos-admin.exe ./cmd/vxaos-admin
+
+# Build and start the development server with config.toml.
+run: build
+    .\bin\vxaos-server.exe -config config.toml
+
+# Start the already-built server with config.toml.
+start:
+    .\bin\vxaos-server.exe -config config.toml
+
+# Run the Go test suite.
+test:
+    go test ./...
+
+# Run go vet.
+vet:
+    go vet ./...
+
+# Format, vet and test.
+check:
+    gofmt -w .
+    go vet ./...
+    go test ./...
+
+# Create a distributable 7z with the server, admin tool, data and config.
+dist: build
+    powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-dist.ps1

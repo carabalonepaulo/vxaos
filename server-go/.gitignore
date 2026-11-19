@@ -1,6 +1,8 @@
 ﻿/bin/
 /data/
 /logs/
+/dist/
+*.7z
 *.db
 *.db-shm
 *.db-wal
