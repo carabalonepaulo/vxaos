@@ -8,6 +8,7 @@ default:
 build:
     go build -o bin/vxaos-server.exe ./cmd/vxaos-server
     go build -o bin/vxaos-admin.exe ./cmd/vxaos-admin
+    go build -o bin/vxaos-load.exe ./cmd/vxaos-load
 
 # Build and start the development server with config.toml.
 run: build
@@ -30,6 +31,14 @@ check:
     gofmt -w .
     go vet ./...
     go test ./...
+
+# Create the 500 disposable bot accounts and characters.
+load-setup: build
+    .\bin\vxaos-load.exe -setup -config config.load.toml -count 500
+
+# Drive 500 bots against a server already running on 127.0.0.1:5050.
+load: build
+    .\bin\vxaos-load.exe -config config.load.toml -addr 127.0.0.1:5050 -count 500 -duration 60s -ramp 10s -move-every 500ms -attack-every 2s -json bin\load-test-baseline.json
 
 # Create a distributable 7z with the server, admin tool, data and config.
 dist: build

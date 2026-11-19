@@ -3,6 +3,9 @@ server-go/bin/
 server-go/data/
 server-go/logs/
 server-go/config.toml
+server-go/*.exe
+/vxaos/
+/vxaos.7z
 *.db
 *.db-shm
 *.db-wal
