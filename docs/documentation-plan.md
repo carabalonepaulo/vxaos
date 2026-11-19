@@ -176,8 +176,11 @@ chapter is considered done. Config examples must match the real loader.
 6. Part IV (Lisp) — the largest and most important chapter.
 7. Part V (architecture, protocol, development).
 8. Part VI (troubleshooting, command reference, glossary).
-9. Root/server README cleanup and links.
-10. `mdbook build`, command verification, review, remove this plan.
+9. Editorial pass: remove internal design rationale and discussion-derived
+   details that are not useful to a reader; keep operator/author/developer
+   instructions.
+10. Root/server README cleanup and links.
+11. `mdbook build`, command verification, review, remove this plan.
 
 ## 7. Acceptance criteria
 
