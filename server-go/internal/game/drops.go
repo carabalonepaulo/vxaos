@@ -142,17 +142,21 @@ func (w *World) canPickupDrop(drop *dropState, p *Player) bool {
 	return !w.now().Before(drop.PickupAt)
 }
 
-// tickDrops removes expired ground drops.
+// tickDrops is the compatibility wrapper for callers already on the world
+// goroutine. Map actors call tickDropsMap directly.
 func (w *World) tickDrops(now time.Time) {
 	for _, ms := range w.maps {
-		if ms == nil {
+		if ms != nil {
+			w.tickDropsMap(ms, now)
+		}
+	}
+}
+
+func (w *World) tickDropsMap(ms *mapState, now time.Time) {
+	for i := len(ms.drops) - 1; i >= 0; i-- {
+		if now.Before(ms.drops[i].DespawnAt) {
 			continue
 		}
-		for i := len(ms.drops) - 1; i >= 0; i-- {
-			if now.Before(ms.drops[i].DespawnAt) {
-				continue
-			}
-			w.removeMapDrop(ms, i)
-		}
+		w.removeMapDrop(ms, i)
 	}
 }

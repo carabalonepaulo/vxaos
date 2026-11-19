@@ -51,34 +51,41 @@ func dirDelta(direction int) (int, int) {
 	return 0, 0
 }
 
-// tickNPCs advances autonomous non-enemy map events once per world tick.
+// tickNPCs is the compatibility wrapper for callers already on the world
+// goroutine. Map actors call tickNPCsMap directly.
 func (w *World) tickNPCs(now time.Time) {
 	for _, ms := range w.maps {
-		if ms == nil || !ms.hasPlayers() {
+		if ms != nil {
+			w.tickNPCsMap(ms, now)
+		}
+	}
+}
+
+func (w *World) tickNPCsMap(ms *mapState, now time.Time) {
+	if !ms.hasPlayers() {
+		return
+	}
+	for _, npc := range ms.npcs {
+		if npc == nil {
 			continue
 		}
-		for _, npc := range ms.npcs {
-			if npc == nil {
-				continue
-			}
-			w.refreshNPC(npc)
-			if npc.page == nil || npc.moveType == 0 || now.Before(npc.nextMove) || w.npcLocked(ms, npc) {
-				continue
-			}
-			frequency := clampInt(npc.moveFrequency, 1, 5)
-			npc.nextMove = now.Add(time.Duration(5-frequency) * 750 * time.Millisecond)
-			switch npc.moveType {
-			case 1: // random
+		w.refreshNPC(npc)
+		if npc.page == nil || npc.moveType == 0 || now.Before(npc.nextMove) || w.npcLocked(ms, npc) {
+			continue
+		}
+		frequency := clampInt(npc.moveFrequency, 1, 5)
+		npc.nextMove = now.Add(time.Duration(5-frequency) * 750 * time.Millisecond)
+		switch npc.moveType {
+		case 1: // random
+			w.moveNPC(ms, npc, moveDirections[rand.IntN(len(moveDirections))])
+		case 2: // approach
+			if target := w.npcNearestPlayer(ms, npc, 10); target != nil {
+				w.moveNPCToward(ms, npc, target)
+			} else {
 				w.moveNPC(ms, npc, moveDirections[rand.IntN(len(moveDirections))])
-			case 2: // approach
-				if target := w.npcNearestPlayer(ms, npc, 10); target != nil {
-					w.moveNPCToward(ms, npc, target)
-				} else {
-					w.moveNPC(ms, npc, moveDirections[rand.IntN(len(moveDirections))])
-				}
-			case 3: // custom move route
-				w.runNPCMoveRoute(ms, npc, now)
 			}
+		case 3: // custom move route
+			w.runNPCMoveRoute(ms, npc, now)
 		}
 	}
 }
@@ -209,7 +216,7 @@ func (w *World) moveNPCDiagonal(ms *mapState, npc *npcState, dx, dy int) bool {
 		npc.x, npc.y = nx, ny
 		npc.direction = face
 		w.broadcastEventMove(ms, npc.event.ID, npc.x, npc.y, npc.direction)
-		w.eventTouch(ms, npc)
+		w.queueEventTouch(ms, npc)
 		return true
 	}
 	npc.direction = face
@@ -224,7 +231,7 @@ func (w *World) jumpNPC(ms *mapState, npc *npcState, dx, dy int) bool {
 	}
 	npc.x, npc.y = nx, ny
 	w.broadcastEventMove(ms, npc.event.ID, npc.x, npc.y, npc.direction)
-	w.eventTouch(ms, npc)
+	w.queueEventTouch(ms, npc)
 	return true
 }
 
@@ -390,7 +397,7 @@ func (w *World) moveNPC(ms *mapState, npc *npcState, direction int) bool {
 		npc.x, npc.y = nx, ny
 		npc.direction = face
 		w.broadcastEventMove(ms, npc.event.ID, npc.x, npc.y, npc.direction)
-		w.eventTouch(ms, npc)
+		w.queueEventTouch(ms, npc)
 		return true
 	}
 	npc.direction = face
@@ -423,6 +430,14 @@ func (w *World) npcBlocked(ms *mapState, moverID, x, y int) bool {
 }
 
 // eventTouch starts a trigger-2 page when an NPC moves into a player.
+func (w *World) queueEventTouch(ms *mapState, npc *npcState) {
+	select {
+	case w.commands <- func() { w.eventTouch(ms, npc) }:
+	default:
+		w.log.Warn("event touch queue full", "map", ms.def.ID, "event", npc.event.ID)
+	}
+}
+
 func (w *World) eventTouch(ms *mapState, npc *npcState) {
 	for _, p := range ms.players {
 		if p == nil || p.Event != nil || p.Character.X != npc.x || p.Character.Y != npc.y {

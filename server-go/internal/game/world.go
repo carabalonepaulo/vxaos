@@ -138,6 +138,8 @@ type World struct {
 	stop     chan struct{}
 	stopped  chan struct{}
 	stopOnce sync.Once
+	rw       sync.RWMutex
+	mapWG    sync.WaitGroup
 
 	// All fields below are owned by the world goroutine.
 	players        []*Player
@@ -162,6 +164,7 @@ type mapState struct {
 	players []*Player
 	autorun *autorunState
 	drops   []*dropState
+	stop    chan struct{}
 }
 
 // npcState is the runtime position and autonomous movement of a non-enemy map
@@ -300,6 +303,12 @@ func (w *World) Stop(ctx context.Context) error {
 	case <-ctx.Done():
 		return ctx.Err()
 	}
+	for _, ms := range w.maps {
+		if ms != nil && ms.stop != nil {
+			close(ms.stop)
+		}
+	}
+	w.mapWG.Wait()
 	if w.persist != nil {
 		if err := w.persist.closeAndFlush(ctx); err != nil {
 			return err
@@ -384,8 +393,32 @@ func (w *World) ensureMap(id int) *mapState {
 		}
 	}
 	w.maps[id] = ms
+	ms.stop = make(chan struct{})
+	w.mapWG.Add(1)
+	go w.runMapActor(ms)
 	w.log.Info("map activated", "map", id, "name", m.Name)
 	return ms
+}
+
+func (w *World) runMapActor(ms *mapState) {
+	defer w.mapWG.Done()
+	tick := time.NewTicker(w.opts.Tick)
+	defer tick.Stop()
+	for {
+		select {
+		case <-tick.C:
+			w.rw.RLock()
+			if ms.hasPlayers() {
+				now := w.now()
+				w.tickCombatMap(ms, now)
+				w.tickDropsMap(ms, now)
+				w.tickNPCsMap(ms, now)
+			}
+			w.rw.RUnlock()
+		case <-ms.stop:
+			return
+		}
+	}
 }
 
 func (w *World) loop() {
@@ -397,17 +430,22 @@ func (w *World) loop() {
 	for {
 		select {
 		case fn := <-w.commands:
+			w.rw.Lock()
 			fn()
+			w.rw.Unlock()
 		case <-tick.C:
-			w.tickCombat()
-			w.tickDrops(w.now())
+			w.rw.Lock()
 			w.tickEvents()
 			w.tickAutoruns()
-			w.tickNPCs(w.now())
+			w.rw.Unlock()
 		case <-save.C:
+			w.rw.Lock()
 			w.saveAll()
+			w.rw.Unlock()
 		case <-w.stop:
+			w.rw.Lock()
 			w.saveAll()
+			w.rw.Unlock()
 			return
 		}
 	}

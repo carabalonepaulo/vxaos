@@ -919,9 +919,21 @@ func (w *World) recoverVitals(p *Player) {
 	w.sendVitalsToMap(p)
 }
 
+// tickCombat is the compatibility wrapper for tests and callers already on the
+// world goroutine. Map actors call tickCombatMap directly.
 func (w *World) tickCombat() {
 	now := w.now()
-	for _, p := range w.players {
+	for _, ms := range w.maps {
+		if ms != nil {
+			w.tickCombatMap(ms, now)
+		}
+	}
+}
+
+// tickCombatMap advances one map's players and enemies. The map actor calls it
+// with the world read lock held.
+func (w *World) tickCombatMap(ms *mapState, now time.Time) {
+	for _, p := range ms.players {
 		if p == nil {
 			continue
 		}
@@ -942,23 +954,18 @@ func (w *World) tickCombat() {
 			w.tickStatus(now, &p.Status, p, w.playerFeatures(p), p.Character.MHP, p.Character.MMP, &p.Character.HP, &p.Character.MP)
 		}
 	}
-	for _, ms := range w.maps {
-		if ms == nil {
+	for _, enemy := range ms.enemies {
+		if enemy == nil {
 			continue
 		}
-		for _, enemy := range ms.enemies {
-			if enemy == nil {
-				continue
+		if !enemy.Alive {
+			if !enemy.ReviveAt.IsZero() && now.After(enemy.ReviveAt) {
+				w.reviveEnemy(ms, enemy, now)
 			}
-			if !enemy.Alive {
-				if !enemy.ReviveAt.IsZero() && now.After(enemy.ReviveAt) {
-					w.reviveEnemy(ms, enemy, now)
-				}
-				continue
-			}
-			w.tickStatus(now, &enemy.Status, nil, w.enemyFeatures(enemy), enemy.Enemy.Params[0], enemy.Enemy.Params[1], &enemy.HP, &enemy.MP)
-			w.updateEnemyAI(ms, enemy, now)
+			continue
 		}
+		w.tickStatus(now, &enemy.Status, nil, w.enemyFeatures(enemy), enemy.Enemy.Params[0], enemy.Enemy.Params[1], &enemy.HP, &enemy.MP)
+		w.updateEnemyAI(ms, enemy, now)
 	}
 }
 
@@ -1006,7 +1013,19 @@ func (w *World) enemyAttack(enemy *enemyState, target *Player) {
 		w.applyAttackStates(w.enemyFeatures(enemy), w.playerFeatures(target), &target.Status, target)
 	}
 	if target.Character.HP <= 0 {
-		w.playerDied(target)
+		w.queuePlayerDied(target)
+	}
+}
+
+func (w *World) queuePlayerDied(p *Player) {
+	select {
+	case w.commands <- func() {
+		if w.playerByID(p.ID) == p {
+			w.playerDied(p)
+		}
+	}:
+	default:
+		w.log.Warn("player death queue full", "player", p.ID)
 	}
 }
 
