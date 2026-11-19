@@ -180,10 +180,7 @@ func (ms *mapState) playerAt(x, y int) *Player {
 
 // Attack performs a normal weapon attack against the tile in front.
 func (w *World) Attack(ctx context.Context, p *Player) error {
-	return w.do(ctx, func() error {
-		if w.playerByID(p.ID) != p {
-			return ErrNotInGame
-		}
+	return w.onPlayer(ctx, p.ID, func(ms *mapState, p *Player) error {
 		if w.restricted(&p.Status, 4) {
 			return ErrRequirement
 		}
@@ -192,10 +189,6 @@ func (w *World) Attack(ctx context.Context, p *Player) error {
 			return ErrRateLimited
 		}
 		p.lastAttack = now
-		ms := w.maps[p.Character.MapID]
-		if ms == nil {
-			return ErrInvalidMove
-		}
 		x, y := frontTile(p.Character.X, p.Character.Y, p.Character.Direction)
 		if enemy := ms.enemyAt(x, y); enemy != nil {
 			w.hitEnemy(p, enemy, w.attackSkill(), w.attackAnimation(p), w.attackAniIndex(p), w.playerStats(p), w.enemyStats(enemy))
@@ -213,19 +206,12 @@ func (w *World) Attack(ctx context.Context, p *Player) error {
 }
 
 func (w *World) SetTarget(ctx context.Context, p *Player, typ uint8, id uint16) error {
-	return w.do(ctx, func() error {
-		if w.playerByID(p.ID) != p {
-			return ErrNotInGame
-		}
-		ms := w.maps[p.Character.MapID]
-		if ms == nil {
-			return ErrNotInGame
-		}
+	return w.onPlayer(ctx, p.ID, func(ms *mapState, p *Player) error {
 		switch typ {
 		case 0:
 			p.TargetType, p.TargetID = 0, 0
 		case 1:
-			if target := w.playerByID(id); target != nil && target.Character.MapID == p.Character.MapID {
+			if target := ms.playerByID(id); target != nil && target.Character.MapID == p.Character.MapID {
 				p.TargetType, p.TargetID = typ, id
 			}
 		case 2:
@@ -241,10 +227,7 @@ func (w *World) SetTarget(ctx context.Context, p *Player, typ uint8, id uint16) 
 
 // UseSkill casts one learned skill.
 func (w *World) UseSkill(ctx context.Context, p *Player, skillID uint16) error {
-	return w.do(ctx, func() error {
-		if w.playerByID(p.ID) != p {
-			return ErrNotInGame
-		}
+	return w.onPlayer(ctx, p.ID, func(ms *mapState, p *Player) error {
 		skill := w.skill(int(skillID))
 		if skill == nil || !hasSkill(p.State, int(skillID)) {
 			return ErrNotOwned
@@ -280,10 +263,7 @@ func (w *World) UseSkill(ctx context.Context, p *Player, skillID uint16) error {
 
 // UseItem consumes an inventory item.
 func (w *World) UseItem(ctx context.Context, p *Player, itemID uint16) error {
-	return w.do(ctx, func() error {
-		if w.playerByID(p.ID) != p {
-			return ErrNotInGame
-		}
+	return w.onPlayer(ctx, p.ID, func(ms *mapState, p *Player) error {
 		item := w.item(int(itemID))
 		if item == nil || findInventory(p.State, KindItem, int(itemID)) < 0 {
 			return ErrNotOwned
@@ -311,9 +291,6 @@ func (w *World) UseHotbar(ctx context.Context, p *Player, slot uint8) error {
 	entry := store.HotbarSlot{}
 	ok := false
 	_ = w.do(ctx, func() error {
-		if w.playerByID(p.ID) != p {
-			return ErrNotInGame
-		}
 		w.ensureHotbar(p)
 		if int(slot) >= len(p.State.Hotbar) {
 			return ErrInvalidHotbar
@@ -366,7 +343,7 @@ func (w *World) hitEnemy(attacker *Player, enemy *enemyState, skill *rpg.Skill, 
 	if skill == nil || !enemy.Alive {
 		return
 	}
-	ms := w.maps[attacker.Character.MapID]
+	ms := attacker.ms
 	if ms == nil {
 		return
 	}
@@ -451,7 +428,7 @@ func (w *World) playerDied(p *Player) {
 		_ = p.Client.Send(protocol.ServerGold, protocol.Gold{Amount: -int64(loss)})
 	}
 	rate := loseExpPercent
-	if p.Account != nil && p.Account.VIPUntil > w.now().Unix() {
+	if p.vipActive(w.now().Unix()) {
 		rate = loseVIPExpPercent
 	}
 	if p.Character.Exp > 0 {
@@ -465,7 +442,7 @@ func (w *World) playerDied(p *Player) {
 	p.TargetType, p.TargetID = 0, 0
 	p.Event = nil
 	mapID, x, y := p.Character.ReviveMapID, p.Character.ReviveX, p.Character.ReviveY
-	if ms := w.ensureMap(mapID); ms == nil || !ms.valid(x, y) {
+	if !w.mapTemplateValid(mapID, x, y) {
 		mapID = w.opts.Data.System.StartMapID
 		x = w.opts.Data.System.StartX
 		y = w.opts.Data.System.StartY
@@ -500,7 +477,7 @@ func (w *World) loseExp(p *Player, amount int) {
 }
 
 func (w *World) useUsableOnPlayer(p *Player, item *rpg.UsableItem, itemID int) {
-	ms := w.maps[p.Character.MapID]
+	ms := p.ms
 	if ms == nil {
 		return
 	}
@@ -541,7 +518,7 @@ func (w *World) useUsableOnPlayer(p *Player, item *rpg.UsableItem, itemID int) {
 	}
 	if item.Scope >= 1 && item.Scope <= 6 {
 		if p.TargetType == 1 {
-			if target := w.playerByID(p.TargetID); target != nil && target.Character.MapID == p.Character.MapID && target.Character.HP > 0 {
+			if target := ms.playerByID(p.TargetID); target != nil && target.Character.MapID == p.Character.MapID && target.Character.HP > 0 {
 				rangeTiles := item.Range
 				if rangeTiles < 1 {
 					rangeTiles = 1
@@ -591,7 +568,7 @@ func (w *World) useUsableOnPlayer(p *Player, item *rpg.UsableItem, itemID int) {
 // applyAreaItem hits every enemy (and PvP-valid player) within the item's AOE
 // radius around the caster, matching the original area branch.
 func (w *World) applyAreaItem(p *Player, item *rpg.UsableItem, user battleStats, radius int) {
-	ms := w.maps[p.Character.MapID]
+	ms := p.ms
 	if ms == nil {
 		return
 	}
@@ -623,7 +600,7 @@ func (w *World) applyAreaItem(p *Player, item *rpg.UsableItem, user battleStats,
 
 func (w *World) resolveAllyTarget(p *Player, ms *mapState, rangeTiles int) *Player {
 	if p.TargetType == 1 {
-		if target := w.playerByID(p.TargetID); target != nil && target.Character.MapID == p.Character.MapID && target.Character.HP > 0 {
+		if target := ms.playerByID(p.TargetID); target != nil && target.Character.MapID == p.Character.MapID && target.Character.HP > 0 {
 			if rangeTiles < 1 || (absInt(target.Character.X-p.Character.X) <= rangeTiles && absInt(target.Character.Y-p.Character.Y) <= rangeTiles) {
 				return target
 			}
@@ -633,7 +610,7 @@ func (w *World) resolveAllyTarget(p *Player, ms *mapState, rangeTiles int) *Play
 }
 
 func (w *World) applyRandomEnemies(p *Player, item *rpg.UsableItem, count int) {
-	ms := w.maps[p.Character.MapID]
+	ms := p.ms
 	if ms == nil || count <= 0 {
 		return
 	}
@@ -769,7 +746,7 @@ func (w *World) resolveTarget(p *Player, scope int, ms *mapState) *enemyState {
 }
 
 func (w *World) applyUsableToEnemy(p *Player, enemy *enemyState, item *rpg.UsableItem) {
-	ms := w.maps[p.Character.MapID]
+	ms := p.ms
 	if ms == nil || enemy == nil || !enemy.Alive {
 		return
 	}
@@ -909,7 +886,7 @@ func (w *World) recoverVitals(p *Player) {
 	}
 	n := p.Character.AGI/100 + 1
 	bonus := 1.0
-	if p.Account != nil && p.Account.VIPUntil > w.now().Unix() {
+	if p.vipActive(w.now().Unix()) {
 		bonus = vipRecoverBonus
 	}
 	hpGain := int(math.Round(float64(recoverHPAmount) * bonus * float64(n)))
@@ -1018,15 +995,7 @@ func (w *World) enemyAttack(enemy *enemyState, target *Player) {
 }
 
 func (w *World) queuePlayerDied(p *Player) {
-	select {
-	case w.commands <- func() {
-		if w.playerByID(p.ID) == p {
-			w.playerDied(p)
-		}
-	}:
-	default:
-		w.log.Warn("player death queue full", "player", p.ID)
-	}
+	w.playerDied(p)
 }
 
 func (w *World) sendVitalsToMap(p *Player) {
@@ -1170,7 +1139,7 @@ func (w *World) awardKill(p *Player, enemy *enemyState) {
 		w.gainGold(p, gold)
 		w.addQuestKills(p, enemy.ID)
 	}
-	ms := w.maps[p.Character.MapID]
+	ms := p.ms
 	for _, drop := range enemy.Enemy.DropItems {
 		if drop.Kind < 1 || drop.Kind > 3 || drop.DataID <= 0 {
 			continue

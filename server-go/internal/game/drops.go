@@ -71,14 +71,7 @@ func (w *World) sendDropsTo(p *Player, ms *mapState) {
 
 // DropItem drops items from the inventory onto the player's tile.
 func (w *World) DropItem(ctx context.Context, p *Player, itemID uint16, kind uint8, amount uint16) error {
-	return w.do(ctx, func() error {
-		if w.playerByID(p.ID) != p {
-			return ErrNotInGame
-		}
-		ms := w.maps[p.Character.MapID]
-		if ms == nil {
-			return ErrNotInGame
-		}
+	return w.onPlayer(ctx, p.ID, func(ms *mapState, p *Player) error {
 		if p.Trade != nil || amount == 0 || kind < KindItem || kind > KindArmor || w.itemKind(int(kind), int(itemID)) == nil {
 			return ErrInvalidDrop
 		}
@@ -105,11 +98,7 @@ func (w *World) DropItem(ctx context.Context, p *Player, itemID uint16, kind uin
 // PickupDrop picks up one ground drop if the player is on its tile and owns it
 // (or the pickup delay elapsed).
 func (w *World) PickupDrop(ctx context.Context, p *Player, index uint8) error {
-	return w.do(ctx, func() error {
-		if w.playerByID(p.ID) != p {
-			return ErrNotInGame
-		}
-		ms := w.maps[p.Character.MapID]
+	return w.onPlayer(ctx, p.ID, func(ms *mapState, p *Player) error {
 		i := int(index)
 		if ms == nil || i < 0 || i >= len(ms.drops) {
 			return ErrInvalidDrop

@@ -39,7 +39,7 @@ func TestGlobalSwitchAndAutorun(t *testing.T) {
 	event := w.opts.Data.Maps[2].Events[13]
 	var page *rpg.Page
 	if err := w.do(ctx, func() error {
-		page = w.globalPage(event)
+		page = w.globalPage(w.ensureMap(2), event)
 		return nil
 	}); err != nil {
 		t.Fatal(err)

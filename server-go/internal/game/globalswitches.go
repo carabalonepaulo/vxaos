@@ -53,7 +53,7 @@ func (w *World) globalSwitchIndex(id int) (int, bool) {
 		return 0, false
 	}
 	index := id - w.opts.MaxPlayerSwitches - 1
-	if index < 0 || index >= len(w.globalSwitches) {
+	if index < 0 || index >= globalSwitchCount {
 		return 0, false
 	}
 	return index, true
@@ -61,39 +61,87 @@ func (w *World) globalSwitchIndex(id int) (int, bool) {
 
 func (w *World) globalSwitchValue(id int) bool {
 	index, ok := w.globalSwitchIndex(id)
-	if !ok {
+	if !ok || index >= len(w.globalSwitches) {
 		return false
 	}
 	return w.globalSwitches[index]
 }
 
+// setGlobalSwitch runs on the coordinator. It updates the authoritative slice,
+// notifies online clients and patches every active map actor.
 func (w *World) setGlobalSwitch(id int, value bool) bool {
 	index, ok := w.globalSwitchIndex(id)
 	if !ok {
 		return false
 	}
+	if index >= len(w.globalSwitches) {
+		grown := make([]bool, globalSwitchCount)
+		copy(grown, w.globalSwitches)
+		w.globalSwitches = grown
+	}
 	w.globalSwitches[index] = value
-	for _, other := range w.players {
-		if other == nil {
-			continue
-		}
-		_ = other.Client.Send(protocol.ServerSwitch, protocol.Switch{
-			ID: uint16(clampInt(id, 0, 65535)), Value: value,
+	msg := protocol.Switch{ID: uint16(clampInt(id, 0, 65535)), Value: value}
+	for _, other := range w.online {
+		_ = other.Client.Send(protocol.ServerSwitch, msg)
+	}
+	for key := range w.actors {
+		idx := index
+		w.enqueueMap(key, func(a *mapActor) {
+			if len(a.ms.globalSwitches) <= idx {
+				grown := make([]bool, globalSwitchCount)
+				copy(grown, a.ms.globalSwitches)
+				a.ms.globalSwitches = grown
+			}
+			a.ms.globalSwitches[idx] = value
 		})
 	}
 	return true
 }
 
+// mapSetGlobalSwitch is called from a map actor. It updates the coordinator and
+// then applies the value locally for immediate page evaluation.
+func (w *World) mapSetGlobalSwitch(p *Player, id int, value bool) bool {
+	index, ok := w.globalSwitchIndex(id)
+	if !ok {
+		return false
+	}
+	var applied bool
+	_ = w.coordErr(func() error {
+		applied = w.setGlobalSwitch(id, value)
+		return nil
+	})
+	if p != nil && p.ms != nil {
+		if len(p.ms.globalSwitches) <= index {
+			grown := make([]bool, globalSwitchCount)
+			copy(grown, p.ms.globalSwitches)
+			p.ms.globalSwitches = grown
+		}
+		p.ms.globalSwitches[index] = value
+	}
+	return applied
+}
+
 // sendGlobalSwitches sends the full server-wide switch block to one player.
 func (w *World) sendGlobalSwitches(p *Player) {
 	values := make([]bool, globalSwitchCount)
-	copy(values, w.globalSwitches)
+	if p != nil && p.ms != nil {
+		copy(values, p.ms.globalSwitches)
+	}
 	_ = p.Client.Send(protocol.ServerGlobalSwitches, protocol.GlobalSwitches{Values: values})
+}
+
+// mapGlobalSwitchValue reads a global switch from the map-local copy.
+func (ms *mapState) globalSwitchValue(w *World, id int) bool {
+	index, ok := w.globalSwitchIndex(id)
+	if !ok || index >= len(ms.globalSwitches) {
+		return false
+	}
+	return ms.globalSwitches[index]
 }
 
 // globalPage returns the highest active page whose conditions only reference
 // global switches. Autorun/parallel events must not depend on per-player state.
-func (w *World) globalPage(event *rpg.Event) *rpg.Page {
+func (w *World) globalPage(ms *mapState, event *rpg.Event) *rpg.Page {
 	for i := len(event.Pages) - 1; i >= 0; i-- {
 		page := event.Pages[i]
 		if page == nil {
@@ -107,7 +155,7 @@ func (w *World) globalPage(event *rpg.Event) *rpg.Page {
 			if c.Switch1ID <= w.opts.MaxPlayerSwitches {
 				continue
 			}
-			if !w.globalSwitchValue(c.Switch1ID) {
+			if !ms.globalSwitchValue(w, c.Switch1ID) {
 				continue
 			}
 		}
@@ -115,7 +163,7 @@ func (w *World) globalPage(event *rpg.Event) *rpg.Page {
 			if c.Switch2ID <= w.opts.MaxPlayerSwitches {
 				continue
 			}
-			if !w.globalSwitchValue(c.Switch2ID) {
+			if !ms.globalSwitchValue(w, c.Switch2ID) {
 				continue
 			}
 		}

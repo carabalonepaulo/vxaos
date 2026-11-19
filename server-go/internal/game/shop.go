@@ -74,10 +74,7 @@ func (w *World) shopPrice(good ShopGood) int {
 
 // ShopBuy buys amount units of one displayed shop good.
 func (w *World) ShopBuy(ctx context.Context, p *Player, index uint8, amount uint16) error {
-	return w.do(ctx, func() error {
-		if w.playerByID(p.ID) != p || p.ShopGoods == nil {
-			return ErrNotInGame
-		}
+	return w.onPlayer(ctx, p.ID, func(ms *mapState, p *Player) error {
 		if int(index) >= len(p.ShopGoods) {
 			return ErrInvalidTarget
 		}
@@ -105,10 +102,7 @@ func (w *World) ShopBuy(ctx context.Context, p *Player, index uint8, amount uint
 
 // ShopSell sells inventory items for half of their database price.
 func (w *World) ShopSell(ctx context.Context, p *Player, itemID uint16, kind uint8, amount uint16) error {
-	return w.do(ctx, func() error {
-		if w.playerByID(p.ID) != p || p.ShopGoods == nil || p.ShopSellDisabled {
-			return ErrNotInGame
-		}
+	return w.onPlayer(ctx, p.ID, func(ms *mapState, p *Player) error {
 		if amount == 0 {
 			return nil
 		}
@@ -149,10 +143,7 @@ func (w *World) ShopSell(ctx context.Context, p *Player, itemID uint16, kind uin
 
 // CloseWindow resumes an event waiting for a shop or bank window.
 func (w *World) CloseWindow(ctx context.Context, p *Player) error {
-	return w.do(ctx, func() error {
-		if w.playerByID(p.ID) != p {
-			return ErrNotInGame
-		}
+	return w.onPlayer(ctx, p.ID, func(ms *mapState, p *Player) error {
 		if p.ShopGoods != nil {
 			p.ShopGoods = nil
 			p.ShopSellDisabled = false

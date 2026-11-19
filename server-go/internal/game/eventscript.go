@@ -36,14 +36,18 @@ func (w *World) runEventScript(p *Player, frame *eventFrame, source string) bool
 		return nil, nil
 	})
 	register("add-vip-days", 1, 1, func(_ *script.VM, args []any) (any, error) {
-		until := p.Account.VIPUntil
-		now := w.now().Unix()
-		if until < now {
-			until = now
-		}
-		until += int64(scriptInt(args, 0)) * 86400
-		p.Account.VIPUntil = until
-		_ = w.opts.Store.UpdateAccountVIP(context.Background(), p.Account.ID, until)
+		days := scriptInt(args, 0)
+		var until int64
+		_ = w.coordErr(func() error {
+			until = p.vipUntil()
+			now := w.now().Unix()
+			if until < now {
+				until = now
+			}
+			until += int64(days) * 86400
+			p.setVIPUntil(until)
+			return w.opts.Store.UpdateAccountVIP(context.Background(), p.Account.ID, until)
+		})
 		_ = p.Client.Send(protocol.ServerVIPDays, protocol.VIPDays{Until: until})
 		return nil, nil
 	})

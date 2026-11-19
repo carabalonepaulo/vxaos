@@ -37,16 +37,17 @@ var (
 	ErrBadAdminCmd = errors.New("game: invalid admin command")
 )
 
-// AdminCommand executes one administrator panel command. Monitors may use the
-// navigation and mute commands only, matching the original server.
+// AdminCommand executes one administrator panel command. It runs on the
+// coordinator; actions that need map state are queued to the owning actor.
 func (w *World) AdminCommand(ctx context.Context, p *Player, m protocol.AdminCommand) error {
 	return w.do(ctx, func() error {
-		if w.playerByID(p.ID) != p {
+		entry := w.online[p.ID]
+		if entry == nil {
 			return ErrNotInGame
 		}
 		group := 0
-		if p.Account != nil {
-			group = p.Account.GroupID
+		if entry.Account != nil {
+			group = entry.Account.GroupID
 		}
 		if group < 1 {
 			return ErrAdminOnly
@@ -60,13 +61,13 @@ func (w *World) AdminCommand(ctx context.Context, p *Player, m protocol.AdminCom
 		}
 		switch m.Command {
 		case AdminKick:
-			return w.adminKick(p, m.Text)
+			return w.adminKick(entry, m.Text)
 		case AdminTeleport:
-			return w.adminTeleport(p, m.Text, int(m.Int1), int(m.Int2), int(m.Int3))
+			return w.adminTeleport(entry, m.Text, int(m.Int1), int(m.Int2), int(m.Int3))
 		case AdminGo:
-			return w.adminGo(p, m.Text)
+			return w.adminGo(entry, m.Text)
 		case AdminPull:
-			return w.adminPull(p, m.Text)
+			return w.adminPull(entry, m.Text)
 		case AdminItem, AdminWeapon, AdminArmor:
 			kind := KindItem
 			if m.Command == AdminWeapon {
@@ -74,19 +75,21 @@ func (w *World) AdminCommand(ctx context.Context, p *Player, m protocol.AdminCom
 			} else if m.Command == AdminArmor {
 				kind = KindArmor
 			}
-			return w.adminGiveItem(p, m.Text, kind, int(m.Int1), int(m.Int2))
+			return w.adminGiveItem(entry, m.Text, kind, int(m.Int1), int(m.Int2))
 		case AdminGold:
-			return w.adminGiveGold(p, m.Text, int(m.Int2))
+			return w.adminGiveGold(entry, m.Text, int(m.Int2))
 		case AdminBanIP, AdminBanAcc:
-			return w.adminBan(p, m.Command, m.Text, int(m.Int1))
+			return w.adminBan(entry, m.Command, m.Text, int(m.Int1))
 		case AdminUnban:
-			return w.adminUnban(p, m.Text)
+			return w.adminUnban(entry, m.Text)
 		case AdminSwitch:
 			id, err := strconv.Atoi(strings.TrimSpace(m.Text))
 			if err != nil || id <= w.opts.MaxPlayerSwitches {
 				return ErrBadAdminCmd
 			}
-			w.setGlobalSwitch(id, m.Int1 == 1)
+			if !w.setGlobalSwitch(id, m.Int1 == 1) {
+				return ErrBadAdminCmd
+			}
 			w.saveGlobalSwitches()
 			return nil
 		case AdminMotd:
@@ -95,19 +98,16 @@ func (w *World) AdminCommand(ctx context.Context, p *Player, m protocol.AdminCom
 			w.broadcastChatColor(w.motd, 17)
 			return nil
 		case AdminMute:
-			target := w.playerByName(m.Text)
-			if target == nil || isAdmin(target) {
+			target := w.onlineByName(m.Text)
+			if target == nil || isAdminEntry(target) {
 				return ErrBadAdminCmd
 			}
 			target.MuteUntil = w.now().Add(adminMuteDelay)
-			w.systemMessage(target, "Você foi silenciado por 30 segundos.", 10)
+			w.systemMessageEntry(target, "Você foi silenciado por 30 segundos.", 10)
 			return nil
 		case AdminMessage:
 			notice := protocol.AdminCommandNotice{Command: AdminMessage, Message: m.Text}
-			for _, other := range w.players {
-				if other == nil {
-					continue
-				}
+			for _, other := range w.online {
 				_ = other.Client.Send(protocol.ServerAdminCommand, notice)
 			}
 			w.broadcastChatColor(m.Text, 17)
@@ -117,11 +117,15 @@ func (w *World) AdminCommand(ctx context.Context, p *Player, m protocol.AdminCom
 	})
 }
 
-func (w *World) systemMessage(p *Player, message string, color uint8) {
-	if p == nil {
+func isAdminEntry(entry *onlineEntry) bool {
+	return entry != nil && entry.Account != nil && entry.Account.GroupID >= 1
+}
+
+func (w *World) systemMessageEntry(entry *onlineEntry, message string, color uint8) {
+	if entry == nil {
 		return
 	}
-	_ = p.Client.Send(protocol.ServerChat, protocol.ChatMessage{Color: color, Message: message})
+	_ = entry.Client.Send(protocol.ServerChat, protocol.ChatMessage{Color: color, Message: message})
 }
 
 func (w *World) broadcastChatColor(message string, color uint8) {
@@ -129,76 +133,121 @@ func (w *World) broadcastChatColor(message string, color uint8) {
 		return
 	}
 	msg := protocol.ChatMessage{Color: color, Message: message}
-	for _, p := range w.players {
-		if p == nil {
-			continue
-		}
-		_ = p.Client.Send(protocol.ServerChat, msg)
+	for _, entry := range w.online {
+		_ = entry.Client.Send(protocol.ServerChat, msg)
 	}
 }
 
-func (w *World) adminKick(admin *Player, name string) error {
-	target := w.playerByName(name)
-	if target == nil || isAdmin(target) {
+func (w *World) adminKick(admin *onlineEntry, name string) error {
+	target := w.onlineByName(name)
+	if target == nil || isAdminEntry(target) {
 		return ErrBadAdminCmd
 	}
-	w.broadcastChatColor(target.Character.Name+" foi expulso.", 10)
-	w.kickNotice(target, AdminKick, "")
+	w.broadcastChatColor(target.Name+" foi expulso.", 10)
+	w.kickNoticeEntry(target, AdminKick, "")
 	return nil
 }
 
-func (w *World) adminTeleport(admin *Player, name string, mapID, x, y int) error {
+func (w *World) adminTeleport(admin *onlineEntry, name string, mapID, x, y int) error {
+	if !w.mapTemplateValid(mapID, x, y) {
+		return ErrBadAdminCmd
+	}
 	if name == "all" {
-		for _, p := range w.players {
-			if p == nil {
-				continue
-			}
+		for _, entry := range w.online {
+			entry := entry
+			w.enqueueMap(entry.Key, func(a *mapActor) {
+				if p := a.playerByID(entry.ID); p != nil {
+					w.transferPlayer(p, mapID, x, y, p.Character.Direction)
+				}
+			})
+		}
+		return nil
+	}
+	target := w.onlineByName(name)
+	if target == nil {
+		return ErrBadAdminCmd
+	}
+	w.enqueueMap(target.Key, func(a *mapActor) {
+		if p := a.playerByID(target.ID); p != nil {
 			w.transferPlayer(p, mapID, x, y, p.Character.Direction)
 		}
-		return nil
-	}
-	target := w.playerByName(name)
-	if target == nil {
-		return ErrBadAdminCmd
-	}
-	if !w.transferPlayer(target, mapID, x, y, target.Character.Direction) {
-		return ErrBadAdminCmd
-	}
+	})
 	return nil
 }
 
-func (w *World) adminGo(admin *Player, name string) error {
-	target := w.playerByName(name)
+func (w *World) adminGo(admin *onlineEntry, name string) error {
+	target := w.onlineByName(name)
 	if target == nil {
 		return ErrBadAdminCmd
 	}
-	if !w.transferPlayer(admin, target.Character.MapID, target.Character.X, target.Character.Y, admin.Character.Direction) {
-		return ErrBadAdminCmd
-	}
+	adminKey := admin.Key
+	adminID := admin.ID
+	w.enqueueMap(target.Key, func(a *mapActor) {
+		p := a.playerByID(target.ID)
+		if p == nil {
+			return
+		}
+		x, y := p.Character.X, p.Character.Y
+		dir := p.Character.Direction
+		_ = w.coordErr(func() error {
+			w.enqueueMap(adminKey, func(adminActor *mapActor) {
+				if adminPlayer := adminActor.playerByID(adminID); adminPlayer != nil {
+					w.transferPlayer(adminPlayer, target.Key.TemplateID, x, y, dir)
+				}
+			})
+			return nil
+		})
+	})
 	return nil
 }
 
-func (w *World) adminPull(admin *Player, name string) error {
+func (w *World) adminPull(admin *onlineEntry, name string) error {
 	if name == "all" {
-		for _, p := range w.players {
-			if p == nil || p == admin {
+		for _, entry := range w.online {
+			if entry.ID == admin.ID {
 				continue
 			}
-			w.transferPlayer(p, admin.Character.MapID, admin.Character.X, admin.Character.Y, p.Character.Direction)
+			w.enqueueMap(entry.Key, func(a *mapActor) {
+				w.pullToAdmin(a, entry, admin)
+			})
 		}
 		return nil
 	}
-	target := w.playerByName(name)
+	target := w.onlineByName(name)
 	if target == nil {
 		return ErrBadAdminCmd
 	}
-	if !w.transferPlayer(target, admin.Character.MapID, admin.Character.X, admin.Character.Y, target.Character.Direction) {
-		return ErrBadAdminCmd
-	}
+	w.enqueueMap(target.Key, func(a *mapActor) {
+		w.pullToAdmin(a, target, admin)
+	})
 	return nil
 }
 
-func (w *World) adminGiveItem(admin *Player, name string, kind, id, amount int) error {
+// pullToAdmin runs on the target's map: it reads the admin position from the
+// admin's map and then transfers the target there.
+func (w *World) pullToAdmin(a *mapActor, target, admin *onlineEntry) {
+	p := a.playerByID(target.ID)
+	if p == nil {
+		return
+	}
+	_ = w.coordErr(func() error {
+		w.enqueueMap(admin.Key, func(adminActor *mapActor) {
+			ap := adminActor.playerByID(admin.ID)
+			if ap == nil {
+				return
+			}
+			x, y := ap.Character.X, ap.Character.Y
+			w.enqueueMap(target.Key, func(targetActor *mapActor) {
+				if tp := targetActor.playerByID(target.ID); tp != nil {
+					w.transferPlayer(tp, admin.Key.TemplateID, x, y, tp.Character.Direction)
+				}
+			})
+		})
+		return nil
+	})
+}
+
+func (w *World) adminGiveItem(admin *onlineEntry, name string, kind, id, amount int) error {
 	if amount == 0 || w.itemKind(kind, id) == nil {
 		return ErrBadAdminCmd
 	}
@@ -207,25 +256,32 @@ func (w *World) adminGiveItem(admin *Player, name string, kind, id, amount int) 
 		return ErrBadAdminCmd
 	}
 	for _, target := range targets {
-		if amount > 0 {
-			if err := addInventoryItem(target.State, w.opts.MaxItems, kind, id, amount); err != nil {
-				w.systemMessage(admin, target.Character.Name+": inventário cheio.", 10)
-				continue
+		target := target
+		w.enqueueMap(target.Key, func(a *mapActor) {
+			p := a.playerByID(target.ID)
+			if p == nil {
+				return
 			}
-			w.sendItemTo(target, kind, id, amount, false, true)
-		} else {
-			if !removeInventoryItem(target.State, kind, id, -amount) {
-				continue
+			if amount > 0 {
+				if err := addInventoryItem(p.State, w.opts.MaxItems, kind, id, amount); err != nil {
+					w.systemMessageEntry(admin, target.Name+": inventário cheio.", 10)
+					return
+				}
+				w.sendItemTo(p, kind, id, amount, false, true)
+			} else {
+				if !removeInventoryItem(p.State, kind, id, -amount) {
+					return
+				}
+				w.sendItemTo(p, kind, id, amount, false, true)
 			}
-			w.sendItemTo(target, kind, id, amount, false, true)
-		}
-		w.saveQuietly(target)
+			w.saveQuietly(p)
+		})
 	}
-	w.systemMessage(admin, "Item entregue.", 5)
+	w.systemMessageEntry(admin, "Item entregue.", 5)
 	return nil
 }
 
-func (w *World) adminGiveGold(admin *Player, name string, amount int) error {
+func (w *World) adminGiveGold(admin *onlineEntry, name string, amount int) error {
 	if amount == 0 {
 		return ErrBadAdminCmd
 	}
@@ -234,43 +290,47 @@ func (w *World) adminGiveGold(admin *Player, name string, amount int) error {
 		return ErrBadAdminCmd
 	}
 	for _, target := range targets {
-		target.Character.Gold = clampInt64(target.Character.Gold+int64(amount), 0, w.opts.MaxGold)
-		_ = target.Client.Send(protocol.ServerGold, protocol.Gold{Amount: int64(amount), Popup: true})
-		w.saveQuietly(target)
+		target := target
+		w.enqueueMap(target.Key, func(a *mapActor) {
+			p := a.playerByID(target.ID)
+			if p == nil {
+				return
+			}
+			p.Character.Gold = clampInt64(p.Character.Gold+int64(amount), 0, w.opts.MaxGold)
+			_ = p.Client.Send(protocol.ServerGold, protocol.Gold{Amount: int64(amount), Popup: true})
+			w.saveQuietly(p)
+		})
 	}
-	w.systemMessage(admin, "Ouro entregue.", 5)
+	w.systemMessageEntry(admin, "Ouro entregue.", 5)
 	return nil
 }
 
-func (w *World) adminTargets(name string) []*Player {
+func (w *World) adminTargets(name string) []*onlineEntry {
 	if name == "all" {
-		out := make([]*Player, 0, len(w.players))
-		for _, p := range w.players {
-			if p == nil {
-				continue
-			}
-			out = append(out, p)
+		out := make([]*onlineEntry, 0, len(w.online))
+		for _, entry := range w.online {
+			out = append(out, entry)
 		}
 		return out
 	}
-	if target := w.playerByName(name); target != nil {
-		return []*Player{target}
+	if target := w.onlineByName(name); target != nil {
+		return []*onlineEntry{target}
 	}
 	return nil
 }
 
-func (w *World) adminBan(admin *Player, command uint8, name string, days int) error {
+func (w *World) adminBan(admin *onlineEntry, command uint8, name string, days int) error {
 	if days <= 0 {
 		days = 1
 	}
 	expires := w.now().Unix() + int64(days)*86400
-	target := w.playerByName(name)
+	target := w.onlineByName(name)
 	kind := "account"
 	value := ""
 	var accountID int64
 	var ip string
 	if target != nil {
-		if isAdmin(target) {
+		if isAdminEntry(target) {
 			return ErrBadAdminCmd
 		}
 		accountID = target.Account.ID
@@ -299,22 +359,22 @@ func (w *World) adminBan(admin *Player, command uint8, name string, days int) er
 		w.log.Error("save ban", "err", err)
 		return err
 	}
-	for _, other := range w.players {
-		if other == nil || isAdmin(other) {
+	for _, other := range w.online {
+		if isAdminEntry(other) {
 			continue
 		}
 		if kind == "account" && other.Account.ID == accountID {
-			w.kickNotice(other, AdminBanAcc, "")
+			w.kickNoticeEntry(other, AdminBanAcc, "")
 		}
 		if kind == "ip" && ip != "" && other.IP == ip {
-			w.kickNotice(other, AdminBanIP, "")
+			w.kickNoticeEntry(other, AdminBanIP, "")
 		}
 	}
 	w.broadcastChatColor(name+" foi banido por "+strconv.Itoa(days)+" dia(s).", 10)
 	return nil
 }
 
-func (w *World) adminUnban(admin *Player, text string) error {
+func (w *World) adminUnban(admin *onlineEntry, text string) error {
 	text = strings.TrimSpace(text)
 	if text == "" {
 		return ErrBadAdminCmd
@@ -335,16 +395,16 @@ func (w *World) adminUnban(admin *Player, text string) error {
 	if strings.Contains(text, ".") || strings.Contains(text, ":") {
 		_ = w.opts.Store.DeleteBan(context.Background(), "ip", text)
 	}
-	if target := w.playerByName(text); target != nil {
+	if target := w.onlineByName(text); target != nil {
 		_ = w.opts.Store.DeleteBan(context.Background(), "account", strconv.FormatInt(target.Account.ID, 10))
 	}
-	w.systemMessage(admin, "Banimento removido.", 5)
+	w.systemMessageEntry(admin, "Banimento removido.", 5)
 	return nil
 }
 
-// kickNotice sends the admin notification, then closes the connection after a
-// short delay so the client can display the alert.
-func (w *World) kickNotice(target *Player, command uint8, message string) {
+// kickNoticeEntry sends the admin notification, then closes the connection
+// after a short delay so the client can display the alert.
+func (w *World) kickNoticeEntry(target *onlineEntry, command uint8, message string) {
 	_ = target.Client.Send(protocol.ServerAdminCommand, protocol.AdminCommandNotice{Command: command, Message: message})
 	client := target.Client
 	time.AfterFunc(adminKickDelay, func() { _ = client.Close() })
@@ -355,4 +415,17 @@ func (w *World) sendMOTD(p *Player) {
 	if w.motd != "" {
 		w.systemMessage(p, w.motd, 17)
 	}
+}
+
+func (w *World) sendMOTDText(p *Player, motd string) {
+	if motd != "" {
+		_ = p.Client.Send(protocol.ServerChat, protocol.ChatMessage{Color: 17, Message: motd})
+	}
+}
+
+func (w *World) systemMessage(p *Player, message string, color uint8) {
+	if p == nil {
+		return
+	}
+	_ = p.Client.Send(protocol.ServerChat, protocol.ChatMessage{Color: color, Message: message})
 }

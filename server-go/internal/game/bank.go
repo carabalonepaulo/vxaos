@@ -11,7 +11,12 @@ import (
 // returns false when the bank cannot be loaded.
 func (w *World) openBank(p *Player) bool {
 	if p.Bank == nil {
-		bank, err := w.opts.Store.GetBank(context.Background(), p.Account.ID)
+		var bank *store.BankState
+		err := w.coordErr(func() error {
+			var loadErr error
+			bank, loadErr = w.opts.Store.GetBank(context.Background(), p.Account.ID)
+			return loadErr
+		})
 		if err != nil {
 			w.log.Error("load bank", "account", p.Account.ID, "err", err)
 			return false
@@ -70,10 +75,7 @@ func bankKindEntries(bank *store.BankState, kind int) int {
 // BankItem moves a stack between the inventory and the bank. Positive amounts
 // are deposits, negative amounts withdrawals.
 func (w *World) BankItem(ctx context.Context, p *Player, itemID uint16, kind uint8, amount int16) error {
-	return w.do(ctx, func() error {
-		if w.playerByID(p.ID) != p || !p.BankOpen || p.Bank == nil {
-			return ErrNotInGame
-		}
+	return w.onPlayer(ctx, p.ID, func(ms *mapState, p *Player) error {
 		k := int(kind)
 		id := int(itemID)
 		if amount == 0 || k < KindItem || k > KindArmor || w.itemKind(k, id) == nil {
@@ -114,10 +116,7 @@ func (w *World) BankItem(ctx context.Context, p *Player, itemID uint16, kind uin
 // BankGold moves gold between the player and the bank. Positive amounts are
 // deposits, negative amounts withdrawals.
 func (w *World) BankGold(ctx context.Context, p *Player, amount int32) error {
-	return w.do(ctx, func() error {
-		if w.playerByID(p.ID) != p || !p.BankOpen || p.Bank == nil {
-			return ErrNotInGame
-		}
+	return w.onPlayer(ctx, p.ID, func(ms *mapState, p *Player) error {
 		if amount == 0 {
 			return nil
 		}
@@ -206,6 +205,16 @@ func compactStacks(items []store.ItemStack) []store.ItemStack {
 
 func (w *World) saveBankQuietly(p *Player) {
 	if p.Bank == nil {
+		return
+	}
+	if w.opts.InlineMaps {
+		if err := w.opts.Store.SaveBank(context.Background(), p.Account.ID, p.Bank); err != nil {
+			w.log.Error("save bank", "account", p.Account.ID, "err", err)
+		}
+		return
+	}
+	if w.persist != nil {
+		w.persist.queueBank(p.Account.ID, p.Bank)
 		return
 	}
 	if err := w.opts.Store.SaveBank(context.Background(), p.Account.ID, p.Bank); err != nil {

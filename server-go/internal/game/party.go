@@ -34,27 +34,35 @@ func (w *World) partyByID(id int) *partyState {
 	return w.parties[id]
 }
 
-func (w *World) partyOnline(party *partyState) []*Player {
+func (w *World) partyEntries(party *partyState) []*onlineEntry {
 	if party == nil {
 		return nil
 	}
-	out := make([]*Player, 0, len(party.Members))
+	out := make([]*onlineEntry, 0, len(party.Members))
 	for _, id := range party.Members {
-		if p := w.playerByID(id); p != nil {
-			out = append(out, p)
+		if entry := w.online[id]; entry != nil {
+			out = append(out, entry)
 		}
 	}
 	return out
 }
 
+// partyMembersOnMap returns the killer plus party members present on the same
+// map actor. It never reads another map's runtime.
 func (w *World) partyMembersOnMap(p *Player) []*Player {
-	party := w.partyByID(p.PartyID)
-	if party == nil {
+	if p == nil {
+		return nil
+	}
+	ms := p.ms
+	if ms == nil {
 		return []*Player{p}
 	}
-	out := make([]*Player, 0, len(party.Members))
-	for _, member := range w.partyOnline(party) {
-		if member.Character.MapID == p.Character.MapID {
+	out := make([]*Player, 0, 4)
+	for _, member := range ms.players {
+		if member == nil {
+			continue
+		}
+		if member == p || (p.PartyID != 0 && member.PartyID == p.PartyID) {
 			out = append(out, member)
 		}
 	}
@@ -64,53 +72,68 @@ func (w *World) partyMembersOnMap(p *Player) []*Player {
 	return out
 }
 
-func (w *World) createParty(leader *Player) *partyState {
+func (w *World) createPartyEntry(leader *onlineEntry) *partyState {
 	party := &partyState{ID: w.nextPartyID, Members: []uint16{leader.ID}}
 	w.nextPartyID++
 	w.parties[party.ID] = party
 	leader.PartyID = party.ID
+	w.patchSocial(leader.ID, func(p *Player) { p.PartyID = party.ID })
 	return party
 }
 
-// PlayerRequest dispatches a target-HUD invitation.
+// PlayerRequest dispatches a target-HUD invitation. Range checks happen on the
+// map actor that owns both players; the social state stays on the coordinator.
 func (w *World) PlayerRequest(ctx context.Context, p *Player, typ uint8, targetID uint16) error {
-	return w.do(ctx, func() error {
-		if w.playerByID(p.ID) != p {
-			return ErrNotInGame
-		}
+	return w.onPlayer(ctx, p.ID, func(ms *mapState, p *Player) error {
 		if typ == requestFinishTrade {
 			return w.requestFinishTradeLocked(p)
 		}
-		target := w.playerByID(targetID)
+		target := ms.playerByID(targetID)
+		if typ == requestGuild {
+			var err error
+			_ = w.coordErr(func() error {
+				err = w.inviteGuildEntry(w.online[p.ID], targetID)
+				return err
+			})
+			return err
+		}
 		if target == nil || target == p {
 			return ErrInvalidTarget
 		}
 		switch typ {
 		case requestParty:
-			return w.invitePartyLocked(p, target)
+			if err := w.checkInviteRange(p, target); err != nil {
+				return err
+			}
+			var err error
+			_ = w.coordErr(func() error {
+				err = w.invitePartyEntry(w.online[p.ID], w.online[target.ID])
+				return err
+			})
+			return err
 		case requestFriend:
-			return w.inviteFriendLocked(p, target)
+			if err := w.checkInviteRange(p, target); err != nil {
+				return err
+			}
+			var err error
+			_ = w.coordErr(func() error {
+				err = w.inviteFriendEntry(w.online[p.ID], w.online[target.ID])
+				return err
+			})
+			return err
 		case requestTrade:
+			if err := w.checkInviteRange(p, target); err != nil {
+				return err
+			}
 			return w.inviteTradeLocked(p, target)
-		case requestGuild:
-			return w.inviteGuildLocked(p, target.Character.Name)
 		default:
 			return ErrUnsupported
 		}
 	})
 }
 
-// invitePartyLocked validates and queues a party invitation.
-func (w *World) invitePartyLocked(p, target *Player) error {
-	if target.PartyID != 0 {
-		return ErrInParty
-	}
-	if p.PartyID != 0 {
-		if party := w.partyByID(p.PartyID); party != nil && len(party.Members) >= w.opts.MaxPartyMembers {
-			return ErrPartyFull
-		}
-	}
-	if target.Character.MapID != p.Character.MapID {
+func (w *World) checkInviteRange(p, target *Player) error {
+	if p == nil || target == nil || p.ms != target.ms {
 		return ErrPartyRange
 	}
 	dx := target.Character.X - p.Character.X
@@ -124,88 +147,92 @@ func (w *World) invitePartyLocked(p, target *Player) error {
 	if dx > 10 || dy > 10 {
 		return ErrPartyRange
 	}
-	target.Request = &pendingRequest{Type: requestParty, FromID: p.ID}
+	return nil
+}
+
+func (w *World) invitePartyEntry(from, target *onlineEntry) error {
+	if from == nil || target == nil {
+		return ErrInvalidTarget
+	}
+	if target.PartyID != 0 {
+		return ErrInParty
+	}
+	if from.PartyID != 0 {
+		if party := w.partyByID(from.PartyID); party != nil && len(party.Members) >= w.opts.MaxPartyMembers {
+			return ErrPartyFull
+		}
+	}
+	req := &pendingRequest{Type: requestParty, FromID: from.ID}
+	target.Request = req
+	w.patchSocial(target.ID, func(p *Player) { p.Request = cloneRequest(req) })
 	_ = target.Client.Send(protocol.ServerRequest, protocol.PlayerRequest{
-		Type: requestParty, FromID: p.ID,
-		Text: fmt.Sprintf("%s te convidou para o grupo.", p.Character.Name),
+		Type: requestParty, FromID: from.ID,
+		Text: fmt.Sprintf("%s te convidou para o grupo.", from.Name),
 	})
 	return nil
 }
 
-// acceptPartyLocked adds the accepting player to the inviter's party.
-func (w *World) acceptPartyLocked(p, from *Player) error {
-	if p.PartyID != 0 {
+func (w *World) acceptPartyEntry(accepting, from *onlineEntry) error {
+	if accepting == nil || from == nil {
+		return ErrNotInGame
+	}
+	if accepting.PartyID != 0 {
 		return ErrInParty
 	}
 	party := w.partyByID(from.PartyID)
 	if party == nil {
-		party = w.createParty(from)
+		party = w.createPartyEntry(from)
 	}
 	if len(party.Members) >= w.opts.MaxPartyMembers {
 		return ErrPartyFull
 	}
-	join := w.partyJoinMessage(p)
-	for _, member := range w.partyOnline(party) {
+	join := partyJoinFromView(accepting.View)
+	for _, member := range w.partyEntries(party) {
 		_ = member.Client.Send(protocol.ServerPartyJoin, join)
-		_ = p.Client.Send(protocol.ServerPartyJoin, w.partyJoinMessage(member))
+		_ = accepting.Client.Send(protocol.ServerPartyJoin, partyJoinFromView(member.View))
 	}
-	party.Members = append(party.Members, p.ID)
-	p.PartyID = party.ID
-	w.partyChat(party, fmt.Sprintf("%s entrou no grupo.", p.Character.Name))
+	party.Members = append(party.Members, accepting.ID)
+	accepting.PartyID = party.ID
+	w.patchSocial(accepting.ID, func(p *Player) { p.PartyID = party.ID })
+	msg := protocol.ChatMessage{Color: 2, Message: fmt.Sprintf("%s entrou no grupo.", accepting.Name)}
+	for _, member := range w.partyEntries(party) {
+		_ = member.Client.Send(protocol.ServerChat, msg)
+	}
 	return nil
 }
 
-// LeaveParty removes the player from the party. The last member dissolves it.
-func (w *World) LeaveParty(ctx context.Context, p *Player) error {
-	return w.do(ctx, func() error {
-		if w.playerByID(p.ID) != p {
-			return ErrNotInGame
-		}
-		w.leavePartyLocked(p)
-		return nil
-	})
+func partyViewOf(p *Player) partyView {
+	v := partyView{
+		ID:             p.ID,
+		Name:           p.Character.Name,
+		CharacterName:  p.Character.CharacterName,
+		CharacterIndex: p.Character.CharacterIndex,
+		Sex:            p.Character.Sex,
+		Level:          p.Character.Level,
+		ClassID:        p.Character.ClassID,
+		HP:             p.Character.HP,
+		MHP:            p.Character.MHP,
+		EXP:            p.Character.Exp,
+	}
+	for i := 0; i < len(v.Equips) && i < len(p.State.Equips); i++ {
+		v.Equips[i] = uint16(clampInt(p.State.Equips[i], 0, 65535))
+	}
+	return v
 }
 
-func (w *World) leavePartyLocked(p *Player) {
-	party := w.partyByID(p.PartyID)
-	if party == nil {
-		p.PartyID = 0
-		return
+func partyJoinFromView(v partyView) protocol.PartyJoin {
+	join := protocol.PartyJoin{
+		PlayerID:       v.ID,
+		Name:           v.Name,
+		CharacterName:  v.CharacterName,
+		CharacterIndex: uint8(clampInt(v.CharacterIndex, 0, 255)),
+		Sex:            uint8(clampInt(v.Sex, 0, 255)),
+		HP:             int32(v.HP),
+		EXP:            int32(v.EXP),
+		Equips:         v.Equips,
+		MHP:            int32(v.MHP),
 	}
-	_ = p.Client.Send(protocol.ServerPartyDissolve, protocol.PartyDissolve{})
-	remaining := party.Members[:0]
-	for _, id := range party.Members {
-		if id != p.ID {
-			remaining = append(remaining, id)
-		}
-	}
-	party.Members = remaining
-	p.PartyID = 0
-	if len(party.Members) == 1 {
-		last := w.playerByID(party.Members[0])
-		if last != nil {
-			_ = last.Client.Send(protocol.ServerPartyDissolve, protocol.PartyDissolve{})
-			last.PartyID = 0
-		}
-		delete(w.parties, party.ID)
-		return
-	}
-	if len(party.Members) == 0 {
-		delete(w.parties, party.ID)
-		return
-	}
-	for _, id := range party.Members {
-		if member := w.playerByID(id); member != nil {
-			_ = member.Client.Send(protocol.ServerPartyLeave, protocol.PartyLeave{PlayerID: p.ID})
-		}
-	}
-}
-
-func (w *World) partyChat(party *partyState, message string) {
-	msg := protocol.ChatMessage{Color: 2, Message: message}
-	for _, member := range w.partyOnline(party) {
-		_ = member.Client.Send(protocol.ServerChat, msg)
-	}
+	return join
 }
 
 func (w *World) partyJoinMessage(p *Player) protocol.PartyJoin {
@@ -226,6 +253,76 @@ func (w *World) partyJoinMessage(p *Player) protocol.PartyJoin {
 		join.MHP = int32(class.ParamAt(0, p.Character.Level))
 	}
 	return join
+}
+
+// LeaveParty removes the player from the party on the coordinator.
+func (w *World) LeaveParty(ctx context.Context, p *Player) error {
+	return w.do(ctx, func() error {
+		entry := w.online[p.ID]
+		if entry == nil {
+			return ErrNotInGame
+		}
+		w.leavePartyEntry(entry)
+		return nil
+	})
+}
+
+func (w *World) leavePartyEntry(entry *onlineEntry) {
+	if entry == nil {
+		return
+	}
+	party := w.partyByID(entry.PartyID)
+	if party == nil {
+		entry.PartyID = 0
+		w.patchSocial(entry.ID, func(p *Player) { p.PartyID = 0 })
+		return
+	}
+	_ = entry.Client.Send(protocol.ServerPartyDissolve, protocol.PartyDissolve{})
+	remaining := party.Members[:0]
+	for _, id := range party.Members {
+		if id != entry.ID {
+			remaining = append(remaining, id)
+		}
+	}
+	party.Members = remaining
+	entry.PartyID = 0
+	w.patchSocial(entry.ID, func(p *Player) { p.PartyID = 0 })
+	if len(party.Members) == 1 {
+		last := w.online[party.Members[0]]
+		if last != nil {
+			_ = last.Client.Send(protocol.ServerPartyDissolve, protocol.PartyDissolve{})
+			last.PartyID = 0
+			w.patchSocial(last.ID, func(p *Player) { p.PartyID = 0 })
+		}
+		delete(w.parties, party.ID)
+		return
+	}
+	if len(party.Members) == 0 {
+		delete(w.parties, party.ID)
+		return
+	}
+	msg := protocol.PartyLeave{PlayerID: entry.ID}
+	for _, id := range party.Members {
+		if member := w.online[id]; member != nil {
+			_ = member.Client.Send(protocol.ServerPartyLeave, msg)
+		}
+	}
+}
+
+// leavePartyLocked is kept for inline tests and inline leave.
+func (w *World) leavePartyLocked(p *Player) {
+	if entry := w.online[p.ID]; entry != nil {
+		w.leavePartyEntry(entry)
+		return
+	}
+	p.PartyID = 0
+}
+
+func (w *World) partyChat(party *partyState, message string) {
+	msg := protocol.ChatMessage{Color: 2, Message: message}
+	for _, member := range w.partyEntries(party) {
+		_ = member.Client.Send(protocol.ServerChat, msg)
+	}
 }
 
 func (w *World) class(id int) *rpg.Class {

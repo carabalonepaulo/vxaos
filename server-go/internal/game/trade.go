@@ -74,8 +74,8 @@ func (w *World) openTradeLocked(p, from *Player) error {
 
 // TradeItem adds or removes an offered item.
 func (w *World) TradeItem(ctx context.Context, p *Player, itemID uint16, kind uint8, amount int16) error {
-	return w.do(ctx, func() error {
-		if w.playerByID(p.ID) != p || p.Trade == nil {
+	return w.onPlayer(ctx, p.ID, func(ms *mapState, p *Player) error {
+		if p.Trade == nil {
 			return ErrNotInTrade
 		}
 		k := int(kind)
@@ -121,8 +121,8 @@ func (w *World) TradeItem(ctx context.Context, p *Player, itemID uint16, kind ui
 
 // TradeGold adds or removes offered gold.
 func (w *World) TradeGold(ctx context.Context, p *Player, amount int32) error {
-	return w.do(ctx, func() error {
-		if w.playerByID(p.ID) != p || p.Trade == nil {
+	return w.onPlayer(ctx, p.ID, func(ms *mapState, p *Player) error {
+		if p.Trade == nil {
 			return ErrNotInTrade
 		}
 		if amount == 0 {
@@ -145,14 +145,16 @@ func (w *World) TradeGold(ctx context.Context, p *Player, amount int32) error {
 
 // RequestFinishTrade asks the partner to confirm the trade.
 func (w *World) RequestFinishTrade(ctx context.Context, p *Player) error {
-	return w.do(ctx, func() error { return w.requestFinishTradeLocked(p) })
+	return w.onPlayer(ctx, p.ID, func(ms *mapState, p *Player) error {
+		return w.requestFinishTradeLocked(p)
+	})
 }
 
 func (w *World) requestFinishTradeLocked(p *Player) error {
-	if w.playerByID(p.ID) != p || p.Trade == nil {
+	if p.ms.playerByID(p.ID) != p || p.Trade == nil {
 		return ErrNotInTrade
 	}
-	partner := w.playerByID(p.Trade.Partner)
+	partner := p.ms.playerByID(p.Trade.Partner)
 	if partner == nil || partner.Trade == nil {
 		return ErrNotInTrade
 	}
@@ -244,7 +246,7 @@ func (w *World) closeTradeLocked(p *Player) {
 	if p.Trade == nil {
 		return
 	}
-	partner := w.playerByID(p.Trade.Partner)
+	partner := p.ms.playerByID(p.Trade.Partner)
 	_ = p.Client.Send(protocol.ServerWindowClose, protocol.WindowClose{})
 	p.Trade = nil
 	if partner != nil && partner.Trade != nil {
@@ -258,7 +260,7 @@ func (w *World) broadcastTrade(p *Player, op protocol.ServerOp, msg protocol.Ser
 		return
 	}
 	_ = p.Client.Send(op, msg)
-	if partner := w.playerByID(p.Trade.Partner); partner != nil {
+	if partner := p.ms.playerByID(p.Trade.Partner); partner != nil {
 		_ = partner.Client.Send(op, msg)
 	}
 }

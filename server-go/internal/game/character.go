@@ -129,10 +129,7 @@ func (w *World) skill(id int) *rpg.Skill {
 // Equip changes one equipment slot. itemID 0 unequips. The item may come from
 // the inventory or from another equipment slot.
 func (w *World) Equip(ctx context.Context, p *Player, slot uint8, itemID uint16) error {
-	return w.do(ctx, func() error {
-		if w.playerByID(p.ID) != p {
-			return ErrNotInGame
-		}
+	return w.onPlayer(ctx, p.ID, func(ms *mapState, p *Player) error {
 		w.ensureEquipSlots(p)
 		s := int(slot)
 		if s < 0 || s >= w.opts.MaxEquips {
@@ -249,15 +246,12 @@ func canAddInventoryItem(st *store.CharacterState, maxItems, kind, id int) bool 
 }
 
 func (w *World) isVIP(p *Player) bool {
-	return p.Account.VIPUntil > w.now().Unix()
+	return p.vipActive(w.now().Unix())
 }
 
 // SetHotbar stores an item or skill in one hotbar slot. Type 0 clears it.
 func (w *World) SetHotbar(ctx context.Context, p *Player, slot, typ uint8, itemID uint16) error {
-	return w.do(ctx, func() error {
-		if w.playerByID(p.ID) != p {
-			return ErrNotInGame
-		}
+	return w.onPlayer(ctx, p.ID, func(ms *mapState, p *Player) error {
 		w.ensureHotbar(p)
 		s := int(slot)
 		if s < 0 || s >= w.opts.MaxHotbar {
@@ -287,10 +281,7 @@ func (w *World) SetHotbar(ctx context.Context, p *Player, slot, typ uint8, itemI
 
 // SpendPoint converts one creation point into a permanent parameter bonus.
 func (w *World) SpendPoint(ctx context.Context, p *Player, paramID uint8) error {
-	return w.do(ctx, func() error {
-		if w.playerByID(p.ID) != p {
-			return ErrNotInGame
-		}
+	return w.onPlayer(ctx, p.ID, func(ms *mapState, p *Player) error {
 		param := int(paramID)
 		if param < 0 || param > 7 {
 			return ErrInvalidParam
@@ -351,7 +342,7 @@ func (w *World) broadcastEquip(p *Player, slot, id int) {
 }
 
 func (w *World) broadcastToMap(p *Player, op protocol.ServerOp, msg protocol.ServerMessage) {
-	ms := w.maps[p.Character.MapID]
+	ms := p.ms
 	if ms == nil {
 		return
 	}
@@ -366,7 +357,5 @@ func (w *World) broadcastToMap(p *Player, op protocol.ServerOp, msg protocol.Ser
 }
 
 func (w *World) saveQuietly(p *Player) {
-	if err := w.saveLocked(p); err != nil {
-		w.log.Error("save character", "player", p.ID, "err", err)
-	}
+	w.queueSave(p)
 }

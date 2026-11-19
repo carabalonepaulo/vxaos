@@ -243,8 +243,16 @@ func TestLoginSelectMoveChatLogout(t *testing.T) {
 	if op != protocol.ServerLogout {
 		t.Fatalf("logout op = %d", op)
 	}
-	// Leave is synchronous, so the database already has the move.
-	got, _, err := st.GetCharacter(context.Background(), characterID)
+	// Leave hands the snapshot to the persistence worker.
+	var got *store.Character
+	deadline := time.Now().Add(2 * time.Second)
+	for time.Now().Before(deadline) {
+		got, _, err = st.GetCharacter(context.Background(), characterID)
+		if err == nil && got.X == 22 && got.Y == 12 {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -394,7 +402,16 @@ func TestEquipHotbarPoints(t *testing.T) {
 	if vitals.HP <= 0 || points.Value != enter.Player.Points-1 {
 		t.Fatalf("vitals=%+v points=%+v", vitals, points)
 	}
-	savedChar, _, err := st.GetCharacter(context.Background(), characterID)
+	var savedChar *store.Character
+	var err error
+	deadline := time.Now().Add(2 * time.Second)
+	for time.Now().Before(deadline) {
+		savedChar, _, err = st.GetCharacter(context.Background(), characterID)
+		if err == nil && savedChar.Points == int(enter.Player.Points-1) && savedChar.MHP == int(enter.Player.MHP+10) {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -708,7 +725,15 @@ func TestCombatMessages(t *testing.T) {
 	if !gotAttack || !gotVitals || !gotItem || !gotAnimation {
 		t.Fatalf("item frames attack=%v vitals=%v item=%v animation=%v", gotAttack, gotVitals, gotItem, gotAnimation)
 	}
-	saved, _, err := st.GetCharacter(ctx, characterID)
+	deadline := time.Now().Add(2 * time.Second)
+	var saved *store.Character
+	for time.Now().Before(deadline) {
+		saved, _, err = st.GetCharacter(ctx, characterID)
+		if err == nil && saved.HP > 1 {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
 	if err != nil {
 		t.Fatal(err)
 	}

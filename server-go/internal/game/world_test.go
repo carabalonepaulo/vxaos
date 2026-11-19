@@ -82,6 +82,7 @@ func testWorld(t *testing.T) (*World, *store.Store) {
 		Tick:         time.Hour,
 		SaveInterval: time.Hour,
 		Quests:       quests,
+		InlineMaps:   true,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -172,7 +173,10 @@ func TestJoinMoveChatLeave(t *testing.T) {
 	if len(p2.Client.(*fakeClient).find(protocol.ServerMapChat)) != 1 {
 		t.Fatal("p2 did not receive map chat")
 	}
-	p1.lastChat = time.Time{}
+	_ = w.do(ctx, func() error {
+		w.online[p1.ID].LastChat = time.Time{}
+		return nil
+	})
 	if err := w.Chat(ctx, p1, 1, "global", ""); err != nil {
 		t.Fatal(err)
 	}

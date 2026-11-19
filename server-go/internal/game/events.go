@@ -54,7 +54,7 @@ func (w *World) startEvents(p *Player) {
 	if p.Event != nil {
 		return
 	}
-	ms := w.maps[p.Character.MapID]
+	ms := p.ms
 	if ms == nil {
 		return
 	}
@@ -140,6 +140,9 @@ func (w *World) switchValue(p *Player, id int) bool {
 		return false
 	}
 	if id > w.opts.MaxPlayerSwitches {
+		if p.ms != nil {
+			return p.ms.globalSwitchValue(w, id)
+		}
 		return w.globalSwitchValue(id)
 	}
 	index := id - 1
@@ -506,10 +509,7 @@ func (w *World) sendEventRange(p *Player, eventID, initial, final int) {
 
 // EventNext resumes a message window.
 func (w *World) EventNext(ctx context.Context, p *Player) error {
-	return w.do(ctx, func() error {
-		if w.playerByID(p.ID) != p {
-			return ErrNotInGame
-		}
+	return w.onPlayer(ctx, p.ID, func(ms *mapState, p *Player) error {
 		if p.Event == nil || !p.Event.waitingMessage {
 			return nil
 		}
@@ -521,10 +521,7 @@ func (w *World) EventNext(ctx context.Context, p *Player) error {
 
 // EventChoice resumes a choice or number/item input.
 func (w *World) EventChoice(ctx context.Context, p *Player, index int32) error {
-	return w.do(ctx, func() error {
-		if w.playerByID(p.ID) != p {
-			return ErrNotInGame
-		}
+	return w.onPlayer(ctx, p.ID, func(ms *mapState, p *Player) error {
 		if p.Event == nil || !p.Event.waitingChoice || len(p.Event.frames) == 0 {
 			return nil
 		}
@@ -547,9 +544,29 @@ func (w *World) EventChoice(ctx context.Context, p *Player, index int32) error {
 	})
 }
 
+// tickEvents is the inline/test compatibility wrapper.
 func (w *World) tickEvents() {
 	now := w.now()
-	for _, p := range w.players {
+	for _, ms := range w.maps {
+		if ms != nil {
+			w.tickEventsMap(ms, now)
+		}
+	}
+}
+
+// tickAutoruns is the inline/test compatibility wrapper.
+func (w *World) tickAutoruns() {
+	now := w.now()
+	for _, ms := range w.maps {
+		if ms != nil {
+			w.tickAutorunsMap(ms, now)
+		}
+	}
+}
+
+// tickEventsMap advances event timers for the players on this map.
+func (w *World) tickEventsMap(ms *mapState, now time.Time) {
+	for _, p := range ms.players {
 		if p == nil {
 			continue
 		}
@@ -561,55 +578,49 @@ func (w *World) tickEvents() {
 	}
 }
 
-// tickAutoruns advances map-level parallel/autorun processes. Only pages whose
-// conditions are global may run here, so one runner per map is enough.
-func (w *World) tickAutoruns() {
-	now := w.now()
-	for _, ms := range w.maps {
-		if ms == nil {
+// tickAutorunsMap advances map-level parallel/autorun processes. Only pages
+// whose conditions are global may run here, so one runner per map is enough.
+func (w *World) tickAutorunsMap(ms *mapState, now time.Time) {
+	var p *Player
+	for _, candidate := range ms.players {
+		if candidate == nil {
 			continue
 		}
-		var p *Player
-		for _, candidate := range ms.players {
-			if candidate == nil {
-				continue
-			}
-			p = candidate
-			break
+		p = candidate
+		break
+	}
+	if p == nil {
+		return
+	}
+	if ms.autorun != nil {
+		if !ms.autorun.waitUntil.IsZero() && now.Before(ms.autorun.waitUntil) {
+			return
 		}
-		if p == nil {
+		ms.autorun.waitUntil = time.Time{}
+		w.runAutorun(ms, p)
+		return
+	}
+	for _, event := range ms.events {
+		if event == nil {
 			continue
 		}
-		if ms.autorun != nil {
-			if !ms.autorun.waitUntil.IsZero() && now.Before(ms.autorun.waitUntil) {
-				continue
-			}
-			ms.autorun.waitUntil = time.Time{}
-			w.runAutorun(ms, p)
+		page := w.globalPage(ms, event)
+		if page == nil || (page.Trigger != 3 && page.Trigger != 4) || len(page.List) == 0 {
 			continue
 		}
-		for _, event := range ms.events {
-			if event == nil {
-				continue
-			}
-			page := w.globalPage(event)
-			if page == nil || (page.Trigger != 3 && page.Trigger != 4) || len(page.List) == 0 {
-				continue
-			}
-			ms.autorun = &autorunState{
+		ms.autorun = &autorunState{
+			eventID: event.ID,
+			run: &eventRun{frames: []*eventFrame{{
 				eventID: event.ID,
-				run: &eventRun{frames: []*eventFrame{{
-					eventID: event.ID,
-					list:    page.List,
-					branch:  make(map[int]bool),
-					choice:  make(map[int]int),
-				}}},
-			}
-			break
+				list:    page.List,
+				branch:  make(map[int]bool),
+				choice:  make(map[int]int),
+			}}},
 		}
-		if ms.autorun != nil {
-			w.runAutorun(ms, p)
-		}
+		break
+	}
+	if ms.autorun != nil {
+		w.runAutorun(ms, p)
 	}
 }
 
@@ -754,7 +765,7 @@ func (w *World) evalScriptCondition(p *Player, text string) bool {
 	case strings.Contains(text, "@client.standard?"):
 		return p.Account != nil && p.Account.GroupID == 0
 	case strings.Contains(text, "@client.vip?"):
-		return p.Account != nil && p.Account.VIPUntil > w.now().Unix()
+		return p.vipActive(w.now().Unix())
 	}
 	if match := questInProgressRE.FindStringSubmatch(text); match != nil {
 		id, _ := strconv.Atoi(match[1])
@@ -873,7 +884,7 @@ func (w *World) applySwitchChange(p *Player, cmd *rpg.EventCommand) {
 			continue
 		}
 		if id > w.opts.MaxPlayerSwitches {
-			globalChanged = w.setGlobalSwitch(id, value == 0) || globalChanged
+			globalChanged = w.mapSetGlobalSwitch(p, id, value == 0) || globalChanged
 			continue
 		}
 		index := id - 1
@@ -884,7 +895,7 @@ func (w *World) applySwitchChange(p *Player, cmd *rpg.EventCommand) {
 		_ = p.Client.Send(protocol.ServerSwitch, protocol.Switch{ID: uint16(clampInt(id, 0, 65535)), Value: value == 0})
 	}
 	if globalChanged {
-		w.saveGlobalSwitches()
+		_ = w.coordErr(func() error { w.saveGlobalSwitches(); return nil })
 	}
 }
 
@@ -1034,10 +1045,7 @@ func (w *World) transferFromEvent(p *Player, cmd *rpg.EventCommand) bool {
 
 // Teleport moves the player to a destination chosen in the teleport window.
 func (w *World) Teleport(ctx context.Context, p *Player, index uint8) error {
-	return w.do(ctx, func() error {
-		if w.playerByID(p.ID) != p {
-			return ErrNotInGame
-		}
+	return w.onPlayer(ctx, p.ID, func(ms *mapState, p *Player) error {
 		group := p.TeleportGroup
 		selected := -1
 		var destination Teleport
@@ -1070,16 +1078,104 @@ func (w *World) Teleport(ctx context.Context, p *Player, index uint8) error {
 	})
 }
 
-// transferPlayer moves one player between maps and synchronizes both maps.
+// transferPlayer moves one player between maps. Inline mode keeps the same
+// object graph (single goroutine); production hands off an immutable snapshot.
 func (w *World) transferPlayer(p *Player, mapID, x, y, direction int) bool {
+	if !w.mapTemplateValid(mapID, x, y) {
+		return false
+	}
+	if w.opts.InlineMaps {
+		return w.transferInline(p, mapID, x, y, direction)
+	}
+	old := p.ms
+	if old == nil || p.actor == nil {
+		return false
+	}
+	if old.key.TemplateID == mapID && old.key.InstanceID == 0 {
+		p.Character.X, p.Character.Y = x, y
+		if direction > 0 {
+			p.Character.Direction = direction
+		}
+		p.TargetType, p.TargetID = 0, 0
+		_ = p.Client.Send(protocol.ServerTransfer, protocol.Transfer{
+			MapID: uint16(mapID), X: uint16(x), Y: uint16(y), Direction: uint8(direction),
+		})
+		return true
+	}
+	snap := p.actor.detach(p.ID, true)
+	if snap == nil {
+		return false
+	}
+	snap.Character.MapID = mapID
+	snap.Character.X, snap.Character.Y = x, y
+	if direction > 0 {
+		snap.Character.Direction = direction
+	}
+	snap.TargetType, snap.TargetID = 0, 0
+	snap.ErasedEvents = nil
+	snap.Trade = nil
+	key := MapKey{TemplateID: mapID}
+	_ = w.coordErr(func() error {
+		w.commitTransfer(snap, key)
+		return nil
+	})
+	return true
+}
+
+// commitTransfer runs on the coordinator and installs the snapshot in the
+// destination actor. It never waits for a map.
+func (w *World) commitTransfer(snap *playerSnapshot, key MapKey) {
+	entry := w.online[snap.ID]
+	if entry == nil {
+		return
+	}
+	epoch := w.allocEpoch()
+	entry.Key = key
+	entry.Epoch = epoch
+	snap.Epoch = epoch
+	snap.GuildName = entry.GuildName
+	snap.PartyID = entry.PartyID
+	snap.Friends = append([]string(nil), entry.Friends...)
+	if tmp := snap.materialize(); tmp != nil {
+		entry.View = partyViewOf(tmp)
+	}
+	a := w.ensureMapKey(key)
+	if a == nil {
+		w.attachBack(snap, entry)
+		return
+	}
+	w.attachPlayer(a, attachPayload{
+		snap:    snap,
+		enter:   false,
+		epoch:   epoch,
+		gen:     w.nextAttachGen(key),
+		motd:    w.motd,
+		globals: append([]bool(nil), w.globalSwitches...),
+	})
+}
+
+func (w *World) attachBack(snap *playerSnapshot, entry *onlineEntry) {
+	key := entry.Key
+	a := w.ensureMapKey(key)
+	if a == nil {
+		w.log.Error("map transfer lost player", "player", snap.ID)
+		return
+	}
+	w.attachPlayer(a, attachPayload{
+		snap: snap, enter: false, epoch: entry.Epoch,
+		gen: w.nextAttachGen(key), motd: w.motd,
+		globals: append([]bool(nil), w.globalSwitches...),
+	})
+}
+
+func (w *World) transferInline(p *Player, mapID, x, y, direction int) bool {
 	target := w.ensureMap(mapID)
 	if target == nil || !target.valid(x, y) {
 		return false
 	}
-	old := w.maps[p.Character.MapID]
+	old := p.ms
 	if old != nil && old != target {
-		old.players[p.ID] = nil
-		w.broadcastToMapPlayers(old, protocol.ServerPlayerLeft, protocol.PlayerLeft{ID: p.ID})
+		p.actor.detach(p.ID, false)
 		p.ErasedEvents = nil
 	}
 	p.Character.MapID = mapID
@@ -1088,8 +1184,17 @@ func (w *World) transferPlayer(p *Player, mapID, x, y, direction int) bool {
 		p.Character.Direction = direction
 	}
 	p.TargetType, p.TargetID = 0, 0
-	target.players = ensureIndex(target.players, int(p.ID))
-	target.players[p.ID] = p
+	if old != target {
+		actor := w.actors[target.key]
+		if actor == nil {
+			return false
+		}
+		p.Epoch = w.allocEpoch()
+		p.MapKey = target.key
+		actor.putPlayer(p)
+		w.online[p.ID].Key = target.key
+		w.online[p.ID].Epoch = p.Epoch
+	}
 	_ = p.Client.Send(protocol.ServerTransfer, protocol.Transfer{
 		MapID: uint16(mapID), X: uint16(x), Y: uint16(y), Direction: uint8(direction),
 	})

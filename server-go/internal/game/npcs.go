@@ -10,8 +10,8 @@ import (
 var moveDirections = []int{2, 4, 6, 8}
 
 // refreshNPC selects the highest global page and updates its movement settings.
-func (w *World) refreshNPC(n *npcState) {
-	page := w.globalPage(n.event)
+func (w *World) refreshNPC(ms *mapState, n *npcState) {
+	page := w.globalPage(ms, n.event)
 	if page == n.page {
 		return
 	}
@@ -69,7 +69,7 @@ func (w *World) tickNPCsMap(ms *mapState, now time.Time) {
 		if npc == nil {
 			continue
 		}
-		w.refreshNPC(npc)
+		w.refreshNPC(ms, npc)
 		if npc.page == nil || npc.moveType == 0 || now.Before(npc.nextMove) || w.npcLocked(ms, npc) {
 			continue
 		}
@@ -175,8 +175,8 @@ func (w *World) runNPCMoveRoute(ms *mapState, npc *npcState, now time.Time) {
 		}
 	case 27, 28: // switch on/off (global switches only)
 		id := intParam(cmd.Parameters, 0)
-		if id > w.opts.MaxPlayerSwitches && w.setGlobalSwitch(id, cmd.Code == 27) {
-			w.saveGlobalSwitches()
+		if id > w.opts.MaxPlayerSwitches && w.mapSetGlobalSwitch(nil, id, cmd.Code == 27) {
+			_ = w.coordErr(func() error { w.saveGlobalSwitches(); return nil })
 		}
 	case 29: // change speed
 		npc.moveSpeed = clampInt(intParam(cmd.Parameters, 0), 1, 6)
@@ -429,13 +429,10 @@ func (w *World) npcBlocked(ms *mapState, moverID, x, y int) bool {
 	return false
 }
 
-// eventTouch starts a trigger-2 page when an NPC moves into a player.
+// queueEventTouch starts a trigger-2 page when an NPC moves into a player. It
+// runs on the map actor; the queue name is kept for call-site continuity.
 func (w *World) queueEventTouch(ms *mapState, npc *npcState) {
-	select {
-	case w.commands <- func() { w.eventTouch(ms, npc) }:
-	default:
-		w.log.Warn("event touch queue full", "map", ms.def.ID, "event", npc.event.ID)
-	}
+	w.eventTouch(ms, npc)
 }
 
 func (w *World) eventTouch(ms *mapState, npc *npcState) {
@@ -486,7 +483,7 @@ func (w *World) sendMapEventsTo(p *Player, ms *mapState) {
 		if npc == nil {
 			continue
 		}
-		w.refreshNPC(npc)
+		w.refreshNPC(ms, npc)
 		_ = p.Client.Send(protocol.ServerEventData, protocol.EventData{
 			EventID:   uint16(clampInt(npc.event.ID, 0, 65535)),
 			X:         uint16(clampInt(npc.x, 0, 65535)),

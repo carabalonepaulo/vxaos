@@ -15,10 +15,16 @@ type persistJob struct {
 	state     *store.CharacterState
 }
 
+type bankJob struct {
+	accountID int64
+	bank      *store.BankState
+}
+
 type persistWorker struct {
 	store *store.Store
 	log   *slog.Logger
 	jobs  chan persistJob
+	banks chan bankJob
 	done  chan struct{}
 	once  sync.Once
 }
@@ -28,6 +34,7 @@ func newPersistWorker(st *store.Store, log *slog.Logger) *persistWorker {
 		store: st,
 		log:   log,
 		jobs:  make(chan persistJob, 1024),
+		banks: make(chan bankJob, 128),
 		done:  make(chan struct{}),
 	}
 	go p.loop()
@@ -36,12 +43,30 @@ func newPersistWorker(st *store.Store, log *slog.Logger) *persistWorker {
 
 func (p *persistWorker) loop() {
 	defer close(p.done)
-	for job := range p.jobs {
-		if job.character == nil || job.state == nil {
-			continue
-		}
-		if err := p.store.SaveCharacter(context.Background(), job.character, job.state); err != nil {
-			p.log.Error("persist character", "character", job.character.ID, "err", err)
+	for p.jobs != nil || p.banks != nil {
+		select {
+		case job, ok := <-p.jobs:
+			if !ok {
+				p.jobs = nil
+				continue
+			}
+			if job.character == nil || job.state == nil {
+				continue
+			}
+			if err := p.store.SaveCharacter(context.Background(), job.character, job.state); err != nil {
+				p.log.Error("persist character", "character", job.character.ID, "err", err)
+			}
+		case job, ok := <-p.banks:
+			if !ok {
+				p.banks = nil
+				continue
+			}
+			if job.bank == nil {
+				continue
+			}
+			if err := p.store.SaveBank(context.Background(), job.accountID, job.bank); err != nil {
+				p.log.Error("persist bank", "account", job.accountID, "err", err)
+			}
 		}
 	}
 }
@@ -63,9 +88,24 @@ func (p *persistWorker) queue(character *store.Character, state *store.Character
 	}
 }
 
+func (p *persistWorker) queueBank(accountID int64, bank *store.BankState) {
+	if bank == nil {
+		return
+	}
+	job := bankJob{accountID: accountID, bank: cloneBankState(bank)}
+	select {
+	case p.banks <- job:
+	default:
+		p.log.Error("bank persist queue full", "account", accountID)
+	}
+}
+
 // closeAndFlush stops accepting work and waits for queued saves to finish.
 func (p *persistWorker) closeAndFlush(ctx context.Context) error {
-	p.once.Do(func() { close(p.jobs) })
+	p.once.Do(func() {
+		close(p.jobs)
+		close(p.banks)
+	})
 	select {
 	case <-p.done:
 		return nil

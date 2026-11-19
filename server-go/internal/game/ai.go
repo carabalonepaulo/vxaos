@@ -18,7 +18,7 @@ func (w *World) updateEnemyAI(ms *mapState, enemy *enemyState, now time.Time) {
 	if enemy.Enemy.Sight > 0 {
 		sight = enemy.Enemy.Sight
 	}
-	target := w.playerByID(enemy.TargetID)
+	target := ms.playerByID(enemy.TargetID)
 	if target != nil {
 		if target.Character.MapID != ms.def.ID || target.Character.HP <= 0 || !enemyInRange(enemy, target, sight+5) {
 			target = nil
