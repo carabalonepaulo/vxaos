@@ -16,7 +16,9 @@ func firstEnemy(t *testing.T, w *World, mapID int) *enemyState {
 		t.Fatalf("map %d missing", mapID)
 	}
 	for _, enemy := range ms.enemies {
-		return enemy
+		if enemy != nil {
+			return enemy
+		}
 	}
 	t.Fatalf("map %d has no enemies", mapID)
 	return nil

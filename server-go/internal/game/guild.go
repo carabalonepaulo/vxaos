@@ -85,6 +85,9 @@ func (w *World) syncPlayerGuild(p *Player) {
 func (w *World) playerByName(name string) *Player {
 	name = strings.TrimSpace(name)
 	for _, p := range w.players {
+		if p == nil {
+			continue
+		}
 		if strings.EqualFold(p.Character.Name, name) {
 			return p
 		}

@@ -561,6 +561,9 @@ func (w *World) EventChoice(ctx context.Context, p *Player, index int32) error {
 func (w *World) tickEvents() {
 	now := w.now()
 	for _, p := range w.players {
+		if p == nil {
+			continue
+		}
 		if p.Event == nil || p.Event.waitUntil.IsZero() || now.Before(p.Event.waitUntil) {
 			continue
 		}
@@ -574,8 +577,14 @@ func (w *World) tickEvents() {
 func (w *World) tickAutoruns() {
 	now := w.now()
 	for _, ms := range w.maps {
+		if ms == nil {
+			continue
+		}
 		var p *Player
 		for _, candidate := range ms.players {
+			if candidate == nil {
+				continue
+			}
 			p = candidate
 			break
 		}
@@ -1081,7 +1090,7 @@ func (w *World) transferPlayer(p *Player, mapID, x, y, direction int) bool {
 	}
 	old := w.maps[p.Character.MapID]
 	if old != nil && old != target {
-		delete(old.players, p.ID)
+		old.players[p.ID] = nil
 		w.broadcastToMapPlayers(old, protocol.ServerPlayerLeft, protocol.PlayerLeft{ID: p.ID})
 		p.ErasedEvents = make(map[int]bool)
 	}
@@ -1091,6 +1100,7 @@ func (w *World) transferPlayer(p *Player, mapID, x, y, direction int) bool {
 		p.Character.Direction = direction
 	}
 	p.TargetType, p.TargetID = 0, 0
+	target.players = ensureIndex(target.players, int(p.ID))
 	target.players[p.ID] = p
 	_ = p.Client.Send(protocol.ServerTransfer, protocol.Transfer{
 		MapID: uint16(mapID), X: uint16(x), Y: uint16(y), Direction: uint8(direction),
@@ -1098,13 +1108,16 @@ func (w *World) transferPlayer(p *Player, mapID, x, y, direction int) bool {
 	if old != target {
 		snap := w.snapshot(p)
 		for _, other := range target.players {
-			if other == p {
+			if other == nil || other == p {
 				continue
 			}
 			_ = p.Client.Send(protocol.ServerPlayerData, protocol.PlayerData{Player: w.snapshot(other)})
 			_ = other.Client.Send(protocol.ServerPlayerData, protocol.PlayerData{Player: snap})
 		}
 		for _, enemy := range target.enemies {
+			if enemy == nil {
+				continue
+			}
 			_ = p.Client.Send(protocol.ServerEventData, protocol.EventData{
 				EventID: uint16(enemy.Event.ID), X: uint16(enemy.X), Y: uint16(enemy.Y),
 				Direction: uint8(enemy.Direction), HP: int32(enemy.HP),

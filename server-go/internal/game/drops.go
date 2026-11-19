@@ -145,6 +145,9 @@ func (w *World) canPickupDrop(drop *dropState, p *Player) bool {
 // tickDrops removes expired ground drops.
 func (w *World) tickDrops(now time.Time) {
 	for _, ms := range w.maps {
+		if ms == nil {
+			continue
+		}
 		for i := len(ms.drops) - 1; i >= 0; i-- {
 			if now.Before(ms.drops[i].DespawnAt) {
 				continue

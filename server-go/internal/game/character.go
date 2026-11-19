@@ -356,6 +356,9 @@ func (w *World) broadcastToMap(p *Player, op protocol.ServerOp, msg protocol.Ser
 		return
 	}
 	for _, other := range ms.players {
+		if other == nil {
+			continue
+		}
 		if err := other.Client.Send(op, msg); err != nil {
 			w.log.Warn("broadcast", "player", other.ID, "op", uint16(op), "err", err)
 		}

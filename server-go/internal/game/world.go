@@ -140,9 +140,9 @@ type World struct {
 	stopOnce sync.Once
 
 	// All fields below are owned by the world goroutine.
-	players        map[uint16]*Player
+	players        []*Player
 	byCharacter    map[int64]*Player
-	maps           map[int]*mapState
+	maps           []*mapState
 	guilds         map[int64]*guildState
 	guildByName    map[string]*guildState
 	parties        map[int]*partyState
@@ -156,9 +156,9 @@ type mapState struct {
 	def     *rpg.Map
 	tileset *rpg.Tileset
 	events  []*rpg.Event
-	npcs    map[int]*npcState
-	enemies map[int]*enemyState
-	players map[uint16]*Player
+	npcs    []*npcState
+	enemies []*enemyState
+	players []*Player
 	autorun *autorunState
 	drops   []*dropState
 }
@@ -270,9 +270,9 @@ func New(opts Options) (*World, error) {
 		commands:    make(chan func(), 1024),
 		stop:        make(chan struct{}),
 		stopped:     make(chan struct{}),
-		players:     make(map[uint16]*Player),
+		players:     make([]*Player, 0),
 		byCharacter: make(map[int64]*Player),
-		maps:        make(map[int]*mapState),
+		maps:        make([]*mapState, len(opts.Data.Maps)),
 		guilds:      make(map[int64]*guildState),
 		guildByName: make(map[string]*guildState),
 		parties:     make(map[int]*partyState),
@@ -291,15 +291,15 @@ func New(opts Options) (*World, error) {
 		st := &mapState{
 			def:     m,
 			tileset: opts.Data.Tilesets[m.TilesetID],
-			npcs:    make(map[int]*npcState),
-			enemies: make(map[int]*enemyState),
-			players: make(map[uint16]*Player),
+			events:  m.Events,
+			npcs:    make([]*npcState, len(m.Events)),
+			enemies: make([]*enemyState, len(m.Events)),
+			players: make([]*Player, 0),
 		}
 		for _, ev := range m.Events {
 			if ev == nil || ev.Name == "notupdate" || ev.Name == "notglobal" {
 				continue
 			}
-			st.events = append(st.events, ev)
 			if enemy := newEnemyState(opts.Data, m, ev); enemy != nil {
 				st.enemies[ev.ID] = enemy
 				continue
@@ -313,8 +313,13 @@ func New(opts Options) (*World, error) {
 		w.maps[id] = st
 	}
 	for _, ms := range w.maps {
+		if ms == nil {
+			continue
+		}
 		for _, npc := range ms.npcs {
-			w.refreshNPC(npc)
+			if npc != nil {
+				w.refreshNPC(npc)
+			}
 		}
 	}
 	go w.loop()
@@ -403,11 +408,14 @@ func (w *World) join(p *Player) error {
 	if _, ok := w.byCharacter[p.Character.ID]; ok {
 		return ErrAlreadyOnline
 	}
-	for w.players[w.nextID] != nil {
+	for int(w.nextID) < len(w.players) && w.players[w.nextID] != nil {
 		w.nextID++
 		if w.nextID == 0 {
 			return fmt.Errorf("game: no free player ids")
 		}
+	}
+	if w.nextID == 0 {
+		return fmt.Errorf("game: no free player ids")
 	}
 	p.ID = w.nextID
 	w.nextID++
@@ -439,8 +447,10 @@ func (w *World) join(p *Player) error {
 			}
 		}
 	}
+	w.players = ensureIndex(w.players, int(p.ID))
 	w.players[p.ID] = p
 	w.byCharacter[p.Character.ID] = p
+	ms.players = ensureIndex(ms.players, int(p.ID))
 	ms.players[p.ID] = p
 	w.ensureEventState(p)
 	w.syncPlayerGuild(p)
@@ -453,6 +463,9 @@ func (w *World) join(p *Player) error {
 	w.sendGlobalSwitches(p)
 	w.sendMOTD(p)
 	for _, enemy := range ms.enemies {
+		if enemy == nil {
+			continue
+		}
 		_ = p.Client.Send(protocol.ServerEventData, protocol.EventData{
 			EventID:   uint16(enemy.Event.ID),
 			X:         uint16(enemy.X),
@@ -464,7 +477,7 @@ func (w *World) join(p *Player) error {
 	w.sendMapEventsTo(p, ms)
 	w.sendDropsTo(p, ms)
 	for _, other := range ms.players {
-		if other == p {
+		if other == nil || other == p {
 			continue
 		}
 		if err := p.Client.Send(protocol.ServerPlayerData, protocol.PlayerData{Player: w.snapshot(other)}); err != nil {
@@ -506,11 +519,14 @@ func (w *World) removeLocked(p *Player) {
 	if p.PartyID != 0 {
 		w.leavePartyLocked(p)
 	}
-	delete(w.players, p.ID)
+	w.players[p.ID] = nil
 	delete(w.byCharacter, p.Character.ID)
 	if ms := w.maps[p.Character.MapID]; ms != nil {
-		delete(ms.players, p.ID)
+		ms.players[p.ID] = nil
 		for _, other := range ms.players {
+			if other == nil {
+				continue
+			}
 			if err := other.Client.Send(protocol.ServerPlayerLeft, protocol.PlayerLeft{ID: p.ID}); err != nil {
 				w.log.Warn("broadcast player left", "player", other.ID, "err", err)
 			}
@@ -559,6 +575,9 @@ func (w *World) Move(ctx context.Context, p *Player, direction uint8) error {
 		p.lastMove = now
 		msg := protocol.PlayerMove{ID: p.ID, X: uint16(p.Character.X), Y: uint16(p.Character.Y), Direction: direction}
 		for _, other := range ms.players {
+			if other == nil {
+				continue
+			}
 			if err := other.Client.Send(protocol.ServerPlayerMove, msg); err != nil {
 				w.log.Warn("broadcast move", "player", other.ID, "err", err)
 			}
@@ -599,6 +618,9 @@ func (w *World) Chat(ctx context.Context, p *Player, channel uint8, message, tar
 			}
 			msg := protocol.MapChat{PlayerID: p.ID, Color: 0, Message: text}
 			for _, other := range ms.players {
+				if other == nil {
+					continue
+				}
 				if err := other.Client.Send(protocol.ServerMapChat, msg); err != nil {
 					w.log.Warn("broadcast map chat", "player", other.ID, "err", err)
 				}
@@ -606,6 +628,9 @@ func (w *World) Chat(ctx context.Context, p *Player, channel uint8, message, tar
 		case 1: // global
 			msg := protocol.ChatMessage{Color: 1, Message: text}
 			for _, other := range w.players {
+				if other == nil {
+					continue
+				}
 				if err := other.Client.Send(protocol.ServerChat, msg); err != nil {
 					w.log.Warn("broadcast global chat", "player", other.ID, "err", err)
 				}
@@ -759,12 +784,27 @@ func clampInt64(v, min, max int64) int64 {
 	return v
 }
 
+// ensureIndex grows an id-indexed slice. RPG Maker ids are array indexes and
+// may contain holes, so callers must skip nil entries while iterating.
+func ensureIndex[T any](list []T, i int) []T {
+	if i < 0 {
+		return list
+	}
+	if i >= len(list) {
+		list = append(list, make([]T, i-len(list)+1)...)
+	}
+	return list
+}
+
 func (w *World) saveLocked(p *Player) error {
 	return w.opts.Store.SaveCharacter(context.Background(), p.Character, p.State)
 }
 
 func (w *World) saveAll() {
 	for _, p := range w.players {
+		if p == nil {
+			continue
+		}
 		if err := w.saveLocked(p); err != nil {
 			w.log.Error("periodic save", "player", p.ID, "err", err)
 		}
@@ -823,7 +863,7 @@ func (ms *mapState) allTiles(x, y int) []int {
 // blocked checks normal-priority events and, on PvP maps, other players.
 func (ms *mapState) blocked(x, y int, moving *Player) bool {
 	for _, npc := range ms.npcs {
-		if npc.x != x || npc.y != y || npc.through {
+		if npc == nil || npc.x != x || npc.y != y || npc.through {
 			continue
 		}
 		if npc.priority == 1 {
@@ -831,7 +871,7 @@ func (ms *mapState) blocked(x, y int, moving *Player) bool {
 		}
 	}
 	for _, enemy := range ms.enemies {
-		if !enemy.Alive || enemy.X != x || enemy.Y != y {
+		if enemy == nil || !enemy.Alive || enemy.X != x || enemy.Y != y {
 			continue
 		}
 		if len(enemy.Event.Pages) > 0 {
@@ -845,7 +885,7 @@ func (ms *mapState) blocked(x, y int, moving *Player) bool {
 		return false
 	}
 	for _, other := range ms.players {
-		if other == moving {
+		if other == nil || other == moving {
 			continue
 		}
 		if other.Character.X == x && other.Character.Y == y {

@@ -140,6 +140,9 @@ func pageNoteInt(page *rpg.Page, key string, def int) int {
 
 func (ms *mapState) enemyAt(x, y int) *enemyState {
 	for _, enemy := range ms.enemies {
+		if enemy == nil {
+			continue
+		}
 		if enemy.Alive && enemy.X == x && enemy.Y == y {
 			return enemy
 		}
@@ -147,8 +150,20 @@ func (ms *mapState) enemyAt(x, y int) *enemyState {
 	return nil
 }
 
+func (ms *mapState) hasPlayers() bool {
+	for _, player := range ms.players {
+		if player != nil {
+			return true
+		}
+	}
+	return false
+}
+
 func (ms *mapState) playerAt(x, y int) *Player {
 	for _, player := range ms.players {
+		if player == nil {
+			continue
+		}
 		if player.Character.X == x && player.Character.Y == y && player.Character.HP > 0 {
 			return player
 		}
@@ -577,6 +592,9 @@ func (w *World) applyAreaItem(p *Player, item *rpg.UsableItem, user battleStats,
 		radius = 1
 	}
 	for _, enemy := range ms.enemies {
+		if enemy == nil {
+			continue
+		}
 		if !enemy.Alive || absInt(enemy.X-p.Character.X) > radius || absInt(enemy.Y-p.Character.Y) > radius {
 			continue
 		}
@@ -584,7 +602,7 @@ func (w *World) applyAreaItem(p *Player, item *rpg.UsableItem, user battleStats,
 	}
 	if ms.def.PvP {
 		for _, other := range ms.players {
-			if other == p || other.Character.HP <= 0 || !w.canPvP(p, other) {
+			if other == nil || other == p || other.Character.HP <= 0 || !w.canPvP(p, other) {
 				continue
 			}
 			if absInt(other.Character.X-p.Character.X) > radius || absInt(other.Character.Y-p.Character.Y) > radius {
@@ -618,7 +636,7 @@ func (w *World) applyRandomEnemies(p *Player, item *rpg.UsableItem, count int) {
 	}
 	candidates := make([]*enemyState, 0, len(ms.enemies))
 	for _, enemy := range ms.enemies {
-		if !enemy.Alive {
+		if enemy == nil || !enemy.Alive {
 			continue
 		}
 		if absInt(enemy.X-p.Character.X) <= rangeTiles && absInt(enemy.Y-p.Character.Y) <= rangeTiles {
@@ -897,6 +915,9 @@ func (w *World) recoverVitals(p *Player) {
 func (w *World) tickCombat() {
 	now := w.now()
 	for _, p := range w.players {
+		if p == nil {
+			continue
+		}
 		if p.Character.HP <= 0 && !p.respawnAt.IsZero() && now.After(p.respawnAt) {
 			w.clearStatus(&p.Status, p)
 			p.Character.HP = p.Character.MHP
@@ -915,7 +936,13 @@ func (w *World) tickCombat() {
 		}
 	}
 	for _, ms := range w.maps {
+		if ms == nil {
+			continue
+		}
 		for _, enemy := range ms.enemies {
+			if enemy == nil {
+				continue
+			}
 			if !enemy.Alive {
 				if !enemy.ReviveAt.IsZero() && now.After(enemy.ReviveAt) {
 					w.reviveEnemy(ms, enemy, now)
@@ -1208,6 +1235,9 @@ func (w *World) applyLevelUp(p *Player, class *rpg.Class, oldLevel, newLevel int
 
 func (w *World) broadcastToMapPlayers(ms *mapState, op protocol.ServerOp, msg protocol.ServerMessage) {
 	for _, p := range ms.players {
+		if p == nil {
+			continue
+		}
 		_ = p.Client.Send(op, msg)
 	}
 }

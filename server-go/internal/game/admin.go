@@ -105,6 +105,9 @@ func (w *World) AdminCommand(ctx context.Context, p *Player, m protocol.AdminCom
 		case AdminMessage:
 			notice := protocol.AdminCommandNotice{Command: AdminMessage, Message: m.Text}
 			for _, other := range w.players {
+				if other == nil {
+					continue
+				}
 				_ = other.Client.Send(protocol.ServerAdminCommand, notice)
 			}
 			w.broadcastChatColor(m.Text, 17)
@@ -127,6 +130,9 @@ func (w *World) broadcastChatColor(message string, color uint8) {
 	}
 	msg := protocol.ChatMessage{Color: color, Message: message}
 	for _, p := range w.players {
+		if p == nil {
+			continue
+		}
 		_ = p.Client.Send(protocol.ServerChat, msg)
 	}
 }
@@ -144,6 +150,9 @@ func (w *World) adminKick(admin *Player, name string) error {
 func (w *World) adminTeleport(admin *Player, name string, mapID, x, y int) error {
 	if name == "all" {
 		for _, p := range w.players {
+			if p == nil {
+				continue
+			}
 			w.transferPlayer(p, mapID, x, y, p.Character.Direction)
 		}
 		return nil
@@ -172,7 +181,7 @@ func (w *World) adminGo(admin *Player, name string) error {
 func (w *World) adminPull(admin *Player, name string) error {
 	if name == "all" {
 		for _, p := range w.players {
-			if p == admin {
+			if p == nil || p == admin {
 				continue
 			}
 			w.transferPlayer(p, admin.Character.MapID, admin.Character.X, admin.Character.Y, p.Character.Direction)
@@ -237,6 +246,9 @@ func (w *World) adminTargets(name string) []*Player {
 	if name == "all" {
 		out := make([]*Player, 0, len(w.players))
 		for _, p := range w.players {
+			if p == nil {
+				continue
+			}
 			out = append(out, p)
 		}
 		return out
@@ -288,7 +300,7 @@ func (w *World) adminBan(admin *Player, command uint8, name string, days int) er
 		return err
 	}
 	for _, other := range w.players {
-		if isAdmin(other) {
+		if other == nil || isAdmin(other) {
 			continue
 		}
 		if kind == "account" && other.Account.ID == accountID {

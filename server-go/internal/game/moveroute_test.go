@@ -25,8 +25,9 @@ func TestCustomMoveRouteStraightAndWait(t *testing.T) {
 			{Code: 1}, // move down
 		}},
 	}
+	ms.npcs = ensureIndex(ms.npcs, 999)
 	ms.npcs[999] = npc
-	defer delete(ms.npcs, 999)
+	defer func() { ms.npcs[999] = nil }()
 
 	w.runNPCMoveRoute(ms, npc, w.now())
 	if npc.x != x+1 || npc.y != y {
@@ -67,8 +68,9 @@ func TestCustomMoveRouteTurnsAndSwitches(t *testing.T) {
 			{Code: 27, Parameters: []any{w.opts.MaxPlayerSwitches + 1}},
 		}},
 	}
+	ms.npcs = ensureIndex(ms.npcs, 998)
 	ms.npcs[998] = npc
-	defer delete(ms.npcs, 998)
+	defer func() { ms.npcs[998] = nil }()
 
 	w.runNPCMoveRoute(ms, npc, w.now())
 	if npc.direction != 6 {

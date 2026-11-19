@@ -74,6 +74,9 @@ func (w *World) setGlobalSwitch(id int, value bool) bool {
 	}
 	w.globalSwitches[index] = value
 	for _, other := range w.players {
+		if other == nil {
+			continue
+		}
 		_ = other.Client.Send(protocol.ServerSwitch, protocol.Switch{
 			ID: uint16(clampInt(id, 0, 65535)), Value: value,
 		})

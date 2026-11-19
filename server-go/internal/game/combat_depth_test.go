@@ -3,6 +3,7 @@ package game
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/kelaia/vxaos/server/internal/protocol"
 	"github.com/kelaia/vxaos/server/internal/rpg"
@@ -26,11 +27,16 @@ func TestPlayerAreaSkillHitsEveryEnemy(t *testing.T) {
 		Event: &rpg.Event{ID: 901}, Enemy: &rpg.Enemy{Params: [8]int{1000, 100, 50, 10, 10, 10, 10, 10}},
 		ID: 2, X: 21, Y: 12, Alive: true, HP: 1000,
 	}
+	ms.enemies = ensureIndex(ms.enemies, 901)
 	ms.enemies[900], ms.enemies[901] = first, second
-	defer func() { delete(ms.enemies, 900); delete(ms.enemies, 901) }()
+	defer func() { ms.enemies[900], ms.enemies[901] = nil, nil }()
 
-	if err := w.UseSkill(ctx, p, 8); err != nil {
-		t.Fatalf("skill: %v", err)
+	for attempt := 0; attempt < 8 && (first.HP >= 1000 || second.HP >= 1000); attempt++ {
+		p.Character.MP = 500
+		p.lastAttack = time.Time{}
+		if err := w.UseSkill(ctx, p, 8); err != nil {
+			t.Fatalf("skill: %v", err)
+		}
 	}
 	if first.HP >= 1000 || second.HP >= 1000 {
 		t.Fatalf("area skill did not hit both: %d %d", first.HP, second.HP)
@@ -51,8 +57,9 @@ func TestProjectileSkillBroadcast(t *testing.T) {
 		Event: &rpg.Event{ID: 902}, Enemy: &rpg.Enemy{Params: [8]int{1000, 100, 50, 10, 10, 10, 10, 10}},
 		ID: 3, X: 25, Y: 12, Alive: true, HP: 1000,
 	}
+	ms.enemies = ensureIndex(ms.enemies, 902)
 	ms.enemies[902] = enemy
-	defer delete(ms.enemies, 902)
+	defer func() { ms.enemies[902] = nil }()
 	if err := w.SetTarget(ctx, p, 2, 902); err != nil {
 		t.Fatal(err)
 	}

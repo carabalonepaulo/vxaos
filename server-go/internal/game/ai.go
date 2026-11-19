@@ -75,6 +75,9 @@ func (w *World) updateEnemyAI(ms *mapState, enemy *enemyState, now time.Time) {
 func (w *World) findEnemyTarget(ms *mapState, enemy *enemyState, sight int) *Player {
 	players := make([]*Player, 0, len(ms.players))
 	for _, p := range ms.players {
+		if p == nil {
+			continue
+		}
 		if p.Character.HP > 0 {
 			players = append(players, p)
 		}
@@ -241,6 +244,9 @@ func (w *World) playerInFront(ms *mapState, enemy *enemyState) *Player {
 func (w *World) enemyAreaTargets(ms *mapState, enemy *enemyState, aoe int) []*Player {
 	var out []*Player
 	for _, p := range ms.players {
+		if p == nil {
+			continue
+		}
 		if p.Character.HP > 0 && enemyInRange(enemy, p, aoe) {
 			out = append(out, p)
 		}

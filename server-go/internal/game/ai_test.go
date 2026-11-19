@@ -102,6 +102,9 @@ func TestEnemyDisableAndReviveRegion(t *testing.T) {
 	ms := w.maps[2]
 	var regional *enemyState
 	for _, candidate := range ms.enemies {
+		if candidate == nil {
+			continue
+		}
 		if candidate.regionID == 2 {
 			regional = candidate
 			break

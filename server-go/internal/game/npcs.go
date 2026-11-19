@@ -54,10 +54,13 @@ func dirDelta(direction int) (int, int) {
 // tickNPCs advances autonomous non-enemy map events once per world tick.
 func (w *World) tickNPCs(now time.Time) {
 	for _, ms := range w.maps {
-		if len(ms.players) == 0 {
+		if ms == nil || !ms.hasPlayers() {
 			continue
 		}
 		for _, npc := range ms.npcs {
+			if npc == nil {
+				continue
+			}
 			w.refreshNPC(npc)
 			if npc.page == nil || npc.moveType == 0 || now.Before(npc.nextMove) || w.npcLocked(ms, npc) {
 				continue
@@ -321,7 +324,7 @@ func intParam(params []any, index int) int {
 
 func (w *World) npcLocked(ms *mapState, npc *npcState) bool {
 	for _, p := range ms.players {
-		if p.Event == nil {
+		if p == nil || p.Event == nil {
 			continue
 		}
 		for _, frame := range p.Event.frames {
@@ -337,6 +340,9 @@ func (w *World) npcNearestPlayer(ms *mapState, npc *npcState, sight int) *Player
 	var best *Player
 	bestDistance := sight + 1
 	for _, p := range ms.players {
+		if p == nil {
+			continue
+		}
 		if p.Character.HP <= 0 {
 			continue
 		}
@@ -396,17 +402,17 @@ func (w *World) moveNPC(ms *mapState, npc *npcState, direction int) bool {
 // event other than the mover.
 func (w *World) npcBlocked(ms *mapState, moverID, x, y int) bool {
 	for _, p := range ms.players {
-		if p.Character.X == x && p.Character.Y == y {
+		if p != nil && p.Character.X == x && p.Character.Y == y {
 			return true
 		}
 	}
 	for _, enemy := range ms.enemies {
-		if enemy.Alive && enemy.Event.ID != moverID && enemy.X == x && enemy.Y == y {
+		if enemy != nil && enemy.Alive && enemy.Event.ID != moverID && enemy.X == x && enemy.Y == y {
 			return true
 		}
 	}
 	for _, npc := range ms.npcs {
-		if npc.event.ID == moverID {
+		if npc == nil || npc.event.ID == moverID {
 			continue
 		}
 		if npc.priority >= 1 && !npc.through && npc.x == x && npc.y == y {
@@ -419,7 +425,7 @@ func (w *World) npcBlocked(ms *mapState, moverID, x, y int) bool {
 // eventTouch starts a trigger-2 page when an NPC moves into a player.
 func (w *World) eventTouch(ms *mapState, npc *npcState) {
 	for _, p := range ms.players {
-		if p.Event != nil || p.Character.X != npc.x || p.Character.Y != npc.y {
+		if p == nil || p.Event != nil || p.Character.X != npc.x || p.Character.Y != npc.y {
 			continue
 		}
 		page := w.properPage(p, npc.event)
@@ -436,7 +442,7 @@ func (w *World) checkPlayerTouch(p *Player, ms *mapState, x, y int, bumped bool)
 		return
 	}
 	for _, npc := range ms.npcs {
-		if npc.x != x || npc.y != y {
+		if npc == nil || npc.x != x || npc.y != y {
 			continue
 		}
 		page := w.properPage(p, npc.event)
@@ -462,6 +468,9 @@ func (w *World) broadcastEventMove(ms *mapState, eventID, x, y, direction int) {
 // sendMapEventsTo syncs every NPC position to one client after a map entry.
 func (w *World) sendMapEventsTo(p *Player, ms *mapState) {
 	for _, npc := range ms.npcs {
+		if npc == nil {
+			continue
+		}
 		w.refreshNPC(npc)
 		_ = p.Client.Send(protocol.ServerEventData, protocol.EventData{
 			EventID:   uint16(clampInt(npc.event.ID, 0, 65535)),
