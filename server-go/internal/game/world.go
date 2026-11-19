@@ -150,6 +150,7 @@ type World struct {
 	nextID         uint16
 	globalSwitches []bool
 	motd           string
+	persist        *persistWorker
 }
 
 type mapState struct {
@@ -284,6 +285,7 @@ func New(opts Options) (*World, error) {
 		w.motd = motd
 	}
 	w.loadGuilds()
+	w.persist = newPersistWorker(opts.Store, opts.Logger)
 	// Map runtime state is created on demand by ensureMap when the first
 	// player enters a map.
 	go w.loop()
@@ -295,10 +297,15 @@ func (w *World) Stop(ctx context.Context) error {
 	w.stopOnce.Do(func() { close(w.stop) })
 	select {
 	case <-w.stopped:
-		return nil
 	case <-ctx.Done():
 		return ctx.Err()
 	}
+	if w.persist != nil {
+		if err := w.persist.closeAndFlush(ctx); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Submit runs fn on the world goroutine.
@@ -822,7 +829,9 @@ func (w *World) saveAll() {
 		if p == nil {
 			continue
 		}
-		if err := w.saveLocked(p); err != nil {
+		if w.persist != nil {
+			w.persist.queue(p.Character, p.State)
+		} else if err := w.saveLocked(p); err != nil {
 			w.log.Error("periodic save", "player", p.ID, "err", err)
 		}
 		w.saveBankQuietly(p)
