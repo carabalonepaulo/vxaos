@@ -103,7 +103,7 @@ type Player struct {
 	ShopIndex              int
 	Bank                   *store.BankState
 	BankOpen               bool
-	ErasedEvents           map[int]bool
+	ErasedEvents           []bool
 	CreatingGuild          bool
 	Request                *pendingRequest
 	PartyID                int

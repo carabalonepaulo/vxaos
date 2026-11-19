@@ -37,7 +37,7 @@ func TestEventGraphicEraseAndVisualCommands(t *testing.T) {
 	if len(client.find(protocol.ServerEventCommand)) != 1 {
 		t.Fatalf("visual command ranges = %d", len(client.find(protocol.ServerEventCommand)))
 	}
-	if !p.ErasedEvents[99] {
+	if !p.eventErased(99) {
 		t.Fatal("erase event was not recorded")
 	}
 	if p.Event != nil {
@@ -48,7 +48,7 @@ func TestEventGraphicEraseAndVisualCommands(t *testing.T) {
 	// transfer.
 	erased, restored := false, false
 	if err := w.do(ctx, func() error {
-		p.ErasedEvents[18] = true
+		p.eraseEvent(18)
 		ms := w.maps[p.Character.MapID]
 		erased = !w.startMapEventAt(p, ms, 38, 13, []int{0, 1, 2}, true)
 		p.Event = nil

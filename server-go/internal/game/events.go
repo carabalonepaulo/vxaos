@@ -71,7 +71,7 @@ func (w *World) startMapEventAt(p *Player, ms *mapState, x, y int, triggers []in
 			continue
 		}
 		npc := ms.npcs[event.ID]
-		if npc == nil || npc.x != x || npc.y != y || p.ErasedEvents[event.ID] {
+		if npc == nil || npc.x != x || npc.y != y || p.eventErased(event.ID) {
 			continue
 		}
 		page := w.properPage(p, event)
@@ -159,8 +159,20 @@ func (w *World) ensureEventState(p *Player) {
 		p.State.Variables = append(p.State.Variables, 0)
 	}
 	if p.ErasedEvents == nil {
-		p.ErasedEvents = make(map[int]bool)
+		p.ErasedEvents = make([]bool, 0)
 	}
+}
+
+func (p *Player) eventErased(id int) bool {
+	return id >= 0 && id < len(p.ErasedEvents) && p.ErasedEvents[id]
+}
+
+func (p *Player) eraseEvent(id int) {
+	if id <= 0 {
+		return
+	}
+	p.ErasedEvents = ensureIndex(p.ErasedEvents, id)
+	p.ErasedEvents[id] = true
 }
 
 func (w *World) variableValue(p *Player, id int) int {
@@ -434,10 +446,7 @@ func (w *World) executeEventCommand(p *Player, run *eventRun, frame *eventFrame,
 		return false, false
 	case 214:
 		if frame.eventID > 0 {
-			if p.ErasedEvents == nil {
-				p.ErasedEvents = make(map[int]bool)
-			}
-			p.ErasedEvents[frame.eventID] = true
+			p.eraseEvent(frame.eventID)
 		}
 		return true, false
 	case 322:
@@ -1071,7 +1080,7 @@ func (w *World) transferPlayer(p *Player, mapID, x, y, direction int) bool {
 	if old != nil && old != target {
 		old.players[p.ID] = nil
 		w.broadcastToMapPlayers(old, protocol.ServerPlayerLeft, protocol.PlayerLeft{ID: p.ID})
-		p.ErasedEvents = make(map[int]bool)
+		p.ErasedEvents = nil
 	}
 	p.Character.MapID = mapID
 	p.Character.X, p.Character.Y = x, y
