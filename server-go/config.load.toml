@@ -9,6 +9,7 @@ tick_ms = 80
 auth_timeout_seconds = 30
 inactivity_seconds = 300
 save_interval_seconds = 900
+map_idle_seconds = 60
 
 [game]
 max_stack = 999

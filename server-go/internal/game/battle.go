@@ -990,12 +990,8 @@ func (w *World) enemyAttack(enemy *enemyState, target *Player) {
 		w.applyAttackStates(w.enemyFeatures(enemy), w.playerFeatures(target), &target.Status, target)
 	}
 	if target.Character.HP <= 0 {
-		w.queuePlayerDied(target)
+		w.playerDied(target)
 	}
-}
-
-func (w *World) queuePlayerDied(p *Player) {
-	w.playerDied(p)
 }
 
 func (w *World) sendVitalsToMap(p *Player) {

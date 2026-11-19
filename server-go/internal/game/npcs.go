@@ -216,7 +216,7 @@ func (w *World) moveNPCDiagonal(ms *mapState, npc *npcState, dx, dy int) bool {
 		npc.x, npc.y = nx, ny
 		npc.direction = face
 		w.broadcastEventMove(ms, npc.event.ID, npc.x, npc.y, npc.direction)
-		w.queueEventTouch(ms, npc)
+		w.eventTouch(ms, npc)
 		return true
 	}
 	npc.direction = face
@@ -231,7 +231,7 @@ func (w *World) jumpNPC(ms *mapState, npc *npcState, dx, dy int) bool {
 	}
 	npc.x, npc.y = nx, ny
 	w.broadcastEventMove(ms, npc.event.ID, npc.x, npc.y, npc.direction)
-	w.queueEventTouch(ms, npc)
+	w.eventTouch(ms, npc)
 	return true
 }
 
@@ -397,7 +397,7 @@ func (w *World) moveNPC(ms *mapState, npc *npcState, direction int) bool {
 		npc.x, npc.y = nx, ny
 		npc.direction = face
 		w.broadcastEventMove(ms, npc.event.ID, npc.x, npc.y, npc.direction)
-		w.queueEventTouch(ms, npc)
+		w.eventTouch(ms, npc)
 		return true
 	}
 	npc.direction = face
@@ -429,12 +429,7 @@ func (w *World) npcBlocked(ms *mapState, moverID, x, y int) bool {
 	return false
 }
 
-// queueEventTouch starts a trigger-2 page when an NPC moves into a player. It
-// runs on the map actor; the queue name is kept for call-site continuity.
-func (w *World) queueEventTouch(ms *mapState, npc *npcState) {
-	w.eventTouch(ms, npc)
-}
-
+// eventTouch starts a trigger-2 page when an NPC moves into a player.
 func (w *World) eventTouch(ms *mapState, npc *npcState) {
 	for _, p := range ms.players {
 		if p == nil || p.Event != nil || p.Character.X != npc.x || p.Character.Y != npc.y {

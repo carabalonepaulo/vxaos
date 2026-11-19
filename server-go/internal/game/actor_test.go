@@ -153,6 +153,81 @@ func TestActorTradeFlowPersists(t *testing.T) {
 	t.Fatal("trade result was not persisted")
 }
 
+func TestActorGuildFlow(t *testing.T) {
+	w, st := testActorWorld(t)
+	ctx := context.Background()
+	leader := createPlayer(t, st, "Leader", 20, 12)
+	member := createPlayer(t, st, "Member", 22, 12)
+	if err := w.Join(ctx, leader); err != nil {
+		t.Fatal(err)
+	}
+	if err := w.Join(ctx, member); err != nil {
+		t.Fatal(err)
+	}
+	waitFrame(t, leader.Client, protocol.ServerEnterWorld, 2*time.Second)
+	waitFrame(t, member.Client, protocol.ServerEnterWorld, 2*time.Second)
+
+	if err := w.onPlayer(ctx, leader.ID, func(ms *mapState, p *Player) error {
+		p.CreatingGuild = true
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	flag := make([]byte, 64)
+	for i := range flag {
+		flag[i] = 255
+	}
+	flag[0] = 3
+	if err := w.CreateGuild(ctx, leader, "  test   guild ", flag); err != nil {
+		t.Fatal(err)
+	}
+	waitFrame(t, leader.Client, protocol.ServerGuildName, 2*time.Second)
+
+	if err := w.InviteGuildMember(ctx, leader, "Member"); err != nil {
+		t.Fatal(err)
+	}
+	waitFrame(t, member.Client, protocol.ServerRequest, 2*time.Second)
+	if err := w.AcceptRequest(ctx, member); err != nil {
+		t.Fatal(err)
+	}
+	waitFrame(t, member.Client, protocol.ServerGuildName, 2*time.Second)
+
+	var memberGuild string
+	if err := w.onPlayer(ctx, member.ID, func(ms *mapState, p *Player) error {
+		memberGuild = p.GuildName
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if memberGuild != "Test Guild" {
+		t.Fatalf("member guild = %q", memberGuild)
+	}
+	if err := w.OpenGuild(ctx, leader); err != nil {
+		t.Fatal(err)
+	}
+	waitFrame(t, leader.Client, protocol.ServerGuildOpen, 2*time.Second)
+	if err := w.LeaveGuild(ctx, member); err != nil {
+		t.Fatal(err)
+	}
+	deadline := time.Now().Add(2 * time.Second)
+	cleared := false
+	for time.Now().Before(deadline) {
+		var name string
+		_ = w.onPlayer(ctx, member.ID, func(ms *mapState, p *Player) error {
+			name = p.GuildName
+			return nil
+		})
+		if name == "" {
+			cleared = true
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	if !cleared {
+		t.Fatal("member guild name was not cleared")
+	}
+}
+
 func TestActorJoinMoveAndTransfer(t *testing.T) {
 	w, st := testActorWorld(t)
 	ctx := context.Background()

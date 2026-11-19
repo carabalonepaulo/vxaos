@@ -57,7 +57,6 @@ type Options struct {
 	DropDespawnSeconds int
 	DropPickupSeconds  int
 	MapIdle            time.Duration
-	MapUnload          time.Duration
 	InlineMaps         bool
 	ProjectileSkills   []int
 	Teleports          []Teleport
@@ -146,11 +145,12 @@ type World struct {
 	log  *slog.Logger
 	now  func() time.Time
 
-	commands chan func()
-	stop     chan struct{}
-	stopped  chan struct{}
-	stopOnce sync.Once
-	actorWG  sync.WaitGroup
+	commands   chan func()
+	stop       chan struct{}
+	stopped    chan struct{}
+	stopOnce   sync.Once
+	actorWG    sync.WaitGroup
+	routeCache sync.Map // player id -> playerRoute
 
 	// All fields below are owned by the coordinator goroutine.
 	online         map[uint16]*onlineEntry
@@ -217,7 +217,6 @@ type mapState struct {
 	autorun        *autorunState
 	drops          []*dropState
 	globalSwitches []bool
-	stop           chan struct{}
 }
 
 // npcState is the runtime position and autonomous movement of a non-enemy map
@@ -316,9 +315,6 @@ func New(opts Options) (*World, error) {
 	}
 	if opts.MapIdle <= 0 {
 		opts.MapIdle = 60 * time.Second
-	}
-	if opts.MapUnload <= 0 {
-		opts.MapUnload = 120 * time.Second
 	}
 	if opts.Logger == nil {
 		opts.Logger = slog.Default()
@@ -489,9 +485,14 @@ func (w *World) onPlayer(ctx context.Context, id uint16, fn func(*mapState, *Pla
 }
 
 func (w *World) onPlayerRetry(ctx context.Context, id uint16, fn func(*mapState, *Player) error, retries int) error {
-	route, err := w.lookupRoute(ctx, id)
-	if err != nil {
-		return err
+	route, ok := w.cachedRoute(id)
+	if !ok {
+		var err error
+		route, err = w.lookupRoute(ctx, id)
+		if err != nil {
+			return err
+		}
+		w.storeRoute(id, route)
 	}
 	if w.opts.InlineMaps {
 		return w.do(ctx, func() error {
@@ -510,16 +511,31 @@ func (w *World) onPlayerRetry(ctx context.Context, id uint16, fn func(*mapState,
 	select {
 	case err := <-reply:
 		if errors.Is(err, ErrStaleRoute) && retries > 0 {
+			w.routeCache.Delete(id)
 			return w.onPlayerRetry(ctx, id, fn, retries-1)
 		}
 		return err
 	case <-route.actor.done:
+		w.routeCache.Delete(id)
 		return ErrNotInGame
 	case <-ctx.Done():
 		return ctx.Err()
 	case <-w.stop:
 		return ErrClosed
 	}
+}
+
+func (w *World) cachedRoute(id uint16) (playerRoute, bool) {
+	value, ok := w.routeCache.Load(id)
+	if !ok {
+		return playerRoute{}, false
+	}
+	route, ok := value.(playerRoute)
+	return route, ok
+}
+
+func (w *World) storeRoute(id uint16, route playerRoute) {
+	w.routeCache.Store(id, route)
 }
 
 // enqueueMap posts fire-and-forget work to a map actor. It must be called on
@@ -797,6 +813,7 @@ func (w *World) joinOnline(p *Player) error {
 		delete(w.byCharacter, p.Character.ID)
 		return fmt.Errorf("game: no valid map for character %d", p.Character.ID)
 	}
+	w.storeRoute(p.ID, playerRoute{key: key, epoch: epoch, actor: a})
 	snap := snapshotPlayer(p, epoch)
 	snap.GuildName = entry.GuildName
 	snap.PartyID = entry.PartyID
@@ -887,6 +904,7 @@ func (w *World) joinInline(p *Player) error {
 	w.online[p.ID] = entry
 	w.byCharacter[p.Character.ID] = entry
 	actor := w.actors[p.MapKey]
+	w.storeRoute(p.ID, playerRoute{key: p.MapKey, epoch: epoch, actor: actor})
 	actor.putPlayer(p)
 	w.ensureEventState(p)
 	w.syncPlayerGuild(p)
@@ -945,6 +963,7 @@ func (w *World) Leave(ctx context.Context, p *Player, save bool) error {
 		}
 		delete(w.online, p.ID)
 		delete(w.byCharacter, entry.CharacterID)
+		w.routeCache.Delete(p.ID)
 		if entry.PartyID != 0 {
 			w.leavePartyEntry(entry)
 		}
@@ -989,6 +1008,7 @@ func (w *World) removeInlineLocked(p *Player, save bool) {
 	}
 	delete(w.online, p.ID)
 	delete(w.byCharacter, p.Character.ID)
+	w.routeCache.Delete(p.ID)
 }
 
 func (w *World) removeOnlineByID(id uint16) {
@@ -998,6 +1018,7 @@ func (w *World) removeOnlineByID(id uint16) {
 	}
 	delete(w.online, id)
 	delete(w.byCharacter, entry.CharacterID)
+	w.routeCache.Delete(id)
 	if entry.PartyID != 0 {
 		w.leavePartyEntry(entry)
 	}

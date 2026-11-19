@@ -1144,6 +1144,7 @@ func (w *World) commitTransfer(snap *playerSnapshot, key MapKey) {
 		w.attachBack(snap, entry)
 		return
 	}
+	w.storeRoute(snap.ID, playerRoute{key: key, epoch: epoch, actor: a})
 	w.attachPlayer(a, attachPayload{
 		snap:    snap,
 		enter:   false,
@@ -1161,6 +1162,7 @@ func (w *World) attachBack(snap *playerSnapshot, entry *onlineEntry) {
 		w.log.Error("map transfer lost player", "player", snap.ID)
 		return
 	}
+	w.storeRoute(snap.ID, playerRoute{key: key, epoch: entry.Epoch, actor: a})
 	w.attachPlayer(a, attachPayload{
 		snap: snap, enter: false, epoch: entry.Epoch,
 		gen: w.nextAttachGen(key), motd: w.motd,

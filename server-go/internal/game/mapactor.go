@@ -49,7 +49,6 @@ type mapActor struct {
 	idleSince time.Time
 	gen       uint64 // last attach generation applied by this actor
 	lastSave  time.Time
-	retired   bool
 }
 
 func newMapActor(w *World, key MapKey, ms *mapState) *mapActor {
@@ -101,7 +100,7 @@ func (a *mapActor) run() {
 		case <-tick.C:
 			a.tick()
 		case <-a.stop:
-			a.flushAll(true)
+			a.flushAll()
 			return
 		}
 	}
@@ -196,14 +195,13 @@ func (a *mapActor) tick() {
 	a.w.tickDropsMap(a.ms, now)
 	if now.Sub(a.lastSave) >= a.w.opts.SaveInterval {
 		a.lastSave = now
-		a.flushAll(false)
+		a.flushAll()
 	}
 }
 
 // sleep tells the coordinator that this actor has been empty for the grace
 // period. The coordinator decides whether it can be removed.
 func (a *mapActor) sleep() {
-	a.retired = true
 	gen := a.gen
 	key := a.key
 	a.w.postCoordinator(func() {
@@ -224,7 +222,7 @@ func (w *World) maybeUnloadMap(key MapKey, a *mapActor, gen uint64) {
 	w.log.Info("map unloaded", "map", key.TemplateID, "instance", key.InstanceID)
 }
 
-func (a *mapActor) flushAll(final bool) {
+func (a *mapActor) flushAll() {
 	now := a.w.now()
 	for _, p := range a.players {
 		if p == nil {

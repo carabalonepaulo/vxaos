@@ -33,6 +33,7 @@ type Server struct {
 	AuthTimeoutSeconds  int `toml:"auth_timeout_seconds"`
 	InactivitySeconds   int `toml:"inactivity_seconds"`
 	SaveIntervalSeconds int `toml:"save_interval_seconds"`
+	MapIdleSeconds      int `toml:"map_idle_seconds"`
 }
 
 // Game contains server-only gameplay knobs. Shared limits are in
@@ -67,6 +68,7 @@ func Default() Config {
 			AuthTimeoutSeconds:  30,
 			InactivitySeconds:   300,
 			SaveIntervalSeconds: 900,
+			MapIdleSeconds:      60,
 		},
 		Game: Game{MaxStack: 999},
 		Auth: Auth{Iterations: auth.DefaultIterations},
@@ -115,6 +117,9 @@ func (c Config) Validate() error {
 	}
 	if c.Server.AuthTimeoutSeconds <= 0 || c.Server.InactivitySeconds <= 0 {
 		return fmt.Errorf("config: session timeouts must be positive")
+	}
+	if c.Server.MapIdleSeconds <= 0 {
+		return fmt.Errorf("config: map_idle_seconds must be positive")
 	}
 	if c.Game.MaxStack <= 0 {
 		return fmt.Errorf("config: game.max_stack must be positive")

@@ -102,6 +102,7 @@ func main() {
 		Store:              st,
 		Tick:               time.Duration(cfg.Server.TickMS) * time.Millisecond,
 		SaveInterval:       time.Duration(cfg.Server.SaveIntervalSeconds) * time.Second,
+		MapIdle:            time.Duration(cfg.Server.MapIdleSeconds) * time.Second,
 		MaxEquips:          shared.Limits.MaxEquips,
 		MaxHotbar:          shared.Limits.MaxHotbar,
 		MaxItems:           shared.Limits.MaxPlayerItems,
