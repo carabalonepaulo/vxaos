@@ -9,7 +9,7 @@ to return 0; the client only displays the result sent by the server.
 ## Migrating Ruby formulas
 
 ```powershell
-cd server-go
+cd server
 go run ./cmd/vxaos-formula check   # report what would change
 go run ./cmd/vxaos-formula apply   # rewrite Skills.rvdata2 / Items.rvdata2
 ```

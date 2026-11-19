@@ -1,9 +1,9 @@
 # Local server state and build artifacts
-server-go/bin/
-server-go/data/
-server-go/logs/
-server-go/config.toml
-server-go/*.exe
+server/bin/
+server/data/
+server/logs/
+server/config.toml
+server/*.exe
 /vxaos/
 /vxaos.7z
 *.db

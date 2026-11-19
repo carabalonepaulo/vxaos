@@ -9,7 +9,7 @@ VX Ace game.
 | Component | Requirement |
 |---|---|
 | Client | RPG Maker VX Ace game with this project's `VXAOS.dll` and patched scripts |
-| Go | The version in `server-go/go.mod` (Go 1.27 or newer) |
+| Go | The version in `server/go.mod` (Go 1.27 or newer) |
 | Git | To clone and update the repository |
 | Database | SQLite by default; MySQL or PostgreSQL optional |
 | `just` | Optional command runner used by the recipes |
@@ -24,13 +24,13 @@ server.
 You need both the server and the client:
 
 ```text
-client data       ../Client/Data (maps, scripts, database .rvdata2 files)
-server            server-go/
-content           server-go/content (shared configs, enums, quests, locales)
+client data       ../client/Data (maps, scripts, database .rvdata2 files)
+server            server/
+content           server/content (shared configs, enums, quests, locales)
 ```
 
 `data_dir` in `config.toml` must point to the client `Data` folder. The example
-configuration uses `../Client/Data` relative to `server-go/`.
+configuration uses `../client/Data` relative to `server/`.
 
 The `content_dir` must contain at least:
 
@@ -80,8 +80,8 @@ port directly to untrusted networks.
 ## Before you start
 
 1. The client runs and reaches the title screen.
-2. You have a writable copy of `Client/Data`.
-3. The server can read `Client/Data` and write `server-go/data/`.
+2. You have a writable copy of `client/Data`.
+3. The server can read `client/Data` and write `server/data/`.
 4. Port 5000 is free.
 
 Next: [Initial setup](setup.md).

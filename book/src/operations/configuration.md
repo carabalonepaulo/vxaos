@@ -19,7 +19,7 @@ server bootstrap.
 | Key | Default | Meaning |
 |---|---|---|
 | `listen` | `0.0.0.0:5000` | TCP address for the game client |
-| `data_dir` | `../Client/Data` | RPG Maker `.rvdata2` directory |
+| `data_dir` | `../client/Data` | RPG Maker `.rvdata2` directory |
 | `content_dir` | `content` | TOML/CSV content directory |
 | `log_level` | `info` | `debug`, `info`, `warn` or `error` |
 
@@ -125,7 +125,7 @@ client closing at the handshake.
 module. It also contains the protocol opcode table used by the parity tests:
 
 - `[protocol.client]` and `[protocol.server]` must match
-  `server-go/internal/protocol/opcodes.go`;
+  `server/internal/protocol/opcodes.go`;
 - the Ruby `client-patches/protocol.rb` must match the same table;
 - `internal/content/enums_test.go` validates all three.
 
@@ -150,7 +150,7 @@ The server command accepts:
 
 ```powershell
 vxaos-server.exe -config config.toml -listen 0.0.0.0:6000 `
-  -data ..\Client\Data -dsn data\other.db
+  -data ..\client\Data -dsn data\other.db
 ```
 
 | Flag | Overrides |

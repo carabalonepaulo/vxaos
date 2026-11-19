@@ -3,8 +3,8 @@
 VXA-OS uses a symmetric binary protocol. The patched client and the server must
 use the same version. There is no v1 compatibility layer.
 
-The implementation is `server-go/internal/protocol`; the client equivalent is
-`server-go/client-patches/protocol.rb` (plus buffer/socket/network patches).
+The implementation is `server/internal/protocol`; the client equivalent is
+`server/client-patches/protocol.rb` (plus buffer/socket/network patches).
 
 ## Handshake
 
@@ -134,7 +134,7 @@ session write.
 
 ## References
 
-- `server-go/docs/protocol-v2.md` (historical detail)
-- `server-go/internal/protocol/opcodes.go` (authoritative list)
-- `server-go/client-patches/protocol.rb`
-- `server-go/content/enums.toml`
+- `server/docs/protocol-v2.md` (historical detail)
+- `server/internal/protocol/opcodes.go` (authoritative list)
+- `server/client-patches/protocol.rb`
+- `server/content/enums.toml`

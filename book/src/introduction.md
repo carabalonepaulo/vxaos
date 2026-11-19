@@ -10,7 +10,7 @@ The project has three parts:
 | Part | What it is |
 |---|---|
 | Client | A patched VX Ace game (`Game.exe`, `RGSS300.dll`, `VXAOS.dll`, patched Ruby scripts) |
-| Server | A Go server in `server/` (currently `server-go/` in the working tree) |
+| Server | A Go server in `server/` |
 | Content | RPG Maker `.rvdata2` data plus TOML/CSV sources under `content/` |
 
 The client is not optional and is not a generic VX Ace client: it must be
@@ -62,18 +62,13 @@ coordinator never waits for a map.
 
 ## Repository layout
 
-The public repository will be organized as:
-
 ```text
 /client    patched game and data
 /server    Go server and tools (module github.com/carabalonepaulo/vxaos/server)
-/editor    editor and content tools (future)
+/server-rb legacy Ruby server (historical reference)
+/extra     DLL sources, website, converters and historical assets
 /book      this documentation
 ```
-
-In the current working tree the server is still in `server-go/`. Commands in
-this book use `server-go/`; when the repository is reorganized, replace it with
-`server/` and keep the module path unchanged.
 
 ## Who this book is for
 

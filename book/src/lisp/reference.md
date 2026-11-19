@@ -1,7 +1,7 @@
 # Language reference
 
 This is the quick reference for the server Lisp. The low-level ABI is in
-`server-go/docs/lisp.md`.
+`server/docs/lisp.md`.
 
 ## Syntax
 

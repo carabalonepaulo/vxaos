@@ -2,14 +2,12 @@
 
 ## Layout
 
-Current working tree:
-
 ```text
 vxaos/
-  Client/            game, data, scripts, DLL
-  Server/            old Ruby server (reference only)
-  Extra/             DLL sources, website, tools
-  server-go/         Go server (moves to server/)
+  client/            patched game, data, scripts and native DLL
+  server/            Go server and tools
+  server-rb/         legacy Ruby server (historical reference)
+  extra/             DLL sources, website, converters and historical assets
   book/              this mdBook
   docs/              temporary documentation plan
   CHANGELOG.md
@@ -18,7 +16,7 @@ vxaos/
 Server module:
 
 ```text
-server-go/
+server/
   cmd/               server, admin, content, clientpatch, formula, events, load, input
   internal/          rvdata, rpg, content, store, auth, chargen, protocol, script, game, net
   client-patches/    protocol/crypto/buffer/socket/network/handlers
@@ -31,14 +29,13 @@ server-go/
   config.load.toml
 ```
 
-The Go module is `github.com/carabalonepaulo/vxaos/server`. It assumes the
-server lives in `server/` at the repository root; the local folder rename is
-pending.
+The Go module is `github.com/carabalonepaulo/vxaos/server`, matching the
+`server/` directory at the repository root.
 
 ## Build and test
 
 ```powershell
-cd server-go
+cd server
 go build ./...
 go test ./...
 go vet ./...
@@ -115,7 +112,7 @@ They rewrite `.rvdata2` files and keep backups. Run `check` first.
 ```
 
 For AOI measurements use `-spread` with a separate database/config, as in
-`server-go/docs/load-test-aoi.md`.
+`server/docs/load-test-aoi.md`.
 
 ## Distribution
 

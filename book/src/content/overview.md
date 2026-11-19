@@ -2,7 +2,7 @@
 
 VXA-OS content lives in two places.
 
-## RPG Maker data (`Client/Data/*.rvdata2`)
+## RPG Maker data (`client/Data/*.rvdata2`)
 
 The server reads the same files the editor writes:
 
@@ -30,7 +30,7 @@ The server never mutates maps or the database at runtime. The migration tools
 (`vxaos-content`, `vxaos-formula`, `vxaos-events`) are the only things that
 rewrite `.rvdata2` files, and they keep `.bak` copies.
 
-## Shared sources (`server-go/content/`)
+## Shared sources (`server/content/`)
 
 ```text
 configs.toml           shared gameplay/UI values -> [VS] Configs

@@ -1,6 +1,6 @@
 # Quests
 
-Quests live in `server-go/content/quests.toml`. The server reads the file at
+Quests live in `server/content/quests.toml`. The server reads the file at
 startup; `vxaos-content build` renders the same data into the client's
 `[VS] Quests` module for the UI.
 

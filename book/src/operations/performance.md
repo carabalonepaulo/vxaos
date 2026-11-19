@@ -82,7 +82,7 @@ Same 500 bots and rates, positions distributed across 50x30/40x25 maps:
 | Memory | 81.9 MB | 84.6 MB | +3.3% |
 
 The clustered workload cannot show AOI culling because the window contains the
-whole cluster. Its numbers are in `server-go/docs/load-test-aoi.md`.
+whole cluster. Its numbers are in `server/docs/load-test-aoi.md`.
 
 ## Tuning
 

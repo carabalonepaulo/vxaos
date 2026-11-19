@@ -1,6 +1,6 @@
 # Maps and events
 
-Maps are loaded from `Client/Data/Map*.rvdata2` and `MapInfos.rvdata2`. The
+Maps are loaded from `client/Data/Map*.rvdata2` and `MapInfos.rvdata2`. The
 server reads the map size, tileset, PvP flag, events, pages and command lists.
 The client renders the same files.
 

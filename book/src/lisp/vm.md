@@ -114,4 +114,4 @@ with the server tests; a prelude error can prevent startup.
 - [Damage formulas](damage-formulas.md)
 - [Event scripts](event-scripts.md)
 - [Language reference](reference.md)
-- Low-level ABI: `server-go/docs/lisp.md`
+- Low-level ABI: `server/docs/lisp.md`

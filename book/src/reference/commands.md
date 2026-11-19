@@ -1,6 +1,6 @@
 # Command reference
 
-All commands assume `server-go/` as the working directory and built binaries in
+All commands assume `server/` as the working directory and built binaries in
 `bin/`.
 
 ## `vxaos-server`
@@ -41,7 +41,7 @@ check   render and validate without writing
 build   replace [VS] Enums/Configs/Vocab/Quests in Scripts.rvdata2
 ```
 
-Defaults: `-data ../Client/Data`, `-content ./content`, `-locale ptBR`.
+Defaults: `-data ../client/Data`, `-content ./content`, `-locale ptBR`.
 
 ## `vxaos-clientpatch`
 
@@ -52,7 +52,7 @@ check   validate scripts/patches, write nothing
 apply   replace/insert entries in Scripts.rvdata2 (keeps .bak)
 ```
 
-Defaults: `-data ../Client/Data`, `-patches ./client-patches`.
+Defaults: `-data ../client/Data`, `-patches ./client-patches`.
 
 ## `vxaos-formula`
 
@@ -61,7 +61,7 @@ vxaos-formula <check|apply> [data-dir]
 ```
 
 Rewrites `Skills.rvdata2` and `Items.rvdata2` damage formulas to Lisp. Default
-data dir `../Client/Data`. `apply` keeps `.bak` files. Invalid formulas cause a
+data dir `../client/Data`. `apply` keeps `.bak` files. Invalid formulas cause a
 non-zero exit.
 
 ## `vxaos-events`
@@ -71,7 +71,7 @@ vxaos-events <check|apply> [data-dir]
 ```
 
 Rewrites command 355 helper calls in `Map*.rvdata2` and
-`CommonEvents.rvdata2`. Default data dir `../Client/Data`. `apply` keeps `.bak`
+`CommonEvents.rvdata2`. Default data dir `../client/Data`. `apply` keeps `.bak`
 files. Unsupported scripts are reported and left untouched.
 
 ## `vxaos-load`

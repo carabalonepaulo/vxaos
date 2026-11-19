@@ -5,10 +5,8 @@ This chapter takes a clean checkout to a logged-in character.
 ## 1. Enter the server directory
 
 ```powershell
-cd server-go
+cd server
 ```
-
-When the repository is reorganized, this becomes `cd server`.
 
 ## 2. Create the server configuration
 
@@ -21,7 +19,7 @@ template. Edit these fields if your paths differ:
 
 ```toml
 listen = "0.0.0.0:5000"
-data_dir = "../Client/Data"
+data_dir = "../client/Data"
 content_dir = "content"
 log_level = "info"
 ```
@@ -85,7 +83,7 @@ go run ./cmd/vxaos-clientpatch apply
 ```
 
 - `check` validates the patch set without writing.
-- `apply` replaces/inserts the scripts in `../Client/Data/Scripts.rvdata2`.
+- `apply` replaces/inserts the scripts in `../client/Data/Scripts.rvdata2`.
 - The previous archive is kept as `Scripts.rvdata2.bak`.
 - Re-running `apply` is idempotent.
 
@@ -177,7 +175,7 @@ just dist        # create a distribution archive
 
 | Symptom | Fix |
 |---|---|
-| `config: ... no such file` | Run from `server-go/` or pass the full `-config` path |
+| `config: ... no such file` | Run from `server/` or pass the full `-config` path |
 | `game data loaded` fails | `data_dir` does not contain the RPG Maker `.rvdata2` files |
 | Client says version mismatch | Regenerate client content and restart both sides |
 | Client disconnects after login | Re-apply `vxaos-clientpatch`, then `vxaos-content build` |

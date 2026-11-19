@@ -10,7 +10,7 @@ Check:
 2. `listen` and the client `HOST`/`PORT` match.
 3. Firewall allows TCP 5000.
 4. The client is patched with protocol v2.
-5. `network.log` in `Client/System` for the last sent/received opcode.
+5. `network.log` in `client/System` for the last sent/received opcode.
 
 A wrong magic/version closes the connection immediately; the server log shows a
 handshake failure.

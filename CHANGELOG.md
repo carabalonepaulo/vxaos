@@ -163,7 +163,7 @@ every 2 s:
   without AOI.
 - The original clustered workload stacks bots on the same tiles, so it cannot
   show AOI culling; its numbers are documented in
-  `server-go/docs/load-test-aoi.md`.
+  `server/docs/load-test-aoi.md`.
 
 ### Security
 
@@ -191,9 +191,9 @@ every 2 s:
 
 ### Documentation
 
-- Protocol v2 reference: `server-go/docs/protocol-v2.md`.
-- Lisp language and host ABI: `server-go/docs/lisp.md`.
-- Load test reports: `server-go/docs/load-test-baseline.md`,
+- Protocol v2 reference: `server/docs/protocol-v2.md`.
+- Lisp language and host ABI: `server/docs/lisp.md`.
+- Load test reports: `server/docs/load-test-baseline.md`,
   `load-test-post-parallel.md`, `load-test-aoi.md`.
 - Full setup, admin, content and Lisp guide: the mdBook in `book/` (in
   progress).

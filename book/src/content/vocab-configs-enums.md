@@ -1,6 +1,6 @@
 # Vocab, Configs and Enums
 
-Three generated Ruby modules come from `server-go/content/`:
+Three generated Ruby modules come from `server/content/`:
 
 | Source | Generated script | Used by |
 |---|---|---|

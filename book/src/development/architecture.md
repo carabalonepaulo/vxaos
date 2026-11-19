@@ -112,7 +112,6 @@ Empty maps skip all of it and are unloaded after `map_idle_seconds`.
 ## Design constraints
 
 - No Ruby at server runtime.
-- No per-map network reactor.
 - No map-state persistence.
 - No global mutex around gameplay.
 - Server authority for all gameplay outcomes.

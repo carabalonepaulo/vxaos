@@ -7,7 +7,7 @@ not execute them.
 ## Migration
 
 ```powershell
-cd server-go
+cd server
 go run ./cmd/vxaos-events check
 go run ./cmd/vxaos-events apply
 ```
@@ -55,7 +55,7 @@ become:
 
 Native behavior is implemented in `internal/game/eventscript.go`. Host objects
 such as `client`, `event`, `map` and `interpreter` are documented in the
-low-level `server-go/docs/lisp.md`.
+low-level `server/docs/lisp.md`.
 
 ## Examples
 

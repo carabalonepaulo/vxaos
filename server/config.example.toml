@@ -1,0 +1,45 @@
+listen = "0.0.0.0:5000"
+data_dir = "../client/Data"
+content_dir = "content"
+log_level = "info"
+
+[server]
+max_connections = 500
+tick_ms = 80
+auth_timeout_seconds = 30
+inactivity_seconds = 300
+save_interval_seconds = 900
+map_idle_seconds = 60
+aoi_radius_tiles = 9
+aoi_hysteresis_tiles = 2
+aoi_cell_size = 8
+
+[game]
+# Shared limits and gameplay values live in content/configs.toml.
+max_stack = 999
+
+[auth]
+# PBKDF2-HMAC-SHA256 iterations. The client must use the same value from its
+# challenge; 210k is a reasonable desktop target.
+iterations = 210000
+
+[store]
+driver = "sqlite"       # sqlite | mysql | postgres
+dsn = "data/vxaos.db"
+# max_open_conns = 1
+# max_idle_conns = 1
+
+# Event-driven teleport windows (open_teleport(group+1) in a 355 script).
+[[teleport]]
+group = 0
+map_id = 1
+x = 21
+y = 12
+gold = 10
+
+[[teleport]]
+group = 0
+map_id = 2
+x = 4
+y = 20
+gold = 20

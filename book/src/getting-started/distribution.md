@@ -6,7 +6,7 @@ content sources and a start script. It does **not** contain the client.
 ## Build the binaries
 
 ```powershell
-cd server-go
+cd server
 just build
 ```
 
@@ -59,7 +59,7 @@ vxaos-server-<version>/
 ```
 
 `packaging/config.toml` uses `data_dir = "game-data"`, so the archive does not
-depend on `../Client/Data`.
+depend on `../client/Data`.
 
 ## First run on a new machine
 

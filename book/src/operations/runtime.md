@@ -11,9 +11,6 @@ The server is one process with:
   currently on it;
 - one **persistence worker** goroutine consuming character/bank snapshots.
 
-There is no per-map network reactor. Go's netpoll handles sockets; map actors
-are state machines, not I/O loops.
-
 ## Map lifecycle
 
 1. First player enters a map → `ensureMap` creates the runtime from the

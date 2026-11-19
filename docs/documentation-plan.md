@@ -119,7 +119,7 @@ the book instead of duplicating it.
     - examples for quests, checkpoints, chat, VIP and graphics.
 19. **Lisp reference**
     - syntax, special forms, built-ins, native function signatures, limits,
-      debugging and common mistakes. Link to `server-go/docs/lisp.md` as the
+      debugging and common mistakes. Link to `server/docs/lisp.md` as the
       low-level ABI reference.
 
 ### Part V — Development
@@ -154,14 +154,14 @@ the book instead of duplicating it.
 
 The book must be verified against the code, not copied from old README claims:
 
-- `server-go/internal/config/config.go`, `config.example.toml`,
+- `server/internal/config/config.go`, `config.example.toml`,
   `content/configs.toml`, `content/enums.toml`
-- `server-go/cmd/vxaos-admin`, `vxaos-content`, `vxaos-clientpatch`,
+- `server/cmd/vxaos-admin`, `vxaos-content`, `vxaos-clientpatch`,
   `vxaos-formula`, `vxaos-events`, `vxaos-load`, `vxaos-input`
-- `server-go/internal/game` for gameplay rules and admin commands
-- `server-go/docs/lisp.md` and `docs/protocol-v2.md`
-- `server-go/docs/load-test-*.md` for measured numbers
-- `server-go/client-patches/manifest.toml` for the client patch list
+- `server/internal/game` for gameplay rules and admin commands
+- `server/docs/lisp.md` and `docs/protocol-v2.md`
+- `server/docs/load-test-*.md` for measured numbers
+- `server/client-patches/manifest.toml` for the client patch list
 
 Every command in the book must be run once in a clean environment before the
 chapter is considered done. Config examples must match the real loader.
