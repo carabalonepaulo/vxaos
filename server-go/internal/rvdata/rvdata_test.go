@@ -282,7 +282,7 @@ func TestLoadScripts(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(scripts) != 167 {
+	if len(scripts) != 168 {
 		t.Fatalf("script count = %d", len(scripts))
 	}
 	i := FindScript(scripts, "[VS] Configs")

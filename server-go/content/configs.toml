@@ -13,7 +13,9 @@
 
 schema_version = 1
 
-loading_time = 2
+# Deprecated by the patched loading screen: it no longer waits before sending
+# the character-selection request. Kept at 0 for compatibility with old scripts.
+loading_time = 0
 loading_titles = ["Title1", "Title2"]
 start_points = 10
 title_bar_height = 20

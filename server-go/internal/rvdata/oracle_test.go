@@ -63,7 +63,7 @@ puts 'map-ok'
 	src2 := `
 require 'zlib'
 s = Marshal.load(File.binread(ARGV[0]))
-raise 'bad count' unless s.size == 167
+raise 'bad count' unless s.size == 168
 i = s.index { |e| e[1] == '[VS] Configs' }
 raise 'no configs' unless i
 src = Zlib::Inflate.inflate(s[i][2])

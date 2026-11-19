@@ -47,6 +47,11 @@ file = "server_authority.rb"
 before = "[RM] Main"
 
 [[script]]
+name = "[VS] Loading Screen"
+file = "loading_screen.rb"
+before = "[RM] Main"
+
+[[script]]
 name = "[VS] Test Input"
 file = "test_input.rb"
 before = "[RM] Main"

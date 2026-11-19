@@ -1162,6 +1162,7 @@ module Handle_Data
     code = r.u16
     message = r.string
     debug_log("server error code=#{code} message=#{message}")
+    SceneManager.scene.cancel_loading if SceneManager.scene.respond_to?(:cancel_loading)
     report_error(message)
   end
 
