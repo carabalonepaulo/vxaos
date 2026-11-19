@@ -36,6 +36,10 @@ check:
 load-setup: build
     .\bin\vxaos-load.exe -setup -config config.load.toml -count 500
 
+# Start the isolated load-test server on 127.0.0.1:5050.
+load-server:
+    .\bin\vxaos-server.exe -config config.load.toml
+
 # Drive 500 bots against a server already running on 127.0.0.1:5050.
 load: build
     .\bin\vxaos-load.exe -config config.load.toml -addr 127.0.0.1:5050 -count 500 -duration 60s -ramp 10s -move-every 500ms -attack-every 2s -json bin\load-test-baseline.json
