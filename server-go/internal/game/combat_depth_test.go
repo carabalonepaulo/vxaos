@@ -102,7 +102,7 @@ func TestPlayerDeathLosesGoldExpAndTransfers(t *testing.T) {
 	if p.Character.X != 21 || p.Character.Y != 12 {
 		t.Fatalf("death position = (%d,%d)", p.Character.X, p.Character.Y)
 	}
-	if len(p.Status.States) != 0 {
+	if p.Status.any() {
 		t.Fatalf("states after death = %+v", p.Status.States)
 	}
 }

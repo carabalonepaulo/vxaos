@@ -33,7 +33,7 @@ func TestStateAndBuffFlow(t *testing.T) {
 
 	// Defender adds state 9 to the caster.
 	use(2)
-	if _, ok := p.Status.States[9]; !ok {
+	if !p.Status.hasState(9) {
 		t.Fatalf("defender state missing: %+v", p.Status.States)
 	}
 	client := p.Client.(*fakeClient)
@@ -64,10 +64,10 @@ func TestStateAndBuffFlow(t *testing.T) {
 		t.Fatal(err)
 	}
 	use(31)
-	if _, ok := p.Status.States[2]; ok {
+	if p.Status.hasState(2) {
 		t.Fatal("poison was not removed")
 	}
-	if _, ok := p.Status.States[7]; ok {
+	if p.Status.hasState(7) {
 		t.Fatal("paralysis was not removed")
 	}
 
@@ -78,7 +78,7 @@ func TestStateAndBuffFlow(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	if _, ok := p.Status.States[2]; !ok {
+	if !p.Status.hasState(2) {
 		t.Fatal("attack state was not applied")
 	}
 
@@ -93,13 +93,13 @@ func TestStateAndBuffFlow(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	if _, ok := p.Status.States[9]; ok {
+	if p.Status.hasState(9) {
 		t.Fatal("defend state did not expire")
 	}
 	if p.Status.Buffs[2].Level != 0 {
 		t.Fatalf("buff did not expire: %+v", p.Status.Buffs[2])
 	}
-	if _, ok := p.Status.States[2]; !ok {
+	if !p.Status.hasState(2) {
 		t.Fatal("permanent poison expired")
 	}
 }

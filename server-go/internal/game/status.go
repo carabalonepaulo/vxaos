@@ -16,22 +16,39 @@ type buffSlot struct {
 }
 
 // statusSet is the transient state/buff container of a battler. Timed states
-// and buffs tick once per second while the world runs.
+// and buffs tick once per second while the world runs. States is indexed by
+// state id; 0 means absent, otherwise the stored value is turns+1. This keeps
+// the RPG Maker id-as-index convention and avoids hashing on every hit.
 type statusSet struct {
-	States     map[int]int
+	States     []int
 	Buffs      [8]buffSlot
 	LastSecond int64
 }
 
-func (s *statusSet) ensure() {
-	if s.States == nil {
-		s.States = make(map[int]int)
+func (s *statusSet) ensure(states int) {
+	if len(s.States) < states {
+		grown := make([]int, states)
+		copy(grown, s.States)
+		s.States = grown
 	}
 }
 
+func (s *statusSet) hasState(id int) bool {
+	return id > 0 && id < len(s.States) && s.States[id] != 0
+}
+
+func (s *statusSet) stateTurns(id int) int {
+	if !s.hasState(id) {
+		return 0
+	}
+	return s.States[id] - 1
+}
+
 func (s *statusSet) any() bool {
-	if len(s.States) > 0 {
-		return true
+	for _, turns := range s.States {
+		if turns != 0 {
+			return true
+		}
 	}
 	for _, b := range s.Buffs {
 		if b.Level != 0 {
@@ -87,9 +104,12 @@ func (w *World) enemyFeatures(enemy *enemyState) []rpg.Feature {
 	return append(out, w.stateFeatures(enemy.Status.States)...)
 }
 
-func (w *World) stateFeatures(states map[int]int) []rpg.Feature {
+func (w *World) stateFeatures(states []int) []rpg.Feature {
 	var out []rpg.Feature
-	for id := range states {
+	for id, turns := range states {
+		if turns == 0 {
+			continue
+		}
 		if def := w.stateDef(id); def != nil {
 			out = append(out, def.Features...)
 		}
@@ -208,15 +228,15 @@ func (w *World) addState(set *statusSet, stateID int, chance float64, owner *Pla
 	if chance < 1 && rand.Float64() >= chance {
 		return false
 	}
-	set.ensure()
-	if _, ok := set.States[stateID]; ok {
+	set.ensure(len(w.opts.Data.States))
+	if set.hasState(stateID) {
 		return false
 	}
 	turns := 0
 	if def.AutoRemovalTiming != 0 && def.MaxTurns > 0 {
 		turns = def.MaxTurns
 	}
-	set.States[stateID] = turns
+	set.States[stateID] = turns + 1
 	if owner != nil {
 		_ = owner.Client.Send(protocol.ServerState, protocol.State{StateID: uint16(clampInt(stateID, 0, 65535)), Add: true})
 	}
@@ -224,13 +244,10 @@ func (w *World) addState(set *statusSet, stateID int, chance float64, owner *Pla
 }
 
 func (w *World) removeState(set *statusSet, stateID int, owner *Player) {
-	if set.States == nil {
+	if !set.hasState(stateID) {
 		return
 	}
-	if _, ok := set.States[stateID]; !ok {
-		return
-	}
-	delete(set.States, stateID)
+	set.States[stateID] = 0
 	if owner != nil {
 		_ = owner.Client.Send(protocol.ServerState, protocol.State{StateID: uint16(clampInt(stateID, 0, 65535)), Add: false})
 	}
@@ -284,8 +301,10 @@ func (w *World) eraseBuff(set *statusSet, owner *Player, param int) {
 
 // clearStatus removes every state and buff (death, logout).
 func (w *World) clearStatus(set *statusSet, owner *Player) {
-	for id := range set.States {
-		w.removeState(set, id, owner)
+	for id, turns := range set.States {
+		if turns != 0 {
+			w.removeState(set, id, owner)
+		}
 	}
 	for i := range set.Buffs {
 		if set.Buffs[i].Level != 0 {
@@ -326,10 +345,13 @@ func (w *World) applyAttackStates(attackerFeatures, targetFeatures []rpg.Feature
 
 // onDamaged removes states flagged as removable by damage.
 func (w *World) onDamaged(set *statusSet, owner *Player) {
-	if len(set.States) == 0 {
+	if !set.any() {
 		return
 	}
-	for id := range set.States {
+	for id, encoded := range set.States {
+		if encoded == 0 {
+			continue
+		}
 		def := w.stateDef(id)
 		if def == nil || !def.RemoveByDamage {
 			continue
@@ -347,8 +369,12 @@ func (w *World) tickStatus(now time.Time, set *statusSet, owner *Player, feature
 		return
 	}
 	set.LastSecond = second
-	for id, turns := range set.States {
+	for id, encoded := range set.States {
+		if encoded == 0 {
+			continue
+		}
 		def := w.stateDef(id)
+		turns := encoded - 1
 		if def == nil || def.AutoRemovalTiming == 0 || turns <= 0 {
 			continue
 		}
@@ -356,7 +382,7 @@ func (w *World) tickStatus(now time.Time, set *statusSet, owner *Player, feature
 		if turns == 0 {
 			w.removeState(set, id, owner)
 		} else {
-			set.States[id] = turns
+			set.States[id] = turns + 1
 		}
 	}
 	for i := range set.Buffs {

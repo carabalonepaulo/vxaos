@@ -719,8 +719,7 @@ func (w *World) evalEventCondition(p *Player, frame *eventFrame, cmd *rpg.EventC
 			return false
 		case 6:
 			stateID, _ := paramInt(cmd, 3)
-			_, ok := p.Status.States[stateID]
-			return ok
+			return p.Status.hasState(stateID)
 		}
 	case 7:
 		amount, _ := paramInt(cmd, 1)

@@ -158,7 +158,10 @@ func axisDirections(dx, dy int) (int, int) {
 }
 
 func (w *World) restricted(set *statusSet, restriction int) bool {
-	for id := range set.States {
+	for id, encoded := range set.States {
+		if encoded == 0 {
+			continue
+		}
 		if def := w.stateDef(id); def != nil && def.Restriction == restriction {
 			return true
 		}
@@ -218,8 +221,7 @@ func (w *World) enemyActionValid(enemy *enemyState, target *Player, action rpg.E
 	case 3:
 		return hpRateIn(enemy.MP, enemy.Enemy.Params[1], action.ConditionParam1, action.ConditionParam2)
 	case 4:
-		_, ok := enemy.Status.States[action.ConditionParam1]
-		return ok
+		return enemy.Status.hasState(action.ConditionParam1)
 	case 5:
 		return target != nil && target.Character.Level >= action.ConditionParam1
 	case 6:
