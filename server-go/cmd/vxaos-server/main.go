@@ -78,7 +78,13 @@ func main() {
 	if err != nil {
 		fatal(err)
 	}
-	log.Info("game data loaded", "maps", len(data.Maps), "actors", len(data.Actors), "items", len(data.Items))
+	mapCount := 0
+	for _, m := range data.Maps {
+		if m != nil {
+			mapCount++
+		}
+	}
+	log.Info("game data loaded", "maps", mapCount, "actors", len(data.Actors), "items", len(data.Items))
 
 	quests, err := content.LoadQuests(filepath.Join(cfg.ContentDir, "quests.toml"))
 	if err != nil {
