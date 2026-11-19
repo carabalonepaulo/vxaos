@@ -463,7 +463,7 @@ func (w *World) executeEventCommand(p *Player, run *eventRun, frame *eventFrame,
 		frame.index++
 		return false, false
 	default:
-		if clientVisualCommands[cmd.Code] {
+		if isClientVisualCommand(cmd.Code) {
 			w.sendEventRange(p, frame.eventID, frame.index, frame.index)
 		}
 		frame.index++
@@ -471,37 +471,17 @@ func (w *World) executeEventCommand(p *Player, run *eventRun, frame *eventFrame,
 	}
 }
 
-// clientVisualCommands are commands with no server-side state that the client
-// can execute directly from its own event data.
-var clientVisualCommands = map[int]bool{
-	203: true, // set move route
-	204: true, // scroll map
-	205: true, // change battleback
-	206: true, // change fog
-	207: true, // show animation (event)
-	208: true, // change transparency
-	209: true, // show balloon icon
-	221: true, // prepare transition
-	222: true, // execute transition
-	223: true, // change screen tone
-	224: true, // flash screen
-	225: true, // shake screen
-	231: true, // show picture
-	232: true, // move picture
-	233: true, // rotate picture
-	234: true, // change picture tone
-	235: true, // erase picture
-	236: true, // change weather
-	241: true, // play BGM
-	242: true, // fade out BGM
-	243: true, // save BGM
-	244: true, // resume BGM
-	245: true, // play BGS
-	246: true, // fade out BGS
-	247: true, // play ME
-	248: true, // play SE
-	249: true, // stop SE
-	251: true, // replay BGM
+// isClientVisualCommand reports commands with no server-side state that the
+// client can execute directly from its own event data.
+func isClientVisualCommand(code int) bool {
+	switch code {
+	case 203, 204, 205, 206, 207, 208, 209,
+		221, 222, 223, 224, 225,
+		231, 232, 233, 234, 235, 236,
+		241, 242, 243, 244, 245, 246, 247, 248, 249, 251:
+		return true
+	}
+	return false
 }
 
 func (w *World) sendEventRange(p *Player, eventID, initial, final int) {

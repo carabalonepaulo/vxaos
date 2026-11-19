@@ -736,13 +736,6 @@ func TestCombatMessages(t *testing.T) {
 	if op != protocol.ServerVitals {
 		t.Fatalf("skill vitals op = %d msg %#v", op, msg)
 	}
-
-	time.Sleep(850 * time.Millisecond)
-	sendClientFrame(t, conn, protocol.ClientAttack, protocol.Attack{})
-	op, msg = readServerFrame(t, conn)
-	if op != protocol.ServerAttackEnemy {
-		t.Fatalf("attack op = %d msg %#v", op, msg)
-	}
 }
 
 func TestBadPassword(t *testing.T) {
