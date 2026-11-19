@@ -99,7 +99,7 @@ func TestEnemyDisableAndReviveRegion(t *testing.T) {
 	}
 
 	// A region=2 enemy revives at a tile of region 2.
-	ms := w.maps[2]
+	ms := w.ensureMap(2)
 	var regional *enemyState
 	for _, candidate := range ms.enemies {
 		if candidate == nil {

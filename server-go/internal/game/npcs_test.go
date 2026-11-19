@@ -37,7 +37,7 @@ func TestNPCWander(t *testing.T) {
 	if err := w.Join(ctx, p); err != nil {
 		t.Fatal(err)
 	}
-	ms := w.maps[1]
+	ms := w.ensureMap(1)
 	npc := ms.npcs[18]
 	if npc == nil {
 		t.Fatal("guardian NPC missing")
@@ -74,7 +74,7 @@ func TestEnemyApproachesPlayer(t *testing.T) {
 	enemy := firstEnemy(t, w, 1)
 	p.Character.MapID = 1
 	p.Character.HP = 100
-	ms := w.maps[1]
+	ms := w.ensureMap(1)
 	placed := false
 	for _, off := range [][2]int{{-1, 0}, {1, 0}, {0, -1}, {0, 1}} {
 		x, y := enemy.X+off[0]*2, enemy.Y+off[1]*2

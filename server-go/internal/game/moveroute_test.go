@@ -10,7 +10,7 @@ import (
 func TestCustomMoveRouteStraightAndWait(t *testing.T) {
 	w, st := testWorld(t)
 	p := createPlayer(t, st, "Route", 21, 12)
-	ms := w.maps[1]
+	ms := w.ensureMap(1)
 	x, y := findOpenTile(t, ms, 2, 0)
 	npc := &npcState{
 		event:     &rpg.Event{ID: 999, Pages: []*rpg.Page{{}}},
@@ -54,7 +54,7 @@ func TestCustomMoveRouteTurnsAndSwitches(t *testing.T) {
 	w, st := testWorld(t)
 	p := createPlayer(t, st, "Turner", 21, 12)
 	_ = p
-	ms := w.maps[1]
+	ms := w.ensureMap(1)
 	x, y := findOpenTile(t, ms, 0, 0)
 	npc := &npcState{
 		event:     &rpg.Event{ID: 998},

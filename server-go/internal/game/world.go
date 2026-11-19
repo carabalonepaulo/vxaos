@@ -284,44 +284,8 @@ func New(opts Options) (*World, error) {
 		w.motd = motd
 	}
 	w.loadGuilds()
-	for id, m := range opts.Data.Maps {
-		if m == nil {
-			continue
-		}
-		st := &mapState{
-			def:     m,
-			tileset: opts.Data.Tilesets[m.TilesetID],
-			events:  m.Events,
-			npcs:    make([]*npcState, len(m.Events)),
-			enemies: make([]*enemyState, len(m.Events)),
-			players: make([]*Player, 0),
-		}
-		for _, ev := range m.Events {
-			if ev == nil || ev.Name == "notupdate" || ev.Name == "notglobal" {
-				continue
-			}
-			if enemy := newEnemyState(opts.Data, m, ev); enemy != nil {
-				st.enemies[ev.ID] = enemy
-				continue
-			}
-			direction := 2
-			if len(ev.Pages) > 0 && ev.Pages[0].Graphic.Direction > 0 {
-				direction = ev.Pages[0].Graphic.Direction
-			}
-			st.npcs[ev.ID] = &npcState{event: ev, x: ev.X, y: ev.Y, direction: direction}
-		}
-		w.maps[id] = st
-	}
-	for _, ms := range w.maps {
-		if ms == nil {
-			continue
-		}
-		for _, npc := range ms.npcs {
-			if npc != nil {
-				w.refreshNPC(npc)
-			}
-		}
-	}
+	// Map runtime state is created on demand by ensureMap when the first
+	// player enters a map.
 	go w.loop()
 	return w, nil
 }
@@ -369,6 +333,52 @@ func (w *World) do(ctx context.Context, fn func() error) error {
 	case <-w.stop:
 		return ErrClosed
 	}
+}
+
+// ensureMap creates the runtime state for one map template on demand. Callers
+// are the world goroutine today; this is the seam that will become a map
+// actor start later.
+func (w *World) ensureMap(id int) *mapState {
+	if id <= 0 || id >= len(w.maps) {
+		return nil
+	}
+	if ms := w.maps[id]; ms != nil {
+		return ms
+	}
+	m := w.opts.Data.Maps[id]
+	if m == nil {
+		return nil
+	}
+	ms := &mapState{
+		def:     m,
+		tileset: w.opts.Data.Tilesets[m.TilesetID],
+		events:  m.Events,
+		npcs:    make([]*npcState, len(m.Events)),
+		enemies: make([]*enemyState, len(m.Events)),
+		players: make([]*Player, 0),
+	}
+	for _, ev := range m.Events {
+		if ev == nil || ev.Name == "notupdate" || ev.Name == "notglobal" {
+			continue
+		}
+		if enemy := newEnemyState(w.opts.Data, m, ev); enemy != nil {
+			ms.enemies[ev.ID] = enemy
+			continue
+		}
+		direction := 2
+		if len(ev.Pages) > 0 && ev.Pages[0].Graphic.Direction > 0 {
+			direction = ev.Pages[0].Graphic.Direction
+		}
+		ms.npcs[ev.ID] = &npcState{event: ev, x: ev.X, y: ev.Y, direction: direction}
+	}
+	for _, npc := range ms.npcs {
+		if npc != nil {
+			w.refreshNPC(npc)
+		}
+	}
+	w.maps[id] = ms
+	w.log.Info("map activated", "map", id, "name", m.Name)
+	return ms
 }
 
 func (w *World) loop() {
@@ -419,14 +429,14 @@ func (w *World) join(p *Player) error {
 	}
 	p.ID = w.nextID
 	w.nextID++
-	ms := w.maps[p.Character.MapID]
+	ms := w.ensureMap(p.Character.MapID)
 	if ms == nil {
 		p.Character.MapID = p.Character.ReviveMapID
-		ms = w.maps[p.Character.MapID]
+		ms = w.ensureMap(p.Character.MapID)
 	}
 	if ms == nil {
 		p.Character.MapID = w.opts.Data.System.StartMapID
-		ms = w.maps[p.Character.MapID]
+		ms = w.ensureMap(p.Character.MapID)
 	}
 	if ms == nil {
 		return fmt.Errorf("game: no valid map for character %d", p.Character.ID)
@@ -434,7 +444,7 @@ func (w *World) join(p *Player) error {
 	// Validate the saved position; fall back to the revive point and then the
 	// system start point.
 	if !ms.valid(p.Character.X, p.Character.Y) {
-		if revive := w.maps[p.Character.ReviveMapID]; revive != nil && revive.valid(p.Character.ReviveX, p.Character.ReviveY) {
+		if revive := w.ensureMap(p.Character.ReviveMapID); revive != nil && revive.valid(p.Character.ReviveX, p.Character.ReviveY) {
 			p.Character.MapID = p.Character.ReviveMapID
 			p.Character.X = p.Character.ReviveX
 			p.Character.Y = p.Character.ReviveY

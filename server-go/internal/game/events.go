@@ -1072,7 +1072,7 @@ func (w *World) Teleport(ctx context.Context, p *Player, index uint8) error {
 
 // transferPlayer moves one player between maps and synchronizes both maps.
 func (w *World) transferPlayer(p *Player, mapID, x, y, direction int) bool {
-	target := w.maps[mapID]
+	target := w.ensureMap(mapID)
 	if target == nil || !target.valid(x, y) {
 		return false
 	}

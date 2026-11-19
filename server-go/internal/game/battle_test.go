@@ -11,7 +11,7 @@ import (
 
 func firstEnemy(t *testing.T, w *World, mapID int) *enemyState {
 	t.Helper()
-	ms := w.maps[mapID]
+	ms := w.ensureMap(mapID)
 	if ms == nil {
 		t.Fatalf("map %d missing", mapID)
 	}

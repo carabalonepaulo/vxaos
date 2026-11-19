@@ -22,7 +22,7 @@ func TestDropAndPickup(t *testing.T) {
 	if err := w.DropItem(ctx, p, 1, KindItem, 2); err != nil {
 		t.Fatalf("drop: %v", err)
 	}
-	ms := w.maps[1]
+	ms := w.ensureMap(1)
 	if len(ms.drops) != 1 {
 		t.Fatalf("drops = %d", len(ms.drops))
 	}
@@ -58,7 +58,7 @@ func TestDropOwnerAndDespawn(t *testing.T) {
 	if err := w.Join(ctx, p); err != nil {
 		t.Fatal(err)
 	}
-	ms := w.maps[1]
+	ms := w.ensureMap(1)
 	if err := w.do(ctx, func() error {
 		w.addMapDrop(ms, KindItem, 1, 1, 21, 12, "SomeoneElse", 0)
 		return nil
@@ -97,7 +97,7 @@ func TestEnemyDropSpawnsGroundItem(t *testing.T) {
 	if err := w.Join(ctx, p); err != nil {
 		t.Fatal(err)
 	}
-	ms := w.maps[1]
+	ms := w.ensureMap(1)
 	enemy := &enemyState{
 		Enemy: &rpg.Enemy{DropItems: []rpg.EnemyDrop{{Kind: KindItem, DataID: 1, Denominator: 1}}},
 		X:     21, Y: 12, Alive: true,

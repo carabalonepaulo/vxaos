@@ -465,7 +465,7 @@ func (w *World) playerDied(p *Player) {
 	p.TargetType, p.TargetID = 0, 0
 	p.Event = nil
 	mapID, x, y := p.Character.ReviveMapID, p.Character.ReviveX, p.Character.ReviveY
-	if ms := w.maps[mapID]; ms == nil || !ms.valid(x, y) {
+	if ms := w.ensureMap(mapID); ms == nil || !ms.valid(x, y) {
 		mapID = w.opts.Data.System.StartMapID
 		x = w.opts.Data.System.StartX
 		y = w.opts.Data.System.StartY

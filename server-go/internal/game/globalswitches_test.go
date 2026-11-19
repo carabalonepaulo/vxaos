@@ -54,7 +54,7 @@ func TestGlobalSwitchAndAutorun(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	ms := w.maps[2]
+	ms := w.ensureMap(2)
 	if ms.autorun == nil || ms.autorun.waitUntil.IsZero() {
 		t.Fatalf("autorun did not start and wait: %+v", ms.autorun)
 	}

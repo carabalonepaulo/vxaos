@@ -18,7 +18,7 @@ func TestPlayerAreaSkillHitsEveryEnemy(t *testing.T) {
 	}
 	p.State.Skills = []int{8}
 	p.Character.MP = 500
-	ms := w.maps[1]
+	ms := w.ensureMap(1)
 	first := &enemyState{
 		Event: &rpg.Event{ID: 900}, Enemy: &rpg.Enemy{Params: [8]int{1000, 100, 50, 10, 10, 10, 10, 10}},
 		ID: 1, X: 20, Y: 13, Alive: true, HP: 1000,
@@ -52,7 +52,7 @@ func TestProjectileSkillBroadcast(t *testing.T) {
 	}
 	p.State.Skills = []int{51}
 	p.Character.MP = 500
-	ms := w.maps[1]
+	ms := w.ensureMap(1)
 	enemy := &enemyState{
 		Event: &rpg.Event{ID: 902}, Enemy: &rpg.Enemy{Params: [8]int{1000, 100, 50, 10, 10, 10, 10, 10}},
 		ID: 3, X: 25, Y: 12, Alive: true, HP: 1000,
