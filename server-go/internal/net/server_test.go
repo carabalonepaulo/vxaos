@@ -652,7 +652,7 @@ func TestCombatMessages(t *testing.T) {
 	}
 	var enemyEvent *rpg.Event
 	for _, ev := range data.Maps[1].Events {
-		if len(ev.Pages) == 0 || len(ev.Pages[0].List) == 0 || ev.Pages[0].List[0].Code != 108 {
+		if ev == nil || len(ev.Pages) == 0 || len(ev.Pages[0].List) == 0 || ev.Pages[0].List[0].Code != 108 {
 			continue
 		}
 		if text, _ := ev.Pages[0].List[0].Parameters[0].(string); strings.HasPrefix(text, "Enemy") {

@@ -23,8 +23,8 @@ type Data struct {
 	Tilesets     []*Tileset
 	CommonEvents []*CommonEvent
 	System       *System
-	MapInfos     map[int]*MapInfo
-	Maps         map[int]*Map
+	MapInfos     []*MapInfo
+	Maps         []*Map
 }
 
 // Feature is one RPG::BaseItem::Feature.
@@ -320,7 +320,7 @@ type Map struct {
 	TilesetID int
 	Note      string
 	Data      *rvdata.Table
-	Events    map[int]*Event
+	Events    []*Event
 	PvP       bool
 }
 

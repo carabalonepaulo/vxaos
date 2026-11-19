@@ -67,6 +67,9 @@ func (w *World) startEvents(p *Player) {
 
 func (w *World) startMapEventAt(p *Player, ms *mapState, x, y int, triggers []int, normal bool) bool {
 	for _, event := range ms.events {
+		if event == nil {
+			continue
+		}
 		npc := ms.npcs[event.ID]
 		if npc == nil || npc.x != x || npc.y != y || p.ErasedEvents[event.ID] {
 			continue
@@ -588,6 +591,9 @@ func (w *World) tickAutoruns() {
 			continue
 		}
 		for _, event := range ms.events {
+			if event == nil {
+				continue
+			}
 			page := w.globalPage(event)
 			if page == nil || (page.Trigger != 3 && page.Trigger != 4) || len(page.List) == 0 {
 				continue

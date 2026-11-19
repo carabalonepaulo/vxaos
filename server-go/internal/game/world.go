@@ -285,6 +285,9 @@ func New(opts Options) (*World, error) {
 	}
 	w.loadGuilds()
 	for id, m := range opts.Data.Maps {
+		if m == nil {
+			continue
+		}
 		st := &mapState{
 			def:     m,
 			tileset: opts.Data.Tilesets[m.TilesetID],
@@ -293,7 +296,7 @@ func New(opts Options) (*World, error) {
 			players: make(map[uint16]*Player),
 		}
 		for _, ev := range m.Events {
-			if ev.Name == "notupdate" || ev.Name == "notglobal" {
+			if ev == nil || ev.Name == "notupdate" || ev.Name == "notglobal" {
 				continue
 			}
 			st.events = append(st.events, ev)
@@ -799,6 +802,9 @@ func (ms *mapState) allTiles(x, y int) []int {
 	var tiles []int
 	// Tile events come first, matching the original map.all_tiles ordering.
 	for _, ev := range ms.events {
+		if ev == nil {
+			continue
+		}
 		npc := ms.npcs[ev.ID]
 		if npc == nil || npc.x != x || npc.y != y || len(ev.Pages) == 0 {
 			continue

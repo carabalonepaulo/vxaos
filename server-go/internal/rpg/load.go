@@ -9,10 +9,7 @@ import (
 
 // Load reads the data files in dir.
 func Load(dir string) (*Data, error) {
-	d := &Data{
-		MapInfos: make(map[int]*MapInfo),
-		Maps:     make(map[int]*Map),
-	}
+	d := &Data{}
 	var err error
 	if d.Actors, err = loadActors(dir); err != nil {
 		return nil, err
@@ -665,6 +662,7 @@ func (d *Data) loadMaps(dir string) error {
 		if !ok {
 			continue
 		}
+		d.MapInfos = growSlice(d.MapInfos, int(id))
 		d.MapInfos[int(id)] = &MapInfo{
 			ID:       int(id),
 			Name:     fieldString(o, "@name"),
@@ -673,13 +671,29 @@ func (d *Data) loadMaps(dir string) error {
 		}
 	}
 	for id, info := range d.MapInfos {
+		if info == nil {
+			continue
+		}
 		m, err := loadMap(dir, id, info.Name)
 		if err != nil {
 			return err
 		}
+		d.Maps = growSlice(d.Maps, id)
 		d.Maps[id] = m
 	}
 	return nil
+}
+
+// growSlice ensures list has an index at i. RPG Maker databases are arrays
+// indexed by id and may contain holes, so nil entries are expected.
+func growSlice[T any](list []T, i int) []T {
+	if i < 0 {
+		return list
+	}
+	if i >= len(list) {
+		list = append(list, make([]T, i-len(list)+1)...)
+	}
+	return list
 }
 
 func loadMap(dir string, id int, name string) (*Map, error) {
@@ -700,7 +714,6 @@ func loadMap(dir string, id int, name string) (*Map, error) {
 		TilesetID: fieldInt(o, "@tileset_id"),
 		Note:      note,
 		Data:      fieldTable(o, "@data"),
-		Events:    make(map[int]*Event),
 		PvP:       NoteBool(note, "PvP"),
 	}
 	if m.Width <= 0 || m.Height <= 0 {
@@ -721,6 +734,7 @@ func loadMap(dir string, id int, name string) (*Map, error) {
 			if err != nil {
 				return nil, fmt.Errorf("rpg: Map%03d event %d: %w", id, eventID, err)
 			}
+			m.Events = growSlice(m.Events, int(eventID))
 			m.Events[int(eventID)] = ev
 		}
 	}

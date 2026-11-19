@@ -48,8 +48,8 @@ func TestLoadData(t *testing.T) {
 	if len(d.CommonEvents) != 9 {
 		t.Errorf("common events = %d", len(d.CommonEvents))
 	}
-	if len(d.MapInfos) != 2 || len(d.Maps) != 2 {
-		t.Errorf("maps = %d infos = %d", len(d.Maps), len(d.MapInfos))
+	if countNonNil(d.MapInfos) != 2 || countNonNil(d.Maps) != 2 {
+		t.Errorf("maps = %d infos = %d", countNonNil(d.Maps), countNonNil(d.MapInfos))
 	}
 	if d.System == nil || d.System.StartMapID <= 0 {
 		t.Errorf("system = %+v", d.System)
@@ -164,8 +164,8 @@ func TestMapsAndEvents(t *testing.T) {
 	if !m.PvP {
 		t.Errorf("map 2 is not PvP")
 	}
-	if len(m.Events) != 17 {
-		t.Errorf("map 2 events = %d", len(m.Events))
+	if countNonNil(m.Events) != 17 {
+		t.Errorf("map 2 events = %d", countNonNil(m.Events))
 	}
 	boss := m.Events[14]
 	if boss == nil || boss.Name != "Boss" || len(boss.Pages) != 1 {
@@ -259,4 +259,14 @@ func TestNoteParsing(t *testing.T) {
 	if len(refs) != 2 || refs[0].Name != "Charset01" || refs[0].Index != 0 || refs[1].Index != 3 {
 		t.Errorf("refs = %+v", refs)
 	}
+}
+
+func countNonNil[T any](list []*T) int {
+	n := 0
+	for _, item := range list {
+		if item != nil {
+			n++
+		}
+	}
+	return n
 }
