@@ -1191,6 +1191,9 @@ module Handle_Data
     msg = message[index + 2, message.size]
     return if $game_player.blocked.include?(name)
     $windows[:chat].write_message(message, color_id)
+    # Map chat is map-wide for the chat window. The balloon is sprite-bound:
+    # players outside the local AOI are not in $game_map.players, so they never
+    # produce a sprite-less balloon.
     player = @player_id == player_id ? $game_player : $game_map.players[player_id]
     if player && $game_map.in_screen?(player)
       player.message = $windows[:chat].word_wrap(msg, 217)

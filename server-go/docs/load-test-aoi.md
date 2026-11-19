@@ -41,7 +41,13 @@ Comparison reports:
 - AOI is disabled with `aoi_radius_tiles = 0`, which keeps the pre-AOI behavior
   for A/B tests.
 
-Map chat remains map-wide. Party/guild/global chat remains coordinator-driven.
+Map chat remains map-wide for the chat window. The balloon above the player is
+sprite-bound: the client only sets it when `$game_map.players[player_id]` exists
+(which means the player is inside the local AOI) and the sprite is on screen.
+A player outside AOI therefore appears as a chat line, never as a sprite-less
+balloon.
+
+Party/guild/global chat remains coordinator-driven.
 
 ## Workloads
 
