@@ -1,0 +1,17 @@
+[book]
+title = "VXA-OS"
+authors = ["carabalonepaulo"]
+language = "en"
+src = "src"
+
+[build]
+build-dir = "build"
+
+[output.html]
+default-theme = "rust"
+preferred-dark-theme = "navy"
+git-repository-url = "https://github.com/carabalonepaulo/vxaos"
+site-url = "/vxaos/"
+
+[output.html.search]
+enable = true

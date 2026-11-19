@@ -9,6 +9,10 @@ tick_ms = 80
 auth_timeout_seconds = 30
 inactivity_seconds = 300
 save_interval_seconds = 900
+map_idle_seconds = 60
+aoi_radius_tiles = 9
+aoi_hysteresis_tiles = 2
+aoi_cell_size = 8
 
 [game]
 # Shared limits and gameplay values live in content/configs.toml.

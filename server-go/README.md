@@ -1,5 +1,9 @@
 # VXA-OS server (Go rewrite)
 
+> **Full documentation:** the public mdBook lives in [`../book`](../book)
+> (`mdbook serve book`). This README is a development summary and may lag
+> behind the book and the changelog.
+
 This directory is the new server. The Ruby server in `../Server` is kept only as
 a reference; the Go server never invokes Ruby at runtime.
 
@@ -178,10 +182,9 @@ account's VIP status and the point budget) and uses `internal/chargen`; the
 client's creation window sends the UI parameter order, converted to RPG Maker
 parameter order on the wire.
 
-Not wired yet: custom move routes for map events, NPC pages that depend on
-player state, state restrictions/counter/cover/taunt behavior, map item
-drops/pickup, admin commands, area skills/projectiles, common events fired by
-items, and the `Configs`/`Enums` content migration.
+For the current feature set, setup, admin tools, content authoring and the Lisp
+reference, see the mdBook in [`../book`](../book). The list above is a
+historical development summary; the book and `CHANGELOG.md` are authoritative.
 
 ## Tests
 
@@ -296,9 +299,6 @@ See `docs/lisp.md` for the language and host ABI.
 
 ## Next milestone
 
-1. **Map/combat polish**: custom move routes, state restrictions/counter/
-   cover/taunt, map item drops/pickup, admin commands, area skills and
-   projectiles.
-2. **Content**: migrate `Configs`/`Enums` to TOML, generate all four scripts
-   and `check` against the real content.
-3. **Load**: a 500-bot protocol test.
+See the book and `CHANGELOG.md` for the current roadmap and release notes. The
+documentation plan is in `../docs/documentation-plan.md` while the book is being
+completed.
