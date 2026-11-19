@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/kelaia/vxaos/server/internal/script"
+	"github.com/carabalonepaulo/vxaos/server/internal/script"
 )
 
 // Damage formulas are stored as Lisp in the .rvdata2 data (the client guard

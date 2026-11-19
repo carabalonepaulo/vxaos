@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/kelaia/vxaos/server/internal/protocol"
+	"github.com/carabalonepaulo/vxaos/server/internal/protocol"
 )
 
 func TestGuildFlow(t *testing.T) {

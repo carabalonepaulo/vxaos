@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/kelaia/vxaos/server/internal/protocol"
-	"github.com/kelaia/vxaos/server/internal/rpg"
+	"github.com/carabalonepaulo/vxaos/server/internal/protocol"
+	"github.com/carabalonepaulo/vxaos/server/internal/rpg"
 )
 
 func TestEventGraphicEraseAndVisualCommands(t *testing.T) {

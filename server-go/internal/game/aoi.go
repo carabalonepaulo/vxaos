@@ -1,6 +1,6 @@
 package game
 
-import "github.com/kelaia/vxaos/server/internal/protocol"
+import "github.com/carabalonepaulo/vxaos/server/internal/protocol"
 
 // Area of interest.
 //

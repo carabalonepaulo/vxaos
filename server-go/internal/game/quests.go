@@ -3,9 +3,9 @@ package game
 import (
 	"fmt"
 
-	"github.com/kelaia/vxaos/server/internal/content"
-	"github.com/kelaia/vxaos/server/internal/protocol"
-	"github.com/kelaia/vxaos/server/internal/store"
+	"github.com/carabalonepaulo/vxaos/server/internal/content"
+	"github.com/carabalonepaulo/vxaos/server/internal/protocol"
+	"github.com/carabalonepaulo/vxaos/server/internal/store"
 )
 
 // Quest states match the client's Enums::Quest.

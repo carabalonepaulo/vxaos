@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/kelaia/vxaos/server/internal/rvdata"
+	"github.com/carabalonepaulo/vxaos/server/internal/rvdata"
 )
 
 func repoPath(parts ...string) string {

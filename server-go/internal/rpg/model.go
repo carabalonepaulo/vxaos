@@ -6,7 +6,7 @@ package rpg
 import (
 	"math"
 
-	"github.com/kelaia/vxaos/server/internal/rvdata"
+	"github.com/carabalonepaulo/vxaos/server/internal/rvdata"
 )
 
 // Data is the loaded game database.

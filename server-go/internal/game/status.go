@@ -5,8 +5,8 @@ import (
 	"math/rand/v2"
 	"time"
 
-	"github.com/kelaia/vxaos/server/internal/protocol"
-	"github.com/kelaia/vxaos/server/internal/rpg"
+	"github.com/carabalonepaulo/vxaos/server/internal/protocol"
+	"github.com/carabalonepaulo/vxaos/server/internal/rpg"
 )
 
 // buffSlot is one parameter buff. Level is -2..2, Turns is in seconds.

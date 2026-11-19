@@ -11,12 +11,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kelaia/vxaos/server/internal/auth"
-	"github.com/kelaia/vxaos/server/internal/chargen"
-	"github.com/kelaia/vxaos/server/internal/config"
-	"github.com/kelaia/vxaos/server/internal/content"
-	"github.com/kelaia/vxaos/server/internal/rpg"
-	"github.com/kelaia/vxaos/server/internal/store"
+	"github.com/carabalonepaulo/vxaos/server/internal/auth"
+	"github.com/carabalonepaulo/vxaos/server/internal/chargen"
+	"github.com/carabalonepaulo/vxaos/server/internal/config"
+	"github.com/carabalonepaulo/vxaos/server/internal/content"
+	"github.com/carabalonepaulo/vxaos/server/internal/rpg"
+	"github.com/carabalonepaulo/vxaos/server/internal/store"
 )
 
 func main() {

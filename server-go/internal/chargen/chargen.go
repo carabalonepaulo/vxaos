@@ -6,8 +6,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/kelaia/vxaos/server/internal/rpg"
-	"github.com/kelaia/vxaos/server/internal/store"
+	"github.com/carabalonepaulo/vxaos/server/internal/rpg"
+	"github.com/carabalonepaulo/vxaos/server/internal/store"
 )
 
 // Options configures character creation.

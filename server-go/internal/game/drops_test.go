@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kelaia/vxaos/server/internal/rpg"
-	"github.com/kelaia/vxaos/server/internal/store"
+	"github.com/carabalonepaulo/vxaos/server/internal/rpg"
+	"github.com/carabalonepaulo/vxaos/server/internal/store"
 )
 
 func TestDropAndPickup(t *testing.T) {

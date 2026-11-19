@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kelaia/vxaos/server/internal/protocol"
-	"github.com/kelaia/vxaos/server/internal/rpg"
-	"github.com/kelaia/vxaos/server/internal/store"
+	"github.com/carabalonepaulo/vxaos/server/internal/protocol"
+	"github.com/carabalonepaulo/vxaos/server/internal/rpg"
+	"github.com/carabalonepaulo/vxaos/server/internal/store"
 )
 
 const (

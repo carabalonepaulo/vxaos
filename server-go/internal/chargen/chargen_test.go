@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/kelaia/vxaos/server/internal/rpg"
+	"github.com/carabalonepaulo/vxaos/server/internal/rpg"
 )
 
 func testOptions(t *testing.T) Options {

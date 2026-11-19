@@ -4,7 +4,7 @@ import (
 	"math/rand/v2"
 	"time"
 
-	"github.com/kelaia/vxaos/server/internal/protocol"
+	"github.com/carabalonepaulo/vxaos/server/internal/protocol"
 )
 
 var moveDirections = []int{2, 4, 6, 8}

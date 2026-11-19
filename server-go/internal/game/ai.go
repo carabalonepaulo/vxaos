@@ -6,8 +6,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/kelaia/vxaos/server/internal/protocol"
-	"github.com/kelaia/vxaos/server/internal/rpg"
+	"github.com/carabalonepaulo/vxaos/server/internal/protocol"
+	"github.com/carabalonepaulo/vxaos/server/internal/rpg"
 )
 
 // updateEnemyAI mirrors the original VXA-OS enemy loop: acquire a target within

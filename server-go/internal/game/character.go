@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/kelaia/vxaos/server/internal/protocol"
-	"github.com/kelaia/vxaos/server/internal/rpg"
-	"github.com/kelaia/vxaos/server/internal/store"
+	"github.com/carabalonepaulo/vxaos/server/internal/protocol"
+	"github.com/carabalonepaulo/vxaos/server/internal/rpg"
+	"github.com/carabalonepaulo/vxaos/server/internal/store"
 )
 
 // Inventory kinds used by the character aggregate and the Item message.

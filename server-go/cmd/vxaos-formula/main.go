@@ -8,8 +8,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/kelaia/vxaos/server/internal/formula"
-	"github.com/kelaia/vxaos/server/internal/rvdata"
+	"github.com/carabalonepaulo/vxaos/server/internal/formula"
+	"github.com/carabalonepaulo/vxaos/server/internal/rvdata"
 )
 
 var files = []string{"Skills.rvdata2", "Items.rvdata2"}

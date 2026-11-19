@@ -13,11 +13,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/kelaia/vxaos/server/internal/auth"
-	"github.com/kelaia/vxaos/server/internal/chargen"
-	"github.com/kelaia/vxaos/server/internal/game"
-	"github.com/kelaia/vxaos/server/internal/protocol"
-	"github.com/kelaia/vxaos/server/internal/store"
+	"github.com/carabalonepaulo/vxaos/server/internal/auth"
+	"github.com/carabalonepaulo/vxaos/server/internal/chargen"
+	"github.com/carabalonepaulo/vxaos/server/internal/game"
+	"github.com/carabalonepaulo/vxaos/server/internal/protocol"
+	"github.com/carabalonepaulo/vxaos/server/internal/store"
 )
 
 var (

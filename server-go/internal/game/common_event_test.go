@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/kelaia/vxaos/server/internal/store"
+	"github.com/carabalonepaulo/vxaos/server/internal/store"
 )
 
 func TestItemCommonEventRuns(t *testing.T) {

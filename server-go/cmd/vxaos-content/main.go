@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/kelaia/vxaos/server/internal/content"
+	"github.com/carabalonepaulo/vxaos/server/internal/content"
 )
 
 func main() {

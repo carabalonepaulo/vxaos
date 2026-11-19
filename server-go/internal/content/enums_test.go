@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/kelaia/vxaos/server/internal/protocol"
+	"github.com/carabalonepaulo/vxaos/server/internal/protocol"
 )
 
 func TestLoadEnums(t *testing.T) {

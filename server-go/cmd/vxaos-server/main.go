@@ -13,14 +13,14 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/kelaia/vxaos/server/internal/chargen"
-	"github.com/kelaia/vxaos/server/internal/config"
-	"github.com/kelaia/vxaos/server/internal/content"
-	"github.com/kelaia/vxaos/server/internal/game"
-	netserver "github.com/kelaia/vxaos/server/internal/net"
-	"github.com/kelaia/vxaos/server/internal/protocol"
-	"github.com/kelaia/vxaos/server/internal/rpg"
-	"github.com/kelaia/vxaos/server/internal/store"
+	"github.com/carabalonepaulo/vxaos/server/internal/chargen"
+	"github.com/carabalonepaulo/vxaos/server/internal/config"
+	"github.com/carabalonepaulo/vxaos/server/internal/content"
+	"github.com/carabalonepaulo/vxaos/server/internal/game"
+	netserver "github.com/carabalonepaulo/vxaos/server/internal/net"
+	"github.com/carabalonepaulo/vxaos/server/internal/protocol"
+	"github.com/carabalonepaulo/vxaos/server/internal/rpg"
+	"github.com/carabalonepaulo/vxaos/server/internal/store"
 )
 
 func main() {

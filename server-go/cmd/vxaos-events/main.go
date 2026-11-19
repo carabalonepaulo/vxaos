@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/kelaia/vxaos/server/internal/eventscript"
-	"github.com/kelaia/vxaos/server/internal/rvdata"
+	"github.com/carabalonepaulo/vxaos/server/internal/eventscript"
+	"github.com/carabalonepaulo/vxaos/server/internal/rvdata"
 )
 
 type stats struct {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/kelaia/vxaos/server/internal/rvdata"
+	"github.com/carabalonepaulo/vxaos/server/internal/rvdata"
 )
 
 // Load reads the data files in dir.

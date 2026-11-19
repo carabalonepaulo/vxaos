@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kelaia/vxaos/server/internal/protocol"
+	"github.com/carabalonepaulo/vxaos/server/internal/protocol"
 )
 
 func TestAdminCommandPermissionsAndTeleport(t *testing.T) {

@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
-	"github.com/kelaia/vxaos/server/internal/auth"
+	"github.com/carabalonepaulo/vxaos/server/internal/auth"
 )
 
 // Config is the server configuration.

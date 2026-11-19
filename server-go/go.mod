@@ -1,4 +1,4 @@
-module github.com/kelaia/vxaos/server
+module github.com/carabalonepaulo/vxaos/server
 
 go 1.27
 

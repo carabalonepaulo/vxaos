@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/kelaia/vxaos/server/internal/protocol"
-	"github.com/kelaia/vxaos/server/internal/script"
+	"github.com/carabalonepaulo/vxaos/server/internal/protocol"
+	"github.com/carabalonepaulo/vxaos/server/internal/script"
 )
 
 // runEventScript executes a migrated 355 script. The script gets a small set

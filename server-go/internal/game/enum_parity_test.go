@@ -3,7 +3,7 @@ package game
 import (
 	"testing"
 
-	"github.com/kelaia/vxaos/server/internal/content"
+	"github.com/carabalonepaulo/vxaos/server/internal/content"
 )
 
 func TestAdminCommandEnumParity(t *testing.T) {

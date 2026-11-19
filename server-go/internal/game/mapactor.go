@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/kelaia/vxaos/server/internal/protocol"
-	"github.com/kelaia/vxaos/server/internal/store"
+	"github.com/carabalonepaulo/vxaos/server/internal/protocol"
+	"github.com/carabalonepaulo/vxaos/server/internal/store"
 )
 
 // ErrStaleRoute means a command was addressed to a map that no longer owns the

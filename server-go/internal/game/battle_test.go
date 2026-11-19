@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kelaia/vxaos/server/internal/protocol"
-	"github.com/kelaia/vxaos/server/internal/store"
+	"github.com/carabalonepaulo/vxaos/server/internal/protocol"
+	"github.com/carabalonepaulo/vxaos/server/internal/store"
 )
 
 func firstEnemy(t *testing.T, w *World, mapID int) *enemyState {

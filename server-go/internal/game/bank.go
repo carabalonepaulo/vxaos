@@ -3,8 +3,8 @@ package game
 import (
 	"context"
 
-	"github.com/kelaia/vxaos/server/internal/protocol"
-	"github.com/kelaia/vxaos/server/internal/store"
+	"github.com/carabalonepaulo/vxaos/server/internal/protocol"
+	"github.com/carabalonepaulo/vxaos/server/internal/store"
 )
 
 // openBank loads the account bank on first use and sends its contents. It

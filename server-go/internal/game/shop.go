@@ -3,8 +3,8 @@ package game
 import (
 	"context"
 
-	"github.com/kelaia/vxaos/server/internal/protocol"
-	"github.com/kelaia/vxaos/server/internal/rpg"
+	"github.com/carabalonepaulo/vxaos/server/internal/protocol"
+	"github.com/carabalonepaulo/vxaos/server/internal/rpg"
 )
 
 // ShopGood is one 605/302 shop entry. Kind is 0 item, 1 weapon, 2 armor.
