@@ -1,0 +1,23 @@
+listen = "0.0.0.0:5000"
+data_dir = "game-data"
+content_dir = "content"
+log_level = "info"
+
+[server]
+max_connections = 500
+tick_ms = 80
+auth_timeout_seconds = 30
+inactivity_seconds = 300
+save_interval_seconds = 900
+
+[game]
+max_stack = 999
+
+[auth]
+# PBKDF2-HMAC-SHA256 iterations. The client receives this value from the
+# challenge, so it does not need to be configured on the client.
+iterations = 210000
+
+[store]
+driver = "sqlite"
+dsn = "data/vxaos.db"
