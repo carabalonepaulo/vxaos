@@ -34,6 +34,9 @@ type Server struct {
 	InactivitySeconds   int `toml:"inactivity_seconds"`
 	SaveIntervalSeconds int `toml:"save_interval_seconds"`
 	MapIdleSeconds      int `toml:"map_idle_seconds"`
+	AOIRadiusTiles      int `toml:"aoi_radius_tiles"`
+	AOIHysteresisTiles  int `toml:"aoi_hysteresis_tiles"`
+	AOICellSize         int `toml:"aoi_cell_size"`
 }
 
 // Game contains server-only gameplay knobs. Shared limits are in
@@ -69,6 +72,9 @@ func Default() Config {
 			InactivitySeconds:   300,
 			SaveIntervalSeconds: 900,
 			MapIdleSeconds:      60,
+			AOIRadiusTiles:      9,
+			AOIHysteresisTiles:  2,
+			AOICellSize:         8,
 		},
 		Game: Game{MaxStack: 999},
 		Auth: Auth{Iterations: auth.DefaultIterations},
@@ -120,6 +126,15 @@ func (c Config) Validate() error {
 	}
 	if c.Server.MapIdleSeconds <= 0 {
 		return fmt.Errorf("config: map_idle_seconds must be positive")
+	}
+	if c.Server.AOIRadiusTiles < 0 {
+		return fmt.Errorf("config: aoi_radius_tiles must be non-negative")
+	}
+	if c.Server.AOIHysteresisTiles < 0 {
+		return fmt.Errorf("config: aoi_hysteresis_tiles must be non-negative")
+	}
+	if c.Server.AOICellSize <= 0 {
+		return fmt.Errorf("config: aoi_cell_size must be positive")
 	}
 	if c.Game.MaxStack <= 0 {
 		return fmt.Errorf("config: game.max_stack must be positive")

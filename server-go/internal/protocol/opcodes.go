@@ -135,6 +135,10 @@ const (
 	ServerError
 	ServerDisconnect
 	ServerGuildCreateOpen
+	ServerMapReset
+	ServerEventRemove
+	ServerMapPlayerEnter
+	ServerMapPlayerLeave
 )
 
 // Auth and error codes are stable protocol values.

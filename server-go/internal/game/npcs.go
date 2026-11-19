@@ -15,9 +15,13 @@ func (w *World) refreshNPC(ms *mapState, n *npcState) {
 	if page == n.page {
 		return
 	}
+	oldVisible := n.page != nil
 	n.page = page
 	if page == nil {
 		n.moveType = 0
+		if ms.actor != nil {
+			ms.actor.aoiEventChanged(n.event.ID, n.x, n.y, oldVisible)
+		}
 		return
 	}
 	n.moveType = page.MoveType
@@ -34,6 +38,9 @@ func (w *World) refreshNPC(ms *mapState, n *npcState) {
 		if n.directionFix {
 			n.direction = n.fixedDirection
 		}
+	}
+	if ms.actor != nil {
+		ms.actor.aoiEventChanged(n.event.ID, n.x, n.y, oldVisible)
 	}
 }
 
@@ -464,7 +471,10 @@ func (w *World) checkPlayerTouch(p *Player, ms *mapState, x, y int, bumped bool)
 }
 
 func (w *World) broadcastEventMove(ms *mapState, eventID, x, y, direction int) {
-	w.broadcastToMapPlayers(ms, protocol.ServerEventMove, protocol.EventMove{
+	if ms != nil && ms.actor != nil {
+		ms.actor.aoiMovedEventID(eventID)
+	}
+	w.broadcastNear(ms, x, y, protocol.ServerEventMove, protocol.EventMove{
 		EventID:   uint16(clampInt(eventID, 0, 65535)),
 		X:         uint16(clampInt(x, 0, 65535)),
 		Y:         uint16(clampInt(y, 0, 65535)),

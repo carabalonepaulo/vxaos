@@ -342,18 +342,10 @@ func (w *World) broadcastEquip(p *Player, slot, id int) {
 }
 
 func (w *World) broadcastToMap(p *Player, op protocol.ServerOp, msg protocol.ServerMessage) {
-	ms := p.ms
-	if ms == nil {
+	if p == nil || p.ms == nil {
 		return
 	}
-	for _, other := range ms.players {
-		if other == nil {
-			continue
-		}
-		if err := other.Client.Send(op, msg); err != nil {
-			w.log.Warn("broadcast", "player", other.ID, "op", uint16(op), "err", err)
-		}
-	}
+	w.broadcastNear(p.ms, p.Character.X, p.Character.Y, op, msg)
 }
 
 func (w *World) saveQuietly(p *Player) {

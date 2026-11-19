@@ -573,7 +573,7 @@ func (w *World) broadcastGuildName(p *Player) {
 	if p == nil || p.ms == nil {
 		return
 	}
-	w.broadcastToMapPlayers(p.ms, protocol.ServerGuildName, protocol.GuildName{PlayerID: p.ID, Name: p.GuildName})
+	w.broadcastNear(p.ms, p.Character.X, p.Character.Y, protocol.ServerGuildName, protocol.GuildName{PlayerID: p.ID, Name: p.GuildName})
 }
 
 // broadcastGuildNameEntry runs on the coordinator and notifies every player on
@@ -582,12 +582,17 @@ func (w *World) broadcastGuildNameEntry(entry *onlineEntry) {
 	if entry == nil {
 		return
 	}
-	msg := protocol.GuildName{PlayerID: entry.ID, Name: entry.GuildName}
-	for _, other := range w.online {
-		if other.Key == entry.Key {
-			_ = other.Client.Send(protocol.ServerGuildName, msg)
+	if w.opts.InlineMaps {
+		if p := w.playerByID(entry.ID); p != nil {
+			w.broadcastGuildName(p)
 		}
+		return
 	}
+	w.enqueueMap(entry.Key, func(a *mapActor) {
+		if p := a.playerByID(entry.ID); p != nil {
+			w.broadcastGuildName(p)
+		}
+	})
 }
 
 func (w *World) broadcastGuild(g *guildState, op protocol.ServerOp, msg protocol.ServerMessage) {

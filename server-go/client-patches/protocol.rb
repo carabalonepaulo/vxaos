@@ -139,6 +139,10 @@ module Protocol
     ERROR               = 75
     DISCONNECT          = 76
     GUILD_CREATE_OPEN   = 77
+    MAP_RESET           = 78
+    EVENT_REMOVE        = 79
+    MAP_PLAYER_ENTER    = 80
+    MAP_PLAYER_LEAVE    = 81
   end
 
 end

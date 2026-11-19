@@ -51,6 +51,10 @@ module Handle_Data
       handle_event_data(payload)
     when Protocol::Server::EVENT_MOVE
       handle_event_move(payload)
+    when Protocol::Server::EVENT_REMOVE
+      handle_event_remove(payload)
+    when Protocol::Server::MAP_RESET
+      handle_map_reset(payload)
     when Protocol::Server::ENEMY_REVIVE
       handle_enemy_revive(payload)
     when Protocol::Server::BALLOON
@@ -139,6 +143,10 @@ module Handle_Data
       handle_player_data(payload)
     when Protocol::Server::PLAYER_LEFT
       handle_player_left(payload)
+    when Protocol::Server::MAP_PLAYER_ENTER
+      handle_map_player_enter(payload)
+    when Protocol::Server::MAP_PLAYER_LEAVE
+      handle_map_player_leave(payload)
     when Protocol::Server::PLAYER_MOVE
       handle_player_move(payload)
     when Protocol::Server::MAP_CHAT
@@ -566,12 +574,40 @@ module Handle_Data
     hp = r.i32
     event = $game_map.events[event_id]
     return unless event
+    event.erased = false
+    event.refresh
     event.moveto(x, y) unless event.x == x && event.y == y
     event.set_direction(d) unless event.respond_to?(:fixed_movement?) && event.fixed_movement?
     if event.actor
       event.actor.hp = hp
       event.erase if event.actor.dead?
     end
+  end
+
+  def handle_event_remove(payload)
+    r = ProtoReader.new(payload)
+    event_id = r.u16
+    event = $game_map.events[event_id]
+    event.erase if event
+  end
+
+  def handle_map_reset(_payload)
+    @drop_ids = []
+    if $game_map.respond_to?(:players) && $game_map.players
+      if SceneManager.scene.respond_to?(:remove_player)
+        $game_map.players.keys.each { |id| SceneManager.scene.remove_player(id) }
+      end
+      $game_map.players.clear
+    end
+    if $game_map.respond_to?(:drops) && $game_map.drops
+      if SceneManager.scene.respond_to?(:remove_drop)
+        ($game_map.drops.size - 1).downto(0) { |i| SceneManager.scene.remove_drop(i) }
+      end
+      $game_map.drops.clear
+    end
+    $game_map.projectiles.clear if $game_map.respond_to?(:projectiles) && $game_map.projectiles
+    $game_map.events.each_value { |event| event.erase } if $game_map.events
+    $game_map.instance_variable_set(:@vxaos_roster, {})
   end
 
   def handle_event_move(payload)
@@ -645,6 +681,7 @@ module Handle_Data
 
   def handle_add_drop(payload)
     r = ProtoReader.new(payload)
+    drop_id = r.u32
     item_id = r.u16
     kind = r.u8
     amount = r.u16
@@ -652,6 +689,8 @@ module Handle_Data
     y = r.u16
     item = $game_party.item_object(kind, item_id)
     return unless item
+    @drop_ids ||= []
+    @drop_ids << drop_id
     drop = Game_Drop.new(item.name, item.icon_index, item.is_a?(RPG::Item) && item.key_item?, amount, x, y)
     $game_map.drops << drop
     SceneManager.scene.add_drop(drop) if SceneManager.scene.respond_to?(:add_drop)
@@ -659,10 +698,13 @@ module Handle_Data
 
   def handle_remove_drop(payload)
     r = ProtoReader.new(payload)
-    drop_id = r.u8
-    return unless $game_map.drops[drop_id]
-    $game_map.drops.delete_at(drop_id)
-    SceneManager.scene.remove_drop(drop_id) if SceneManager.scene.respond_to?(:remove_drop)
+    drop_id = r.u32
+    @drop_ids ||= []
+    index = @drop_ids.index(drop_id)
+    return unless index
+    @drop_ids.delete_at(index)
+    $game_map.drops.delete_at(index)
+    SceneManager.scene.remove_drop(index) if SceneManager.scene.respond_to?(:remove_drop)
   end
 
   def handle_player_exp(payload)
@@ -1102,7 +1144,24 @@ module Handle_Data
     id = r.u16
     $game_map.players.delete(id)
     SceneManager.scene.remove_player(id) if SceneManager.scene.respond_to?(:remove_player)
-    $windows[:party].refresh if $windows[:party] && $game_actors[1].party_members.has_key?(id)
+  end
+
+  def handle_map_player_enter(payload)
+    r = ProtoReader.new(payload)
+    id = r.u16
+    name = r.string
+    roster = $game_map.instance_variable_get(:@vxaos_roster) || {}
+    roster[id] = name
+    $game_map.instance_variable_set(:@vxaos_roster, roster)
+  end
+
+  def handle_map_player_leave(payload)
+    r = ProtoReader.new(payload)
+    id = r.u16
+    _name = r.string
+    roster = $game_map.instance_variable_get(:@vxaos_roster) || {}
+    roster.delete(id)
+    $game_map.instance_variable_set(:@vxaos_roster, roster)
   end
 
   def handle_player_move(payload)

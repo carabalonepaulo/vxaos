@@ -43,6 +43,7 @@ type mapActor struct {
 	wake  chan struct{}
 
 	ms        *mapState
+	aoi       *aoiState
 	stop      chan struct{}
 	done      chan struct{}
 	players   []*Player
@@ -52,7 +53,7 @@ type mapActor struct {
 }
 
 func newMapActor(w *World, key MapKey, ms *mapState) *mapActor {
-	return &mapActor{
+	a := &mapActor{
 		w:        w,
 		key:      key,
 		ms:       ms,
@@ -62,6 +63,11 @@ func newMapActor(w *World, key MapKey, ms *mapState) *mapActor {
 		players:  make([]*Player, 0),
 		lastSave: w.now(),
 	}
+	ms.actor = a
+	if w.opts.AOIRadius > 0 {
+		a.aoi = newAOI(a)
+	}
+	return a
 }
 
 // post enqueues work without blocking the caller.
@@ -457,28 +463,12 @@ func (a *mapActor) attach(payload attachPayload) {
 		}
 		a.w.sendGlobalSwitches(p)
 		a.w.sendMOTDText(p, payload.motd)
-		for _, enemy := range a.ms.enemies {
-			if enemy == nil {
-				continue
-			}
-			_ = p.Client.Send(protocol.ServerEventData, protocol.EventData{
-				EventID:   uint16(enemy.Event.ID),
-				X:         uint16(enemy.X),
-				Y:         uint16(enemy.Y),
-				Direction: uint8(enemy.Direction),
-				HP:        int32(enemy.HP),
-			})
+		if a.aoi != nil {
+			_ = p.Client.Send(protocol.ServerMapReset, protocol.MapReset{})
 		}
-		a.w.sendMapEventsTo(p, a.ms)
-		a.w.sendDropsTo(p, a.ms)
-		snapSelf := a.w.snapshot(p)
-		for _, other := range a.ms.players {
-			if other == nil || other == p {
-				continue
-			}
-			_ = p.Client.Send(protocol.ServerPlayerData, protocol.PlayerData{Player: a.w.snapshot(other)})
-			_ = other.Client.Send(protocol.ServerPlayerData, protocol.PlayerData{Player: snapSelf})
-		}
+		a.aoiAttachPlayer(p, true)
+		a.w.sendMapRoster(p, a.ms)
+		a.w.broadcastMapPlayerEnter(a.ms, p)
 		a.w.log.Info("player joined", "player", p.ID, "character", p.Character.Name, "map", a.key.TemplateID, "x", p.Character.X, "y", p.Character.Y)
 		return
 	}
@@ -487,25 +477,12 @@ func (a *mapActor) attach(payload attachPayload) {
 		MapID: uint16(p.Character.MapID), X: uint16(p.Character.X), Y: uint16(p.Character.Y), Direction: uint8(p.Character.Direction),
 	})
 	a.w.sendGlobalSwitches(p)
-	snapSelf := a.w.snapshot(p)
-	for _, other := range a.ms.players {
-		if other == nil || other == p {
-			continue
-		}
-		_ = p.Client.Send(protocol.ServerPlayerData, protocol.PlayerData{Player: a.w.snapshot(other)})
-		_ = other.Client.Send(protocol.ServerPlayerData, protocol.PlayerData{Player: snapSelf})
+	if a.aoi != nil {
+		_ = p.Client.Send(protocol.ServerMapReset, protocol.MapReset{})
 	}
-	for _, enemy := range a.ms.enemies {
-		if enemy == nil {
-			continue
-		}
-		_ = p.Client.Send(protocol.ServerEventData, protocol.EventData{
-			EventID: uint16(enemy.Event.ID), X: uint16(enemy.X), Y: uint16(enemy.Y),
-			Direction: uint8(enemy.Direction), HP: int32(enemy.HP),
-		})
-	}
-	a.w.sendMapEventsTo(p, a.ms)
-	a.w.sendDropsTo(p, a.ms)
+	a.aoiAttachPlayer(p, true)
+	a.w.sendMapRoster(p, a.ms)
+	a.w.broadcastMapPlayerEnter(a.ms, p)
 }
 
 // detach removes one player and returns an immutable snapshot. It runs on the
@@ -521,11 +498,16 @@ func (a *mapActor) detach(id uint16, save bool) *playerSnapshot {
 	p.TargetType, p.TargetID = 0, 0
 	p.Event = nil
 	snap := snapshotPlayer(p, p.Epoch)
-	for _, other := range a.ms.players {
-		if other == nil || other == p {
-			continue
+	a.w.broadcastMapPlayerLeave(a.ms, p)
+	if a.aoi != nil {
+		a.aoiDetachPlayer(p)
+	} else {
+		for _, other := range a.ms.players {
+			if other == nil || other == p {
+				continue
+			}
+			_ = other.Client.Send(protocol.ServerPlayerLeft, protocol.PlayerLeft{ID: p.ID})
 		}
-		_ = other.Client.Send(protocol.ServerPlayerLeft, protocol.PlayerLeft{ID: p.ID})
 	}
 	a.dropPlayer(id)
 	p.ms = nil

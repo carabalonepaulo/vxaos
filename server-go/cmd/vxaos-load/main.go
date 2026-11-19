@@ -37,6 +37,7 @@ type options struct {
 	prefix      string
 	password    string
 	setup       bool
+	spread      bool
 	jsonPath    string
 	iterations  int
 }
@@ -103,6 +104,7 @@ func parseFlags() options {
 	fs.StringVar(&opts.prefix, "prefix", "load", "account/character name prefix")
 	fs.StringVar(&opts.password, "pass", "loadtest", "bot password")
 	fs.BoolVar(&opts.setup, "setup", false, "create the bot accounts and characters instead of running")
+	fs.BoolVar(&opts.spread, "spread", false, "spread bot spawn positions across the map (AOI workload)")
 	fs.StringVar(&opts.jsonPath, "json", "", "write the JSON report to this path")
 	fs.IntVar(&opts.iterations, "iterations", 1000, "PBKDF2 iterations for created bot accounts")
 	fs.Parse(os.Args[1:])
@@ -197,7 +199,7 @@ func setup(opts options) error {
 		if err != nil {
 			return err
 		}
-		mapID, x, y := spawn(i)
+		mapID, x, y := spawn(i, opts.spread)
 		c.MapID, c.X, c.Y = mapID, x, y
 		c.Direction = 2
 		c.ReviveMapID, c.ReviveX, c.ReviveY = mapID, x, y
@@ -216,7 +218,13 @@ func isNoRows(err error) bool {
 	return errors.Is(err, sql.ErrNoRows)
 }
 
-func spawn(i int) (int, int, int) {
+func spawn(i int, spread bool) (int, int, int) {
+	if spread {
+		if i%2 == 0 {
+			return 2, 3 + (i*7)%34, 3 + (i*11)%19
+		}
+		return 1, 3 + (i*7)%44, 3 + (i*11)%24
+	}
 	if i%2 == 0 {
 		return 2, 4, 20
 	}

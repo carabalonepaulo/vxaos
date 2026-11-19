@@ -126,8 +126,9 @@ module Send_Data
 
   def send_remove_drop(drop_id)
     return unless @socket
+    server_id = @drop_ids ? (@drop_ids[drop_id] || drop_id) : drop_id
     w = ProtoWriter.new
-    w.u8(drop_id)
+    w.u32(server_id)
     send_frame(Protocol::Client::PICKUP_DROP, w.to_s)
   end
 

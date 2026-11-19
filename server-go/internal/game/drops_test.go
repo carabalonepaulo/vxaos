@@ -36,11 +36,11 @@ func TestDropAndPickup(t *testing.T) {
 
 	// The client must be standing on the drop to take it.
 	p.Character.X, p.Character.Y = 22, 13
-	if err := w.PickupDrop(ctx, p, 0); err != ErrNotOnDrop {
+	if err := w.PickupDrop(ctx, p, drop.ID); err != ErrNotOnDrop {
 		t.Fatalf("pickup away from drop err = %v", err)
 	}
 	p.Character.X, p.Character.Y = 22, 12
-	if err := w.PickupDrop(ctx, p, 0); err != nil {
+	if err := w.PickupDrop(ctx, p, drop.ID); err != nil {
 		t.Fatalf("pickup: %v", err)
 	}
 	if len(ms.drops) != 0 {

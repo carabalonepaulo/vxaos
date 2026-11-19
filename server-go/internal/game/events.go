@@ -1092,6 +1092,7 @@ func (w *World) transferPlayer(p *Player, mapID, x, y, direction int) bool {
 		return false
 	}
 	if old.key.TemplateID == mapID && old.key.InstanceID == 0 {
+		oldX, oldY := p.Character.X, p.Character.Y
 		p.Character.X, p.Character.Y = x, y
 		if direction > 0 {
 			p.Character.Direction = direction
@@ -1100,6 +1101,14 @@ func (w *World) transferPlayer(p *Player, mapID, x, y, direction int) bool {
 		_ = p.Client.Send(protocol.ServerTransfer, protocol.Transfer{
 			MapID: uint16(mapID), X: uint16(x), Y: uint16(y), Direction: uint8(direction),
 		})
+		if p.actor != nil && p.actor.aoi != nil {
+			_ = p.Client.Send(protocol.ServerMapReset, protocol.MapReset{})
+			p.actor.aoiPlayerMovedResync(p, oldX, oldY)
+			w.broadcastNear(p.ms, p.Character.X, p.Character.Y, protocol.ServerPlayerMove, protocol.PlayerMove{
+				ID: p.ID, X: uint16(p.Character.X), Y: uint16(p.Character.Y), Direction: uint8(p.Character.Direction),
+			})
+			w.sendMapRoster(p, p.ms)
+		}
 		return true
 	}
 	snap := p.actor.detach(p.ID, true)

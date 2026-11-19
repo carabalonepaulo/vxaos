@@ -230,6 +230,10 @@ func TestProtocolTomlMatchesGo(t *testing.T) {
 		{"ERROR", protocol.ServerError},
 		{"DISCONNECT", protocol.ServerDisconnect},
 		{"GUILD_CREATE_OPEN", protocol.ServerGuildCreateOpen},
+		{"MAP_RESET", protocol.ServerMapReset},
+		{"EVENT_REMOVE", protocol.ServerEventRemove},
+		{"MAP_PLAYER_ENTER", protocol.ServerMapPlayerEnter},
+		{"MAP_PLAYER_LEAVE", protocol.ServerMapPlayerLeave},
 	}
 	for _, tc := range client {
 		if got := file.Protocol.Client[tc.name]; got != int(tc.value) {

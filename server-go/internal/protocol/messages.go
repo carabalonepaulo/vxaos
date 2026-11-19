@@ -866,9 +866,9 @@ func (m DropItemRequest) Encode() ([]byte, error) {
 	return w.Done()
 }
 
-// PickupDrop picks up one ground drop by list index.
+// PickupDrop picks up one ground drop by stable server id.
 type PickupDrop struct {
-	DropID uint8
+	DropID uint32
 }
 
 // ClientOpcode implements ClientMessage.
@@ -877,7 +877,7 @@ func (m PickupDrop) ClientOpcode() ClientOp { return ClientPickupDrop }
 // Encode implements ClientMessage.
 func (m PickupDrop) Encode() ([]byte, error) {
 	w := NewWriter()
-	w.U8(m.DropID)
+	w.U32(m.DropID)
 	return w.Done()
 }
 
@@ -1297,7 +1297,8 @@ func (m PlayerMove) Encode() ([]byte, error) {
 	return w.Done()
 }
 
-// PlayerLeft removes a player from the map.
+// PlayerLeft removes a player sprite from the current area of interest. It is
+// not a logical map/world leave.
 type PlayerLeft struct {
 	ID uint16
 }
@@ -1311,6 +1312,49 @@ func (m PlayerLeft) Encode() ([]byte, error) {
 	w.U16(m.ID)
 	return w.Done()
 }
+
+// MapPlayerEnter is a logical "this player is now on the map" event.
+type MapPlayerEnter struct {
+	ID   uint16
+	Name string
+}
+
+// ServerOpcode implements ServerMessage.
+func (m MapPlayerEnter) ServerOpcode() ServerOp { return ServerMapPlayerEnter }
+
+// Encode implements ServerMessage.
+func (m MapPlayerEnter) Encode() ([]byte, error) {
+	w := NewWriter()
+	w.U16(m.ID)
+	w.String(m.Name)
+	return w.Done()
+}
+
+// MapPlayerLeave is a logical "this player is no longer on the map" event.
+type MapPlayerLeave struct {
+	ID   uint16
+	Name string
+}
+
+// ServerOpcode implements ServerMessage.
+func (m MapPlayerLeave) ServerOpcode() ServerOp { return ServerMapPlayerLeave }
+
+// Encode implements ServerMessage.
+func (m MapPlayerLeave) Encode() ([]byte, error) {
+	w := NewWriter()
+	w.U16(m.ID)
+	w.String(m.Name)
+	return w.Done()
+}
+
+// MapReset clears the client-side AOI state before a new visibility snapshot.
+type MapReset struct{}
+
+// ServerOpcode implements ServerMessage.
+func (m MapReset) ServerOpcode() ServerOp { return ServerMapReset }
+
+// Encode implements ServerMessage.
+func (m MapReset) Encode() ([]byte, error) { return nil, nil }
 
 // MapChat is a message shown to players on one map.
 type MapChat struct {
@@ -1582,6 +1626,21 @@ func (m EventData) Encode() ([]byte, error) {
 	return w.Done()
 }
 
+// EventRemove removes an event/enemy sprite from the current area of interest.
+type EventRemove struct {
+	EventID uint16
+}
+
+// ServerOpcode implements ServerMessage.
+func (m EventRemove) ServerOpcode() ServerOp { return ServerEventRemove }
+
+// Encode implements ServerMessage.
+func (m EventRemove) Encode() ([]byte, error) {
+	w := NewWriter()
+	w.U16(m.EventID)
+	return w.Done()
+}
+
 // EventMove synchronizes a moving event.
 type EventMove struct {
 	EventID   uint16
@@ -1634,6 +1693,7 @@ func (m Projectile) Encode() ([]byte, error) {
 
 // DropAdd adds a ground drop to the map's drop list.
 type DropAdd struct {
+	DropID uint32
 	ItemID uint16
 	Kind   uint8
 	Amount uint16
@@ -1647,6 +1707,7 @@ func (m DropAdd) ServerOpcode() ServerOp { return ServerDropAdd }
 // Encode implements ServerMessage.
 func (m DropAdd) Encode() ([]byte, error) {
 	w := NewWriter()
+	w.U32(m.DropID)
 	w.U16(m.ItemID)
 	w.U8(m.Kind)
 	w.U16(m.Amount)
@@ -1655,9 +1716,9 @@ func (m DropAdd) Encode() ([]byte, error) {
 	return w.Done()
 }
 
-// DropRemove removes one ground drop by list index.
+// DropRemove removes one ground drop by stable server id.
 type DropRemove struct {
-	DropID uint8
+	DropID uint32
 }
 
 // ServerOpcode implements ServerMessage.
@@ -1666,7 +1727,7 @@ func (m DropRemove) ServerOpcode() ServerOp { return ServerDropRemove }
 // Encode implements ServerMessage.
 func (m DropRemove) Encode() ([]byte, error) {
 	w := NewWriter()
-	w.U8(m.DropID)
+	w.U32(m.DropID)
 	return w.Done()
 }
 
@@ -2464,7 +2525,7 @@ func DecodeClient(op ClientOp, payload []byte) (any, error) {
 	case ClientDropItem:
 		m = DropItemRequest{ItemID: r.U16(), Kind: r.U8(), Amount: r.U16()}
 	case ClientPickupDrop:
-		m = PickupDrop{DropID: r.U8()}
+		m = PickupDrop{DropID: r.U32()}
 	case ClientAdminCommand:
 		m = AdminCommand{Command: r.U8(), Text: r.String(), Int1: r.I32(), Int2: r.I32(), Int3: r.I16()}
 	case ClientDeleteCharacter:
@@ -2564,6 +2625,12 @@ func DecodeServer(op ServerOp, payload []byte) (any, error) {
 		m = PlayerMove{ID: r.U16(), X: r.U16(), Y: r.U16(), Direction: r.U8()}
 	case ServerPlayerLeft:
 		m = PlayerLeft{ID: r.U16()}
+	case ServerMapPlayerEnter:
+		m = MapPlayerEnter{ID: r.U16(), Name: r.String()}
+	case ServerMapPlayerLeave:
+		m = MapPlayerLeave{ID: r.U16(), Name: r.String()}
+	case ServerMapReset:
+		m = MapReset{}
 	case ServerMapChat:
 		m = MapChat{PlayerID: r.U16(), Color: r.U8(), Message: r.String()}
 	case ServerChat:
@@ -2590,6 +2657,8 @@ func DecodeServer(op ServerOp, payload []byte) (any, error) {
 		m = AttackPlayer{AttackerID: r.U16(), AttackerType: r.U8(), AniIndex: r.U8(), PlayerID: r.U16(), HPDamage: r.I32(), MPDamage: r.I32(), Critical: r.Bool(), AnimationID: r.U16(), NotShowMissed: r.Bool()}
 	case ServerEventData:
 		m = EventData{EventID: r.U16(), X: r.U16(), Y: r.U16(), Direction: r.U8(), HP: r.I32()}
+	case ServerEventRemove:
+		m = EventRemove{EventID: r.U16()}
 	case ServerEventMove:
 		m = EventMove{EventID: r.U16(), X: r.U16(), Y: r.U16(), Direction: r.U8()}
 	case ServerEnemyRevive:
@@ -2597,9 +2666,9 @@ func DecodeServer(op ServerOp, payload []byte) (any, error) {
 	case ServerBalloon:
 		m = Balloon{CharacterID: r.U16(), CharacterType: r.U8(), BalloonID: r.U8()}
 	case ServerDropAdd:
-		m = DropAdd{ItemID: r.U16(), Kind: r.U8(), Amount: r.U16(), X: r.U16(), Y: r.U16()}
+		m = DropAdd{DropID: r.U32(), ItemID: r.U16(), Kind: r.U8(), Amount: r.U16(), X: r.U16(), Y: r.U16()}
 	case ServerDropRemove:
-		m = DropRemove{DropID: r.U8()}
+		m = DropRemove{DropID: r.U32()}
 	case ServerAdminCommand:
 		m = AdminCommandNotice{Command: r.U8(), Message: r.String()}
 	case ServerProjectile:

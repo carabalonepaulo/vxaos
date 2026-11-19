@@ -58,6 +58,9 @@ type Options struct {
 	DropPickupSeconds  int
 	MapIdle            time.Duration
 	InlineMaps         bool
+	AOIRadius          int
+	AOIHysteresis      int
+	AOICellSize        int
 	ProjectileSkills   []int
 	Teleports          []Teleport
 	Quests             []content.Quest
@@ -208,6 +211,7 @@ type partyView struct {
 
 type mapState struct {
 	key            MapKey
+	actor          *mapActor
 	def            *rpg.Map
 	tileset        *rpg.Tileset
 	events         []*rpg.Event
@@ -216,6 +220,7 @@ type mapState struct {
 	players        []*Player
 	autorun        *autorunState
 	drops          []*dropState
+	dropSlab       dropSlab
 	globalSwitches []bool
 }
 
@@ -315,6 +320,15 @@ func New(opts Options) (*World, error) {
 	}
 	if opts.MapIdle <= 0 {
 		opts.MapIdle = 60 * time.Second
+	}
+	if opts.AOIRadius < 0 {
+		opts.AOIRadius = 0
+	}
+	if opts.AOIRadius > 0 && opts.AOIHysteresis <= 0 {
+		opts.AOIHysteresis = 2
+	}
+	if opts.AOICellSize <= 0 {
+		opts.AOICellSize = 8
 	}
 	if opts.Logger == nil {
 		opts.Logger = slog.Default()
@@ -1045,6 +1059,7 @@ func (w *World) Move(ctx context.Context, p *Player, direction uint8) error {
 			return ErrInvalidMove
 		}
 		nx, ny := p.Character.X+dx, p.Character.Y+dy
+		oldX, oldY := p.Character.X, p.Character.Y
 		moved := false
 		if ms.valid(nx, ny) && ms.passable(nx, ny, direction) && !ms.blocked(nx, ny, p) {
 			p.Character.X, p.Character.Y = nx, ny
@@ -1057,13 +1072,9 @@ func (w *World) Move(ctx context.Context, p *Player, direction uint8) error {
 		p.Character.Direction = int(direction)
 		p.lastMove = now
 		msg := protocol.PlayerMove{ID: p.ID, X: uint16(p.Character.X), Y: uint16(p.Character.Y), Direction: direction}
-		for _, other := range ms.players {
-			if other == nil {
-				continue
-			}
-			if err := other.Client.Send(protocol.ServerPlayerMove, msg); err != nil {
-				w.log.Warn("broadcast move", "player", other.ID, "err", err)
-			}
+		w.broadcastNear(ms, p.Character.X, p.Character.Y, protocol.ServerPlayerMove, msg)
+		if moved {
+			p.actor.aoiPlayerMoved(p, oldX, oldY)
 		}
 		if moved {
 			w.checkPlayerTouch(p, ms, p.Character.X, p.Character.Y, false)

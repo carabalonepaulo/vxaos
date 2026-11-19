@@ -205,7 +205,7 @@ func (s *Server) handle(ctx context.Context, conn stdnet.Conn) {
 	sess := &Session{
 		srv:  s,
 		conn: conn,
-		send: make(chan outbound, 256),
+		send: make(chan outbound, 1024),
 		done: make(chan struct{}),
 	}
 	s.addSession(sess)

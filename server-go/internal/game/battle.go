@@ -365,12 +365,13 @@ func (w *World) hitEnemy(attacker *Player, enemy *enemyState, skill *rpg.Skill, 
 		Critical:     critical,
 		AnimationID:  uint16(clampInt(animationID, 0, 65535)),
 	}
-	w.broadcastToMap(attacker, protocol.ServerAttackEnemy, msg)
+	w.broadcastNear(ms, enemy.X, enemy.Y, protocol.ServerAttackEnemy, msg)
 	w.onDamaged(&enemy.Status, nil)
 	if !missed {
 		w.applyAttackStates(w.playerFeatures(attacker), w.enemyFeatures(enemy), &enemy.Status, nil)
 	}
 	if enemy.HP <= 0 {
+		oldX, oldY := enemy.X, enemy.Y
 		enemy.HP = 0
 		enemy.Alive = false
 		enemy.ReviveAt = w.now().Add(respawnDelay(enemy.Enemy))
@@ -379,6 +380,9 @@ func (w *World) hitEnemy(attacker *Player, enemy *enemyState, skill *rpg.Skill, 
 		w.disableEnemy(attacker, enemy)
 		attacker.TargetType, attacker.TargetID = 0, 0
 		w.awardKill(attacker, enemy)
+		if ms.actor != nil {
+			ms.actor.aoiEntityChanged(aoiRef{kind: aoiEnemy, id: uint32(enemy.Event.ID)}, oldX, oldY, true, oldX, oldY, false)
+		}
 	}
 }
 
@@ -660,7 +664,7 @@ func (w *World) broadcastSkillProjectile(p *Player, skillID, finishX, finishY, t
 	if p == nil || !containsInt(w.opts.ProjectileSkills, skillID) {
 		return
 	}
-	w.broadcastToMap(p, protocol.ServerProjectile, protocol.Projectile{
+	w.broadcastProjectile(p.ms, p.Character.X, p.Character.Y, finishX, finishY, protocol.ServerProjectile, protocol.Projectile{
 		StartX: uint16(clampInt(p.Character.X, 0, 65535)), StartY: uint16(clampInt(p.Character.Y, 0, 65535)),
 		FinishX: uint16(clampInt(finishX, 0, 65535)), FinishY: uint16(clampInt(finishY, 0, 65535)),
 		TargetX: uint16(clampInt(targetX, 0, 65535)), TargetY: uint16(clampInt(targetY, 0, 65535)),
@@ -1221,15 +1225,6 @@ func (w *World) applyLevelUp(p *Player, class *rpg.Class, oldLevel, newLevel int
 	}
 	if hpGain != 0 || mpGain != 0 {
 		w.sendVitalsToMap(p)
-	}
-}
-
-func (w *World) broadcastToMapPlayers(ms *mapState, op protocol.ServerOp, msg protocol.ServerMessage) {
-	for _, p := range ms.players {
-		if p == nil {
-			continue
-		}
-		_ = p.Client.Send(op, msg)
 	}
 }
 

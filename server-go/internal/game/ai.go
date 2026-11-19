@@ -336,6 +336,7 @@ func (w *World) disableEnemy(killer *Player, enemy *enemyState) {
 // reviveEnemy restores HP/MP and may move a non-fixed enemy to a passable tile
 // in its configured revive region.
 func (w *World) reviveEnemy(ms *mapState, enemy *enemyState, now time.Time) {
+	oldX, oldY := enemy.X, enemy.Y
 	enemy.Alive = true
 	enemy.HP = enemy.Enemy.Params[0]
 	if enemy.HP < 1 {
@@ -350,11 +351,14 @@ func (w *World) reviveEnemy(ms *mapState, enemy *enemyState, now time.Time) {
 	if enemy.moveType != 0 {
 		w.enemyChangePosition(ms, enemy)
 	}
-	w.broadcastToMapPlayers(ms, protocol.ServerEnemyRevive, protocol.EnemyRevive{EventID: uint16(enemy.Event.ID)})
-	w.broadcastToMapPlayers(ms, protocol.ServerEventData, protocol.EventData{
+	w.broadcastNear(ms, enemy.X, enemy.Y, protocol.ServerEnemyRevive, protocol.EnemyRevive{EventID: uint16(enemy.Event.ID)})
+	w.broadcastNear(ms, enemy.X, enemy.Y, protocol.ServerEventData, protocol.EventData{
 		EventID: uint16(enemy.Event.ID), X: uint16(enemy.X), Y: uint16(enemy.Y),
 		Direction: uint8(enemy.Direction), HP: int32(enemy.HP),
 	})
+	if ms.actor != nil {
+		ms.actor.aoiEntityChanged(aoiRef{kind: aoiEnemy, id: uint32(enemy.Event.ID)}, oldX, oldY, false, enemy.X, enemy.Y, true)
+	}
 }
 
 func (w *World) enemyChangePosition(ms *mapState, enemy *enemyState) {

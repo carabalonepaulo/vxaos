@@ -32,12 +32,15 @@ func testActorWorld(t *testing.T) (*World, *store.Store) {
 		t.Fatal(err)
 	}
 	w, err := New(Options{
-		Data:         data,
-		Store:        st,
-		Tick:         20 * time.Millisecond,
-		SaveInterval: time.Hour,
-		MapIdle:      200 * time.Millisecond,
-		Quests:       quests,
+		Data:          data,
+		Store:         st,
+		Tick:          20 * time.Millisecond,
+		SaveInterval:  time.Hour,
+		MapIdle:       200 * time.Millisecond,
+		AOIRadius:     6,
+		AOIHysteresis: 1,
+		AOICellSize:   4,
+		Quests:        quests,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -226,6 +229,62 @@ func TestActorGuildFlow(t *testing.T) {
 	if !cleared {
 		t.Fatal("member guild name was not cleared")
 	}
+}
+
+func TestActorAOIVisibility(t *testing.T) {
+	w, st := testActorWorld(t)
+	ctx := context.Background()
+	item := firstUsableItem(t, w)
+	p1 := createPlayer(t, st, "Near", 5, 5)
+	p2 := createPlayer(t, st, "Far", 20, 20)
+	p1.State.Inventory = []store.ItemStack{{Kind: KindItem, ItemID: item.ID, Amount: 1}}
+	if err := w.Join(ctx, p1); err != nil {
+		t.Fatal(err)
+	}
+	if err := w.Join(ctx, p2); err != nil {
+		t.Fatal(err)
+	}
+	waitFrame(t, p1.Client, protocol.ServerEnterWorld, 2*time.Second)
+	waitFrame(t, p2.Client, protocol.ServerEnterWorld, 2*time.Second)
+	time.Sleep(80 * time.Millisecond)
+
+	if frames := p1.Client.(*fakeClient).find(protocol.ServerPlayerData); len(frames) != 0 {
+		t.Fatalf("far player was visible: %d frames", len(frames))
+	}
+
+	move := func(p *Player, x, y int) {
+		t.Helper()
+		if err := w.onPlayer(ctx, p.ID, func(ms *mapState, pl *Player) error {
+			oldX, oldY := pl.Character.X, pl.Character.Y
+			pl.Character.X, pl.Character.Y = x, y
+			pl.actor.aoiPlayerMoved(pl, oldX, oldY)
+			return nil
+		}); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	move(p2, 7, 5)
+	waitFrame(t, p1.Client, protocol.ServerPlayerData, 2*time.Second)
+	move(p2, 20, 20)
+	waitFrame(t, p1.Client, protocol.ServerPlayerLeft, 2*time.Second)
+
+	if err := w.DropItem(ctx, p1, uint16(item.ID), KindItem, 1); err != nil {
+		t.Fatal(err)
+	}
+	msg := waitFrame(t, p1.Client, protocol.ServerDropAdd, 2*time.Second)
+	drop := msg.(protocol.DropAdd)
+	if drop.DropID == 0 {
+		t.Fatal("drop id was not set")
+	}
+	if frames := p2.Client.(*fakeClient).find(protocol.ServerDropAdd); len(frames) != 0 {
+		t.Fatalf("far player saw the drop: %d frames", len(frames))
+	}
+
+	move(p2, 6, 5)
+	waitFrame(t, p2.Client, protocol.ServerDropAdd, 2*time.Second)
+	move(p2, 20, 20)
+	waitFrame(t, p2.Client, protocol.ServerDropRemove, 2*time.Second)
 }
 
 func TestActorJoinMoveAndTransfer(t *testing.T) {

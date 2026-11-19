@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"time"
-
-	"github.com/kelaia/vxaos/server/internal/protocol"
 )
 
 var (
@@ -17,6 +15,8 @@ var (
 
 // dropState is one item stack lying on a map.
 type dropState struct {
+	ID        uint32
+	slot      int
 	ItemID    int
 	Kind      int
 	Amount    int
@@ -25,6 +25,94 @@ type dropState struct {
 	PartyID   int
 	PickupAt  time.Time
 	DespawnAt time.Time
+}
+
+// dropSlot is one slab slot. generation protects clients from reusing a stale
+// drop id after the slot is recycled.
+type dropSlot struct {
+	generation uint16
+	live       bool
+	drop       *dropState
+}
+
+// dropSlab is a generation-checked slab. Lookup by id is O(1); allocation and
+// release are O(1); no per-drop map allocation is needed.
+type dropSlab struct {
+	slots []dropSlot
+	free  []int
+}
+
+func dropID(slot int, generation uint16) uint32 {
+	return uint32(generation)<<16 | uint32(slot&0xffff)
+}
+
+func (s *dropSlab) add(drop *dropState) uint32 {
+	index := -1
+	if n := len(s.free); n > 0 {
+		index = s.free[n-1]
+		s.free = s.free[:n-1]
+	} else {
+		index = len(s.slots)
+		s.slots = append(s.slots, dropSlot{})
+	}
+	slot := &s.slots[index]
+	slot.generation++
+	if slot.generation == 0 {
+		slot.generation = 1
+	}
+	slot.live = true
+	slot.drop = drop
+	drop.slot = index
+	drop.ID = dropID(index, slot.generation)
+	return drop.ID
+}
+
+func (s *dropSlab) get(id uint32) *dropState {
+	index := int(id & 0xffff)
+	generation := uint16(id >> 16)
+	if index < 0 || index >= len(s.slots) {
+		return nil
+	}
+	slot := &s.slots[index]
+	if !slot.live || slot.generation != generation {
+		return nil
+	}
+	return slot.drop
+}
+
+func (s *dropSlab) remove(id uint32) *dropState {
+	index := int(id & 0xffff)
+	generation := uint16(id >> 16)
+	if index < 0 || index >= len(s.slots) {
+		return nil
+	}
+	slot := &s.slots[index]
+	if !slot.live || slot.generation != generation {
+		return nil
+	}
+	drop := slot.drop
+	slot.live = false
+	slot.drop = nil
+	s.free = append(s.free, index)
+	return drop
+}
+
+func (s *dropSlab) len() int {
+	n := 0
+	for i := range s.slots {
+		if s.slots[i].live {
+			n++
+		}
+	}
+	return n
+}
+
+func (s *dropSlab) each(fn func(*dropState)) {
+	for i := range s.slots {
+		if s.slots[i].live && s.slots[i].drop != nil {
+			fn(s.slots[i].drop)
+		}
+	}
 }
 
 func (w *World) addMapDrop(ms *mapState, kind, id, amount, x, y int, owner string, partyID int) bool {
@@ -38,35 +126,38 @@ func (w *World) addMapDrop(ms *mapState, kind, id, amount, x, y int, owner strin
 		PickupAt:  now.Add(time.Duration(w.opts.DropPickupSeconds) * time.Second),
 		DespawnAt: now.Add(time.Duration(w.opts.DropDespawnSeconds) * time.Second),
 	}
+	ms.dropSlab.add(drop)
 	ms.drops = append(ms.drops, drop)
-	w.broadcastToMapPlayers(ms, protocol.ServerDropAdd, protocol.DropAdd{
-		ItemID: uint16(clampInt(id, 0, 65535)), Kind: uint8(clampInt(kind, 0, 255)),
-		Amount: uint16(clampInt(amount, 0, 65535)),
-		X:      uint16(clampInt(x, 0, 65535)), Y: uint16(clampInt(y, 0, 65535)),
-	})
+	w.aoiDropAdded(ms, drop)
 	return true
 }
 
+// removeMapDrop removes a dense-list index (used by the expiry tick and tests).
 func (w *World) removeMapDrop(ms *mapState, index int) {
 	if ms == nil || index < 0 || index >= len(ms.drops) {
 		return
 	}
-	ms.drops = append(ms.drops[:index], ms.drops[index+1:]...)
-	w.broadcastToMapPlayers(ms, protocol.ServerDropRemove, protocol.DropRemove{DropID: uint8(clampInt(index, 0, 255))})
+	w.removeMapDropByID(ms, ms.drops[index].ID)
+}
+
+func (w *World) removeMapDropByID(ms *mapState, id uint32) {
+	drop := ms.dropSlab.remove(id)
+	if drop == nil {
+		return
+	}
+	for i, candidate := range ms.drops {
+		if candidate == drop {
+			ms.drops = append(ms.drops[:i], ms.drops[i+1:]...)
+			break
+		}
+	}
+	w.aoiDropRemoved(ms, id)
 }
 
 // sendDropsTo sends the current drop list in list order (the client uses the
 // index to pick up and remove drops).
 func (w *World) sendDropsTo(p *Player, ms *mapState) {
-	for _, drop := range ms.drops {
-		_ = p.Client.Send(protocol.ServerDropAdd, protocol.DropAdd{
-			ItemID: uint16(clampInt(drop.ItemID, 0, 65535)),
-			Kind:   uint8(clampInt(drop.Kind, 0, 255)),
-			Amount: uint16(clampInt(drop.Amount, 0, 65535)),
-			X:      uint16(clampInt(drop.X, 0, 65535)),
-			Y:      uint16(clampInt(drop.Y, 0, 65535)),
-		})
-	}
+	w.aoiSendDrops(p)
 }
 
 // DropItem drops items from the inventory onto the player's tile.
@@ -97,13 +188,12 @@ func (w *World) DropItem(ctx context.Context, p *Player, itemID uint16, kind uin
 
 // PickupDrop picks up one ground drop if the player is on its tile and owns it
 // (or the pickup delay elapsed).
-func (w *World) PickupDrop(ctx context.Context, p *Player, index uint8) error {
+func (w *World) PickupDrop(ctx context.Context, p *Player, id uint32) error {
 	return w.onPlayer(ctx, p.ID, func(ms *mapState, p *Player) error {
-		i := int(index)
-		if ms == nil || i < 0 || i >= len(ms.drops) {
+		drop := ms.dropSlab.get(id)
+		if drop == nil {
 			return ErrInvalidDrop
 		}
-		drop := ms.drops[i]
 		if p.Character.X != drop.X || p.Character.Y != drop.Y {
 			return ErrNotOnDrop
 		}
@@ -115,7 +205,7 @@ func (w *World) PickupDrop(ctx context.Context, p *Player, index uint8) error {
 		}
 		w.sendItemTo(p, drop.Kind, drop.ItemID, drop.Amount, true, true)
 		w.addQuestItemNotice(p, drop.Kind, drop.ItemID)
-		w.removeMapDrop(ms, i)
+		w.removeMapDropByID(ms, id)
 		w.saveQuietly(p)
 		return nil
 	})
