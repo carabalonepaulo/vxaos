@@ -1,0 +1,38 @@
+# Quests are ordered: the first entry is quest id 0.
+# Event scripts address them with a one-based id (start_quest(1) -> entry 0).
+
+[[quest]]
+name = "Estimulante Mágico"
+desc = "Pegue 1 Estimulante no baú mágico."
+switch_id = 0
+variable_id = 0
+variable_amount = 0
+item_id = 5
+item_kind = 1
+item_amount = 1
+enemy_id = 0
+enemy_amount = 0
+rew_exp = 10
+rew_gold = 10
+rew_item_id = 0
+rew_item_kind = 0
+rew_item_amount = 0
+repeat = false
+
+[[quest]]
+name = "Morcegos Malditos"
+desc = "Mate 10 Morcegos na Caverna."
+switch_id = 0
+variable_id = 0
+variable_amount = 0
+item_id = 0
+item_kind = 0
+item_amount = 0
+enemy_id = 2
+enemy_amount = 10
+rew_exp = 20
+rew_gold = 20
+rew_item_id = 2
+rew_item_kind = 2
+rew_item_amount = 1
+repeat = true

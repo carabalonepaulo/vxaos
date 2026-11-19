@@ -1,0 +1,19 @@
+# Local server state and build artifacts
+server-go/bin/
+server-go/data/
+server-go/logs/
+server-go/config.toml
+*.db
+*.db-shm
+*.db-wal
+*.bak
+
+# Logs and temporary files
+*.log
+tmp/
+.tmp/
+.vxaos-*
+
+# Editor/OS noise
+.DS_Store
+Thumbs.db

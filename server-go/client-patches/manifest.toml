@@ -1,0 +1,52 @@
+# Client patch manifest. Files are applied to Scripts.rvdata2 in this order.
+# Existing entries are replaced in place; new entries require after/before.
+
+[[script]]
+name = "[VS] Protocol"
+file = "protocol.rb"
+after = "[VS] Enums"
+
+[[script]]
+name = "[VS] Crypto"
+file = "crypto.rb"
+after = "[VS] VXAOS"
+
+[[script]]
+name = "[VS] Buffer"
+file = "buffer.rb"
+
+[[script]]
+name = "[VS] Socket"
+file = "socket.rb"
+
+[[script]]
+name = "[VS] Send_Data"
+file = "send_data.rb"
+
+[[script]]
+name = "[VS] Handle_Data"
+file = "handle_data.rb"
+
+[[script]]
+name = "[VS] Network"
+file = "network.rb"
+
+[[script]]
+name = "[VS] Game Guild"
+file = "guild.rb"
+after = "[VS] Network"
+
+[[script]]
+name = "[VS] Game Trade"
+file = "trade.rb"
+after = "[VS] Game_Trade"
+
+[[script]]
+name = "[VS] Server Authority"
+file = "server_authority.rb"
+before = "[RM] Main"
+
+[[script]]
+name = "[VS] Test Input"
+file = "test_input.rb"
+before = "[RM] Main"
