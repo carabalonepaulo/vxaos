@@ -1,0 +1,21 @@
+{
+  "started_at": "2026-11-19T18:21:04-03:00",
+  "addr": "127.0.0.1:5050",
+  "count": 500,
+  "duration_seconds": 60.37289,
+  "ramp_seconds": 10,
+  "move_every_ms": 500,
+  "attack_every_ms": 2000,
+  "connected": 500,
+  "auth_ok": 500,
+  "enter_ok": 500,
+  "failed": 0,
+  "sent_frames": 68250,
+  "recv_frames": 13441584,
+  "recv_bytes": 106966104,
+  "auth_p50_ms": 2.0867,
+  "auth_p95_ms": 6.1474,
+  "enter_p50_ms": 0.533,
+  "enter_p95_ms": 2.0368,
+  "errors": {}
+}
