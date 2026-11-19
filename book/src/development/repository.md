@@ -9,7 +9,6 @@ vxaos/
   server-rb/         legacy Ruby server (historical reference)
   extra/             DLL sources, website, converters and historical assets
   book/              this mdBook
-  docs/              temporary documentation plan
   CHANGELOG.md
 ```
 

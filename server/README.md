@@ -299,6 +299,4 @@ See `docs/lisp.md` for the language and host ABI.
 
 ## Next milestone
 
-See the book and `CHANGELOG.md` for the current roadmap and release notes. The
-documentation plan is in `../docs/documentation-plan.md` while the book is being
-completed.
+See the book and `CHANGELOG.md` for the current roadmap and release notes.

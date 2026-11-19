@@ -13,7 +13,6 @@ persistent worlds, quests, events and social play.
 | `server-rb/` | Legacy Ruby server and historical assets (reference only) |
 | `book/` | English documentation built with mdBook |
 | `extra/` | Additional tools, DLL sources and historical material |
-| `docs/` | Temporary documentation plan (removed when the book is complete) |
 | `CHANGELOG.md` | Release notes |
 
 ## Documentation
