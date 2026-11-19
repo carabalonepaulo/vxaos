@@ -138,6 +138,13 @@ func pageNoteInt(page *rpg.Page, key string, def int) int {
 	return def
 }
 
+func (ms *mapState) enemyByID(id int) *enemyState {
+	if id >= 0 && id < len(ms.enemies) {
+		return ms.enemies[id]
+	}
+	return nil
+}
+
 func (ms *mapState) enemyAt(x, y int) *enemyState {
 	for _, enemy := range ms.enemies {
 		if enemy == nil {
@@ -174,7 +181,7 @@ func (ms *mapState) playerAt(x, y int) *Player {
 // Attack performs a normal weapon attack against the tile in front.
 func (w *World) Attack(ctx context.Context, p *Player) error {
 	return w.do(ctx, func() error {
-		if w.players[p.ID] != p {
+		if w.playerByID(p.ID) != p {
 			return ErrNotInGame
 		}
 		if w.restricted(&p.Status, 4) {
@@ -207,7 +214,7 @@ func (w *World) Attack(ctx context.Context, p *Player) error {
 
 func (w *World) SetTarget(ctx context.Context, p *Player, typ uint8, id uint16) error {
 	return w.do(ctx, func() error {
-		if w.players[p.ID] != p {
+		if w.playerByID(p.ID) != p {
 			return ErrNotInGame
 		}
 		ms := w.maps[p.Character.MapID]
@@ -218,11 +225,11 @@ func (w *World) SetTarget(ctx context.Context, p *Player, typ uint8, id uint16) 
 		case 0:
 			p.TargetType, p.TargetID = 0, 0
 		case 1:
-			if target := w.players[id]; target != nil && target.Character.MapID == p.Character.MapID {
+			if target := w.playerByID(id); target != nil && target.Character.MapID == p.Character.MapID {
 				p.TargetType, p.TargetID = typ, id
 			}
 		case 2:
-			if enemy := ms.enemies[int(id)]; enemy != nil && enemy.Alive {
+			if enemy := ms.enemyByID(int(id)); enemy != nil && enemy.Alive {
 				p.TargetType, p.TargetID = typ, id
 			}
 		default:
@@ -235,7 +242,7 @@ func (w *World) SetTarget(ctx context.Context, p *Player, typ uint8, id uint16) 
 // UseSkill casts one learned skill.
 func (w *World) UseSkill(ctx context.Context, p *Player, skillID uint16) error {
 	return w.do(ctx, func() error {
-		if w.players[p.ID] != p {
+		if w.playerByID(p.ID) != p {
 			return ErrNotInGame
 		}
 		skill := w.skill(int(skillID))
@@ -274,7 +281,7 @@ func (w *World) UseSkill(ctx context.Context, p *Player, skillID uint16) error {
 // UseItem consumes an inventory item.
 func (w *World) UseItem(ctx context.Context, p *Player, itemID uint16) error {
 	return w.do(ctx, func() error {
-		if w.players[p.ID] != p {
+		if w.playerByID(p.ID) != p {
 			return ErrNotInGame
 		}
 		item := w.item(int(itemID))
@@ -304,7 +311,7 @@ func (w *World) UseHotbar(ctx context.Context, p *Player, slot uint8) error {
 	entry := store.HotbarSlot{}
 	ok := false
 	_ = w.do(ctx, func() error {
-		if w.players[p.ID] != p {
+		if w.playerByID(p.ID) != p {
 			return ErrNotInGame
 		}
 		w.ensureHotbar(p)
@@ -534,7 +541,7 @@ func (w *World) useUsableOnPlayer(p *Player, item *rpg.UsableItem, itemID int) {
 	}
 	if item.Scope >= 1 && item.Scope <= 6 {
 		if p.TargetType == 1 {
-			if target := w.players[p.TargetID]; target != nil && target.Character.MapID == p.Character.MapID && target.Character.HP > 0 {
+			if target := w.playerByID(p.TargetID); target != nil && target.Character.MapID == p.Character.MapID && target.Character.HP > 0 {
 				rangeTiles := item.Range
 				if rangeTiles < 1 {
 					rangeTiles = 1
@@ -616,7 +623,7 @@ func (w *World) applyAreaItem(p *Player, item *rpg.UsableItem, user battleStats,
 
 func (w *World) resolveAllyTarget(p *Player, ms *mapState, rangeTiles int) *Player {
 	if p.TargetType == 1 {
-		if target := w.players[p.TargetID]; target != nil && target.Character.MapID == p.Character.MapID && target.Character.HP > 0 {
+		if target := w.playerByID(p.TargetID); target != nil && target.Character.MapID == p.Character.MapID && target.Character.HP > 0 {
 			if rangeTiles < 1 || (absInt(target.Character.X-p.Character.X) <= rangeTiles && absInt(target.Character.Y-p.Character.Y) <= rangeTiles) {
 				return target
 			}
@@ -753,7 +760,7 @@ func (w *World) resolveTarget(p *Player, scope int, ms *mapState) *enemyState {
 		return nil
 	}
 	if p.TargetType == 2 {
-		if enemy := ms.enemies[int(p.TargetID)]; enemy != nil && enemy.Alive {
+		if enemy := ms.enemyByID(int(p.TargetID)); enemy != nil && enemy.Alive {
 			return enemy
 		}
 	}

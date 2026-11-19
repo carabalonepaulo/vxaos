@@ -149,7 +149,7 @@ func validGuildFlag(flag []byte) bool {
 // CreateGuild creates a guild for the player who opened the create window.
 func (w *World) CreateGuild(ctx context.Context, p *Player, name string, flag []byte) error {
 	return w.do(ctx, func() error {
-		if w.players[p.ID] != p || !p.CreatingGuild {
+		if w.playerByID(p.ID) != p || !p.CreatingGuild {
 			return ErrBadRequest
 		}
 		if p.GuildName != "" {
@@ -193,7 +193,7 @@ func (w *World) CreateGuild(ctx context.Context, p *Player, name string, flag []
 // OpenGuild sends the guild window contents.
 func (w *World) OpenGuild(ctx context.Context, p *Player) error {
 	return w.do(ctx, func() error {
-		if w.players[p.ID] != p {
+		if w.playerByID(p.ID) != p {
 			return ErrNotInGame
 		}
 		g := w.guildByName[store.NameKey(p.GuildName)]
@@ -334,7 +334,7 @@ func (w *World) inviteGuildLocked(p *Player, name string) error {
 // AcceptRequest accepts the pending invitation.
 func (w *World) AcceptRequest(ctx context.Context, p *Player) error {
 	return w.do(ctx, func() error {
-		if w.players[p.ID] != p {
+		if w.playerByID(p.ID) != p {
 			return ErrNotInGame
 		}
 		request := p.Request
@@ -344,25 +344,25 @@ func (w *World) AcceptRequest(ctx context.Context, p *Player) error {
 		}
 		switch request.Type {
 		case requestParty:
-			from := w.players[request.FromID]
+			from := w.playerByID(request.FromID)
 			if from == nil {
 				return ErrNotInGame
 			}
 			return w.acceptPartyLocked(p, from)
 		case requestFriend:
-			from := w.players[request.FromID]
+			from := w.playerByID(request.FromID)
 			if from == nil {
 				return ErrNotInGame
 			}
 			return w.acceptFriendLocked(p, from)
 		case requestTrade:
-			from := w.players[request.FromID]
+			from := w.playerByID(request.FromID)
 			if from == nil {
 				return ErrNotInGame
 			}
 			return w.openTradeLocked(p, from)
 		case requestFinishTrade:
-			from := w.players[request.FromID]
+			from := w.playerByID(request.FromID)
 			if from == nil {
 				return ErrNotInGame
 			}
@@ -371,7 +371,7 @@ func (w *World) AcceptRequest(ctx context.Context, p *Player) error {
 		default:
 			return ErrUnsupported
 		}
-		from := w.players[request.FromID]
+		from := w.playerByID(request.FromID)
 		if from == nil || from.GuildName == "" {
 			return ErrNotInGame
 		}
@@ -403,7 +403,7 @@ func (w *World) AcceptRequest(ctx context.Context, p *Player) error {
 // DeclineRequest declines the pending invitation.
 func (w *World) DeclineRequest(ctx context.Context, p *Player) error {
 	return w.do(ctx, func() error {
-		if w.players[p.ID] != p {
+		if w.playerByID(p.ID) != p {
 			return ErrNotInGame
 		}
 		request := p.Request
@@ -411,7 +411,7 @@ func (w *World) DeclineRequest(ctx context.Context, p *Player) error {
 		if request == nil {
 			return nil
 		}
-		if from := w.players[request.FromID]; from != nil {
+		if from := w.playerByID(request.FromID); from != nil {
 			switch request.Type {
 			case requestParty:
 				w.questChat(from, fmt.Sprintf("%s recusou entrar no grupo.", p.Character.Name))
@@ -428,7 +428,7 @@ func (w *World) DeclineRequest(ctx context.Context, p *Player) error {
 // LeaveGuild leaves the guild; a leader deletes it.
 func (w *World) LeaveGuild(ctx context.Context, p *Player) error {
 	return w.do(ctx, func() error {
-		if w.players[p.ID] != p {
+		if w.playerByID(p.ID) != p {
 			return ErrNotInGame
 		}
 		g := w.guildByName[store.NameKey(p.GuildName)]
@@ -510,7 +510,7 @@ func (w *World) deleteGuild(g *guildState) error {
 }
 
 func (w *World) leaderGuild(p *Player) (*guildState, error) {
-	if w.players[p.ID] != p || p.GuildName == "" {
+	if w.playerByID(p.ID) != p || p.GuildName == "" {
 		return nil, ErrNoGuild
 	}
 	g := w.guildByName[store.NameKey(p.GuildName)]

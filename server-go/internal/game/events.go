@@ -498,7 +498,7 @@ func (w *World) sendEventRange(p *Player, eventID, initial, final int) {
 // EventNext resumes a message window.
 func (w *World) EventNext(ctx context.Context, p *Player) error {
 	return w.do(ctx, func() error {
-		if w.players[p.ID] != p {
+		if w.playerByID(p.ID) != p {
 			return ErrNotInGame
 		}
 		if p.Event == nil || !p.Event.waitingMessage {
@@ -513,7 +513,7 @@ func (w *World) EventNext(ctx context.Context, p *Player) error {
 // EventChoice resumes a choice or number/item input.
 func (w *World) EventChoice(ctx context.Context, p *Player, index int32) error {
 	return w.do(ctx, func() error {
-		if w.players[p.ID] != p {
+		if w.playerByID(p.ID) != p {
 			return ErrNotInGame
 		}
 		if p.Event == nil || !p.Event.waitingChoice || len(p.Event.frames) == 0 {
@@ -1026,7 +1026,7 @@ func (w *World) transferFromEvent(p *Player, cmd *rpg.EventCommand) bool {
 // Teleport moves the player to a destination chosen in the teleport window.
 func (w *World) Teleport(ctx context.Context, p *Player, index uint8) error {
 	return w.do(ctx, func() error {
-		if w.players[p.ID] != p {
+		if w.playerByID(p.ID) != p {
 			return ErrNotInGame
 		}
 		group := p.TeleportGroup

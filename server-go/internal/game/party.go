@@ -40,7 +40,7 @@ func (w *World) partyOnline(party *partyState) []*Player {
 	}
 	out := make([]*Player, 0, len(party.Members))
 	for _, id := range party.Members {
-		if p := w.players[id]; p != nil {
+		if p := w.playerByID(id); p != nil {
 			out = append(out, p)
 		}
 	}
@@ -75,13 +75,13 @@ func (w *World) createParty(leader *Player) *partyState {
 // PlayerRequest dispatches a target-HUD invitation.
 func (w *World) PlayerRequest(ctx context.Context, p *Player, typ uint8, targetID uint16) error {
 	return w.do(ctx, func() error {
-		if w.players[p.ID] != p {
+		if w.playerByID(p.ID) != p {
 			return ErrNotInGame
 		}
 		if typ == requestFinishTrade {
 			return w.requestFinishTradeLocked(p)
 		}
-		target := w.players[targetID]
+		target := w.playerByID(targetID)
 		if target == nil || target == p {
 			return ErrInvalidTarget
 		}
@@ -158,7 +158,7 @@ func (w *World) acceptPartyLocked(p, from *Player) error {
 // LeaveParty removes the player from the party. The last member dissolves it.
 func (w *World) LeaveParty(ctx context.Context, p *Player) error {
 	return w.do(ctx, func() error {
-		if w.players[p.ID] != p {
+		if w.playerByID(p.ID) != p {
 			return ErrNotInGame
 		}
 		w.leavePartyLocked(p)
@@ -182,7 +182,7 @@ func (w *World) leavePartyLocked(p *Player) {
 	party.Members = remaining
 	p.PartyID = 0
 	if len(party.Members) == 1 {
-		last := w.players[party.Members[0]]
+		last := w.playerByID(party.Members[0])
 		if last != nil {
 			_ = last.Client.Send(protocol.ServerPartyDissolve, protocol.PartyDissolve{})
 			last.PartyID = 0
@@ -195,7 +195,7 @@ func (w *World) leavePartyLocked(p *Player) {
 		return
 	}
 	for _, id := range party.Members {
-		if member := w.players[id]; member != nil {
+		if member := w.playerByID(id); member != nil {
 			_ = member.Client.Send(protocol.ServerPartyLeave, protocol.PartyLeave{PlayerID: p.ID})
 		}
 	}

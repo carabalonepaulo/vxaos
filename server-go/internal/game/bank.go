@@ -71,7 +71,7 @@ func bankKindEntries(bank *store.BankState, kind int) int {
 // are deposits, negative amounts withdrawals.
 func (w *World) BankItem(ctx context.Context, p *Player, itemID uint16, kind uint8, amount int16) error {
 	return w.do(ctx, func() error {
-		if w.players[p.ID] != p || !p.BankOpen || p.Bank == nil {
+		if w.playerByID(p.ID) != p || !p.BankOpen || p.Bank == nil {
 			return ErrNotInGame
 		}
 		k := int(kind)
@@ -115,7 +115,7 @@ func (w *World) BankItem(ctx context.Context, p *Player, itemID uint16, kind uin
 // deposits, negative amounts withdrawals.
 func (w *World) BankGold(ctx context.Context, p *Player, amount int32) error {
 	return w.do(ctx, func() error {
-		if w.players[p.ID] != p || !p.BankOpen || p.Bank == nil {
+		if w.playerByID(p.ID) != p || !p.BankOpen || p.Bank == nil {
 			return ErrNotInGame
 		}
 		if amount == 0 {

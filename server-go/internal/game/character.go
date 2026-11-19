@@ -130,7 +130,7 @@ func (w *World) skill(id int) *rpg.Skill {
 // the inventory or from another equipment slot.
 func (w *World) Equip(ctx context.Context, p *Player, slot uint8, itemID uint16) error {
 	return w.do(ctx, func() error {
-		if w.players[p.ID] != p {
+		if w.playerByID(p.ID) != p {
 			return ErrNotInGame
 		}
 		w.ensureEquipSlots(p)
@@ -255,7 +255,7 @@ func (w *World) isVIP(p *Player) bool {
 // SetHotbar stores an item or skill in one hotbar slot. Type 0 clears it.
 func (w *World) SetHotbar(ctx context.Context, p *Player, slot, typ uint8, itemID uint16) error {
 	return w.do(ctx, func() error {
-		if w.players[p.ID] != p {
+		if w.playerByID(p.ID) != p {
 			return ErrNotInGame
 		}
 		w.ensureHotbar(p)
@@ -288,7 +288,7 @@ func (w *World) SetHotbar(ctx context.Context, p *Player, slot, typ uint8, itemI
 // SpendPoint converts one creation point into a permanent parameter bonus.
 func (w *World) SpendPoint(ctx context.Context, p *Player, paramID uint8) error {
 	return w.do(ctx, func() error {
-		if w.players[p.ID] != p {
+		if w.playerByID(p.ID) != p {
 			return ErrNotInGame
 		}
 		param := int(paramID)

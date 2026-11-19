@@ -75,7 +75,7 @@ func (w *World) openTradeLocked(p, from *Player) error {
 // TradeItem adds or removes an offered item.
 func (w *World) TradeItem(ctx context.Context, p *Player, itemID uint16, kind uint8, amount int16) error {
 	return w.do(ctx, func() error {
-		if w.players[p.ID] != p || p.Trade == nil {
+		if w.playerByID(p.ID) != p || p.Trade == nil {
 			return ErrNotInTrade
 		}
 		k := int(kind)
@@ -122,7 +122,7 @@ func (w *World) TradeItem(ctx context.Context, p *Player, itemID uint16, kind ui
 // TradeGold adds or removes offered gold.
 func (w *World) TradeGold(ctx context.Context, p *Player, amount int32) error {
 	return w.do(ctx, func() error {
-		if w.players[p.ID] != p || p.Trade == nil {
+		if w.playerByID(p.ID) != p || p.Trade == nil {
 			return ErrNotInTrade
 		}
 		if amount == 0 {
@@ -149,10 +149,10 @@ func (w *World) RequestFinishTrade(ctx context.Context, p *Player) error {
 }
 
 func (w *World) requestFinishTradeLocked(p *Player) error {
-	if w.players[p.ID] != p || p.Trade == nil {
+	if w.playerByID(p.ID) != p || p.Trade == nil {
 		return ErrNotInTrade
 	}
-	partner := w.players[p.Trade.Partner]
+	partner := w.playerByID(p.Trade.Partner)
 	if partner == nil || partner.Trade == nil {
 		return ErrNotInTrade
 	}
@@ -244,7 +244,7 @@ func (w *World) closeTradeLocked(p *Player) {
 	if p.Trade == nil {
 		return
 	}
-	partner := w.players[p.Trade.Partner]
+	partner := w.playerByID(p.Trade.Partner)
 	_ = p.Client.Send(protocol.ServerWindowClose, protocol.WindowClose{})
 	p.Trade = nil
 	if partner != nil && partner.Trade != nil {
@@ -258,7 +258,7 @@ func (w *World) broadcastTrade(p *Player, op protocol.ServerOp, msg protocol.Ser
 		return
 	}
 	_ = p.Client.Send(op, msg)
-	if partner := w.players[p.Trade.Partner]; partner != nil {
+	if partner := w.playerByID(p.Trade.Partner); partner != nil {
 		_ = partner.Client.Send(op, msg)
 	}
 }

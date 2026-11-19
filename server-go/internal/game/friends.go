@@ -47,7 +47,7 @@ func (w *World) friendOnlineCount(p *Player) int {
 // OpenFriends reorders the list online-first and sends the online names.
 func (w *World) OpenFriends(ctx context.Context, p *Player) error {
 	return w.do(ctx, func() error {
-		if w.players[p.ID] != p {
+		if w.playerByID(p.ID) != p {
 			return ErrNotInGame
 		}
 		online := make([]string, 0, len(p.Friends))
@@ -125,7 +125,7 @@ func (w *World) acceptFriendLocked(p, from *Player) error {
 // RemoveFriend removes one entry from the player's list by index.
 func (w *World) RemoveFriend(ctx context.Context, p *Player, index uint8) error {
 	return w.do(ctx, func() error {
-		if w.players[p.ID] != p {
+		if w.playerByID(p.ID) != p {
 			return ErrNotInGame
 		}
 		i := int(index)

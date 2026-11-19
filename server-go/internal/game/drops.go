@@ -72,7 +72,7 @@ func (w *World) sendDropsTo(p *Player, ms *mapState) {
 // DropItem drops items from the inventory onto the player's tile.
 func (w *World) DropItem(ctx context.Context, p *Player, itemID uint16, kind uint8, amount uint16) error {
 	return w.do(ctx, func() error {
-		if w.players[p.ID] != p {
+		if w.playerByID(p.ID) != p {
 			return ErrNotInGame
 		}
 		ms := w.maps[p.Character.MapID]
@@ -106,7 +106,7 @@ func (w *World) DropItem(ctx context.Context, p *Player, itemID uint16, kind uin
 // (or the pickup delay elapsed).
 func (w *World) PickupDrop(ctx context.Context, p *Player, index uint8) error {
 	return w.do(ctx, func() error {
-		if w.players[p.ID] != p {
+		if w.playerByID(p.ID) != p {
 			return ErrNotInGame
 		}
 		ms := w.maps[p.Character.MapID]

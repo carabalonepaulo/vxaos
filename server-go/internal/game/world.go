@@ -408,7 +408,7 @@ func (w *World) join(p *Player) error {
 	if _, ok := w.byCharacter[p.Character.ID]; ok {
 		return ErrAlreadyOnline
 	}
-	for int(w.nextID) < len(w.players) && w.players[w.nextID] != nil {
+	for int(w.nextID) < len(w.players) && w.playerByID(w.nextID) != nil {
 		w.nextID++
 		if w.nextID == 0 {
 			return fmt.Errorf("game: no free player ids")
@@ -497,7 +497,7 @@ func (w *World) Leave(ctx context.Context, p *Player, save bool) error {
 		return ErrNotInGame
 	}
 	return w.do(ctx, func() error {
-		if w.players[p.ID] != p {
+		if w.playerByID(p.ID) != p {
 			return ErrNotInGame
 		}
 		if save {
@@ -537,7 +537,7 @@ func (w *World) removeLocked(p *Player) {
 // Move processes one step/turn request.
 func (w *World) Move(ctx context.Context, p *Player, direction uint8) error {
 	return w.do(ctx, func() error {
-		if w.players[p.ID] != p {
+		if w.playerByID(p.ID) != p {
 			return ErrNotInGame
 		}
 		now := w.now()
@@ -595,7 +595,7 @@ func (w *World) Move(ctx context.Context, p *Player, direction uint8) error {
 // slice.
 func (w *World) Chat(ctx context.Context, p *Player, channel uint8, message, target string) error {
 	return w.do(ctx, func() error {
-		if w.players[p.ID] != p {
+		if w.playerByID(p.ID) != p {
 			return ErrNotInGame
 		}
 		now := w.now()
@@ -794,6 +794,13 @@ func ensureIndex[T any](list []T, i int) []T {
 		list = append(list, make([]T, i-len(list)+1)...)
 	}
 	return list
+}
+
+func (w *World) playerByID(id uint16) *Player {
+	if int(id) < len(w.players) {
+		return w.players[id]
+	}
+	return nil
 }
 
 func (w *World) saveLocked(p *Player) error {

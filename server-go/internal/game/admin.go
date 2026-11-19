@@ -41,7 +41,7 @@ var (
 // navigation and mute commands only, matching the original server.
 func (w *World) AdminCommand(ctx context.Context, p *Player, m protocol.AdminCommand) error {
 	return w.do(ctx, func() error {
-		if w.players[p.ID] != p {
+		if w.playerByID(p.ID) != p {
 			return ErrNotInGame
 		}
 		group := 0
